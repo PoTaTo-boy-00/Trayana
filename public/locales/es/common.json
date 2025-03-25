@@ -1,0 +1,31 @@
+```json
+{
+  "common": {
+    "dashboard": "Panel de Control",
+    "alerts": "Alertas",
+    "resources": "Recursos",
+    "messages": "Mensajes",
+    "settings": "Configuración"
+  },
+  "alerts": {
+    "create": "Crear Alerta",
+    "severity": "Severidad",
+    "title": "Título",
+    "description": "Descripción",
+    "affectedAreas": "Áreas Afectadas"
+  },
+  "resources": {
+    "add": "Agregar Recurso",
+    "update": "Actualizar Recurso",
+    "delete": "Eliminar Recurso",
+    "type": "Tipo",
+    "quantity": "Cantidad",
+    "status": "Estado"
+  },
+  "messages": {
+    "send": "Enviar Mensaje",
+    "reply": "Responder",
+    "priority": "Prioridad",
+    "recipient": "Destinatario"
+  }
+}

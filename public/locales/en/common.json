@@ -1,0 +1,30 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "alerts": "Alerts",
+    "resources": "Resources",
+    "messages": "Messages",
+    "settings": "Settings"
+  },
+  "alerts": {
+    "create": "Create Alert",
+    "severity": "Severity",
+    "title": "Title",
+    "description": "Description",
+    "affectedAreas": "Affected Areas"
+  },
+  "resources": {
+    "add": "Add Resource",
+    "update": "Update Resource",
+    "delete": "Delete Resource",
+    "type": "Type",
+    "quantity": "Quantity",
+    "status": "Status"
+  },
+  "messages": {
+    "send": "Send Message",
+    "reply": "Reply",
+    "priority": "Priority",
+    "recipient": "Recipient"
+  }
+}
