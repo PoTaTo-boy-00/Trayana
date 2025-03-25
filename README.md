@@ -47,14 +47,14 @@ This project is a **real-time disaster response and resource management system**
 For testing purposes, use the following credentials:
 
 ### Admin Login
-- Email: admin@example.com
+- Email: admin@gmail.com
 
-- Password: SecureAdminPass123
+- Password: admin2005
 
 ### Partner Login
-- Email: partner@example.com
+- Email: jsh@gmail.com
 
-- Password: PartnerSecurePass123
+- Password: 123456
 
 ## 📡 API Endpoints
 ### 🚨 **SOS Alerts**
