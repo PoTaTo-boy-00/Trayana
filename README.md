@@ -1,4 +1,5 @@
 # Trayans - README
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## 🚀 Overview
 This project is a **real-time disaster response and resource management system** leveraging AI and cloud technologies. It enables **victims, government agencies, and partner organizations** to coordinate during disasters via multi-channel communication and automated resource allocation.
