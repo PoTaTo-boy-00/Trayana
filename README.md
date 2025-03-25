@@ -8,15 +8,17 @@ This project is a **real-time disaster response and resource management system**
 |-------------------|----------------|
 | **Frontend**      | React Native (Mobile), Next.js (Web), TailwindCSS |
 | **Backend**       | Node.js, Express.js, Supabase (PostgreSQL, Realtime DB) |
-| **AI & ML**       | Google Gemini AI, Vertex AI Forecasting, Google NLP API |
-| **Communication** | Firebase Push, Twilio SMS, Google Dialogflow, Google Public Alerts API |
+| **AI & ML**       | Google Gemini AI, Vertex AI Forecasting, Google NLP API, BigQuery |
+| **Communication** | Supabse Push, Twilio SMS, Supabase Realtime, Websocket |
 | **Geolocation**   | Google Maps API, GPS Tracking |
-| **Data Analytics**| Google Data Studio |
-| **IoT & Sensors** | Google Cloud IoT Core (for seismic & flood sensors) |
+| **Database**      | Supabase, BigQuery |
+| **APIs**          | IMD, USGS Earthquake, Google Maps, Google Translate, Google Sheets, Google Flood Forecasting, Google Earth, Google Earth Engine |
+| **Code Editor**   | IDX, VS Code | 
+
 
 ## 🏗️ Features
 ### 🎯 **Core Features**
-✅ **Real-time Disaster Alerts** (Google Public Alerts API, Social Media Monitoring)  
+✅ **Real-time Disaster Alerts** (SMS, Realtime (for Partner Organizations), Social Media Monitoring)  
 ✅ **SOS Emergency Requests** (AI-powered urgency detection via Gemini AI)  
 ✅ **Offline Mode** (Locally stores distress messages, syncs once online)  
 ✅ **Multi-Channel Communication** (Mobile app, SMS, IVR for illiterate users)  
@@ -27,11 +29,11 @@ This project is a **real-time disaster response and resource management system**
 ## 📜 Installation & Setup
 1️⃣ Clone the repository:  
 ```bash
-   git clone https://github.com/your-username/disaster-response-system.git
+   git clone https://github.com/PoTaTo-boy-00/Trayana.git
 ```
 2️⃣ Install dependencies:  
 ```bash
-   cd disaster-response-system
+   cd Trayana
    npm install
 ```
 3️⃣ Set up **Supabase environment variables** in `.env.local`  
@@ -39,6 +41,19 @@ This project is a **real-time disaster response and resource management system**
 ```bash
    npm run dev
 ```
+
+## Admin & Partner Login Credentials
+For testing purposes, use the following credentials:
+
+### Admin Login
+- Email: admin@example.com
+
+- Password: SecureAdminPass123
+
+### Partner Login
+- Email: partner@example.com
+
+- Password: PartnerSecurePass123
 
 ## 📡 API Endpoints
 ### 🚨 **SOS Alerts**
@@ -54,7 +69,7 @@ This project is a **real-time disaster response and resource management system**
 - `GET /api/alerts` – Retrieve active alerts
 
 ## 🔒 Security & Authentication
-- **Clerk Authentication** for role-based access (User, Admin, Partner)
+- **Supabase Authentication** for role-based access (Admin, Partner)
 - **AES-256 & TLS Encryption** for secure data transmission
 
 ## 🛠️ Future Enhancements
@@ -69,5 +84,5 @@ This project is a **real-time disaster response and resource management system**
 4️⃣ Submit a pull request 🎉
 
 ## 📩 Contact
-For queries, reach out at: `your-email@example.com`
+For queries, reach out at: `ad2719@cse.jgec.ac.in`
 
