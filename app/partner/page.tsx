@@ -22,8 +22,9 @@ import MapComponent from "@/components/ui/MapComponent";
 
 export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
-  // const [personnel, setPersonnel] = useState<PersonnelLocation[]>([]);
-  // const [sosAlerts, setSosAlerts] = useState<SOSAlert[]>([]);
+  const [resourceCount, setResourceCount] = useState<number>(0);
+  const [personnelCount, setPersonnelCount] = useState<number>(0);
+
   const supabase = createClientComponentClient();
   const personnel = [
     {
@@ -47,6 +48,30 @@ export default function PartnerDashboard() {
       }
     };
     fetchAlerts();
+  }, []);
+  useEffect(() => {
+    const fetchResources = async () => {
+      const { data, error } = await supabase.from("resources").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setResourceCount(data.length);
+      }
+    };
+
+    fetchResources();
+  }, []);
+  useEffect(() => {
+    const fetchPersonnel = async () => {
+      const { data, error } = await supabase.from("personnel").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setPersonnelCount(data.length);
+      }
+    };
+
+    fetchPersonnel();
   }, []);
   return (
     <div className="space-y-6">
@@ -77,7 +102,7 @@ export default function PartnerDashboard() {
             <Box className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">48</div>
+            <div className="text-2xl font-bold">{resourceCount}</div>
             <p className="text-xs text-muted-foreground">Across 4 categories</p>
           </CardContent>
         </Card>
@@ -90,7 +115,7 @@ export default function PartnerDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
+            <div className="text-2xl font-bold">{personnelCount}</div>
             <p className="text-xs text-muted-foreground">Currently deployed</p>
           </CardContent>
         </Card>

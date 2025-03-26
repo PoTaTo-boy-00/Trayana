@@ -37,7 +37,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
 }) => {
   // Load the Google Maps script
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "", // Add your Google Maps API key here
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
 
   // Handle loading and errors
