@@ -34,6 +34,7 @@ import {
 export default function AdminDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [organizationCount, setOrganizationCount] = useState<number>(0);
+  const [personnelCount, setPersonnelCount] = useState<number>(0);
   const [prediction, setPrediction] = useState<DiasterPrediction | null>(null);
   const [resourceData, setResourceData] = useState<ResourceAllocation[]>([]);
   const [optimizedAllocation, setOptimizedAllocation] =
@@ -62,6 +63,18 @@ export default function AdminDashboard() {
     };
 
     fetchOrganizations();
+  }, []);
+  useEffect(() => {
+    const fetchPersonnel = async () => {
+      const { data, error } = await supabase.from("personnel").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setPersonnelCount(data.length);
+      }
+    };
+
+    fetchPersonnel();
   }, []);
 
   useEffect(() => {
@@ -126,7 +139,7 @@ export default function AdminDashboard() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">20</div>
+            <div className="text-2xl font-bold">{organizationCount}</div>
             <p className="text-xs text-muted-foreground">Across 6 categories</p>
           </CardContent>
         </Card>
@@ -139,7 +152,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">142</div>
+            <div className="text-2xl font-bold">{personnelCount}</div>
             <p className="text-xs text-muted-foreground">Currently deployed</p>
           </CardContent>
         </Card>
