@@ -54,6 +54,25 @@ export default function MessagesPage() {
     };
 
     fetchMessages();
+
+    const channel = supabase
+      .channel("messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+        },
+        (payload) => {
+          setMessages((prev) => [...prev, payload.new as Message]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleSendMessage = async (newMessage: Message) => {
@@ -87,17 +106,6 @@ export default function MessagesPage() {
           </DialogContent>
         </Dialog>
       </div>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex gap-4">
-            <Input placeholder="Type your message..." className="flex-1" />
-            <Button>
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="space-y-4">
         {messages.map((message) => (

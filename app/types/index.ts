@@ -146,7 +146,7 @@ export interface Personnel {
 
 export interface Message {
   id: string;
-  senderId: string;
+  senderId?: string | null;
   recipientId: string | null;
   type: "direct" | "group" | "broadcast" | "sms" | "ussd";
   content: string;
