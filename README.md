@@ -85,5 +85,5 @@ For testing purposes, use the following credentials:
 4️⃣ Submit a pull request 🎉
 
 ## 📩 Contact
-For queries, reach out at: `ad2719@cse.jgec.ac.in`
+For queries, reach out at: `ad2719@cse.jgec.ac.in` or `mk2714@cse.jgec.ac.in`
 
