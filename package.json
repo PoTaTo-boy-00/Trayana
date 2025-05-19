@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google-cloud/speech": "^6.3.0",
+    "@google-cloud/translate": "^9.1.0",
     "@google-cloud/vertexai": "^0.5.0",
     "@google/generative-ai": "^0.2.0",
     "@hookform/resolvers": "^3.9.0",
@@ -45,7 +46,7 @@
     "@supabase/auth-helpers-nextjs": "^0.9.0",
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
-    "@supabase/supabase-js": "^2.49.1",
+    "@supabase/supabase-js": "^2.49.4",
     "@tensorflow/tfjs": "^4.17.0",
     "@turf/turf": "^7.2.0",
     "@types/google.maps": "^3.58.1",

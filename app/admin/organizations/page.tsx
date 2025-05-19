@@ -69,6 +69,18 @@ export default function OrganizationsPage() {
     }
   };
 
+  const handleDeleteOrganization = async (id: string) => {
+    const { error } = await supabase
+      .from("organizations")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error("Error deleting organization:", error);
+    } else {
+      setOrganizations((prev) => prev.filter((org) => org.id !== id));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -96,16 +108,26 @@ export default function OrganizationsPage() {
                 <Building2 className="h-5 w-5" />
                 {org.name}
               </CardTitle>
-              <span
-                className={`px-2 py-1 rounded-full text-sm ${
-                  org.status === "active"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-                }`}
-              >
-                {org.status.charAt(0).toUpperCase() + org.status.slice(1)}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`px-2 py-1 rounded-full text-sm ${
+                    org.status === "active"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                  }`}
+                >
+                  {org.status.charAt(0).toUpperCase() + org.status.slice(1)}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteOrganization(org.id)}
+                >
+                  Delete
+                </Button>
+              </div>
             </CardHeader>
+
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Type</p>
