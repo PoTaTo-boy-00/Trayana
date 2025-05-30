@@ -8,6 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Building2, Package } from "lucide-react";
 import * as turf from "@turf/turf";
 import MapComponent from "@/components/ui/MapComponent";
+import { personnel } from "@/data/personnel";
+import { sosAlerts } from "@/data/sos";
+import { useTranslation } from "@/lib/translation-context";
 
 export default function MapPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -16,17 +19,14 @@ export default function MapPage() {
 
   const supabase = createClientComponentClient();
 
-  const personnel = [
-    {
-      id: 1,
-      location_lat: 26.544205506857356,
-      location_lng: 88.70577006096832,
-    }, // Jalpaiguri
-  ];
-
-  const sosAlerts = [
-    { id: 1, location_lat: 26.54, location_lng: 88.71 }, // Near Jalpaiguri
-  ];
+  // const personnel = [
+  //   {
+  //     id: 1,
+  //     location_lat: 26.544205506857356,
+  //     location_lng: 88.70577006096832,
+  //   }, // Jalpaiguri
+  // ];
+  const { t, language, setLanguage } = useTranslation();
 
   useEffect(() => {
     async function fetchData() {
@@ -88,7 +88,7 @@ export default function MapPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Interactive Map</h1>
+        <h1 className="text-3xl font-bold">{t("maps.title")}</h1>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

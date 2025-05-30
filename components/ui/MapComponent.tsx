@@ -6,6 +6,7 @@ import {
   useLoadScript,
 } from "@react-google-maps/api";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // Adjust import based on your UI library
+import { useTranslation } from "@/lib/translation-context";
 
 // Define types for personnel and SOS alerts
 interface Location {
@@ -31,10 +32,13 @@ const center = {
   lng: 88.70577006, // Default center longitude (Jalpaiguri)
 };
 
+// const { t } = useTranslation();
+// const { t, language, setLanguage } = useTranslation();
 const MapComponent: React.FC<MapComponentProps> = ({
   personnel,
   sosAlerts,
 }) => {
+  const { t } = useTranslation();
   // Load the Google Maps script
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
@@ -94,7 +98,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
               color: "black",
             }}
           >
-            Personnel
+            {t("maps.legends.personnel")}
           </span>
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
@@ -114,7 +118,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
               color: "black",
             }}
           >
-            SOS Alerts
+            {t("maps.legends.sosAlerts")}
           </span>
         </div>
       </div>
@@ -124,7 +128,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Personnel & SOS Locations</CardTitle>
+        <CardTitle>{t("maps.description")}</CardTitle>
       </CardHeader>
       <CardContent className="p-0 w-full h-[500px]">
         <GoogleMap

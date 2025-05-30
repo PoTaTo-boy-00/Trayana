@@ -29,9 +29,13 @@ import {
   Resource,
   ResourceAllocation,
 } from "../types";
+import FloodPredictorForm from "../components/floodPrediction";
+import { useTranslation } from "@/lib/translation-context";
+// import { FloodPrediction } from "../components/floodPrediction";
 // import { count } from "console";
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [alertCount, setAlertCount] = useState<number>(0);
   const [organizationCount, setOrganizationCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
@@ -112,59 +116,65 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Dashboard Overview</h1>
+      <h1 className="text-3xl font-bold">{t("dashboard.title")}</h1>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("dashboard.cards.activeAlerts")}
+            </CardTitle>
             <AlertTriangle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{alertCount}</div>
-            {/* <div className="flex gap-2 mt-2">
-              <AlertBadge severity="red" />
-              <AlertBadge severity="orange" />
-              <AlertBadge severity="yellow" />
-              <AlertBadge severity="green" />
-            </div> */}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Active Organizations
+              {t("dashboard.cards.activeOrganizations")}
             </CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{organizationCount}</div>
-            <p className="text-xs text-muted-foreground">Across 6 categories</p>
+            <p className="text-xs text-muted-foreground">
+              {t("dashboard.cards.organizationInfo")}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Field Personnel
+              {t("dashboard.cards.fieldPersonnel")}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{personnelCount}</div>
-            <p className="text-xs text-muted-foreground">Currently deployed</p>
+            <p className="text-xs text-muted-foreground">
+              {t("dashboard.cards.personnelInfo")}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Status</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("dashboard.cards.systemStatus")}
+            </CardTitle>
             <Activity className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Operational</div>
-            <p className="text-xs text-muted-foreground">All systems normal</p>
+            <div className="text-2xl font-bold">
+              {t("dashboard.cards.systemOperational")}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {t("dashboard.cards.allSystemsNormal")}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -172,65 +182,19 @@ export default function AdminDashboard() {
       <div className="grid gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
-            <Brain className="h-5 w-5" />
-            <CardTitle>AI Disaster Prediction</CardTitle>
+            <CardTitle>{t("dashboard.floodPrediction")}</CardTitle>
           </CardHeader>
           <CardContent>
-            {prediction && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Predicted Event
-                    </p>
-                    <p className="text-xl font-semibold">
-                      {prediction.disasterType}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Probability</p>
-                    <p className="text-xl font-semibold">
-                      {(prediction.probability * 100).toFixed(0)}%
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Expected Areas
-                  </p>
-                  <div className="flex gap-2 mt-1">
-                    {prediction.expectedAreas.map((area) => (
-                      <span
-                        key={area}
-                        className="px-2 py-1 bg-secondary rounded-full text-xs"
-                      >
-                        {area}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Recommended Actions
-                  </p>
-                  <ul className="mt-2 space-y-2">
-                    {prediction.recommendedActions.map((action, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        <span className="text-sm">{action}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
+            <FloodPredictorForm />
           </CardContent>
         </Card>
+      </div>
 
+      <div className="grid gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
             <BarChart3 className="h-5 w-5" />
-            <CardTitle>Resource Allocation Analysis</CardTitle>
+            <CardTitle>{t("dashboard.resourceAnalysis")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px] mt-4">
@@ -254,7 +218,7 @@ export default function AdminDashboard() {
             {optimizedAllocation && (
               <div className="mt-6">
                 <p className="font-medium">
-                  {optimizedAllocation.recommendation}
+                  {t("dashboard.optimizedRecommendation")}
                 </p>
                 <ul className="mt-2 space-y-2">
                   {optimizedAllocation.suggestions.map((suggestion, index) => (

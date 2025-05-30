@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/lib/translation-context";
 
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -92,20 +93,21 @@ export default function AlertsPage() {
     message: "Alert Created",
     phone: ["+2348130000000"],
   };
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Alert Management</h1>
+        <h1 className="text-3xl font-bold">{t("alert.title")}</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Create Alert
+              <Plus className="mr-2 h-4 w-4" /> {t("alert.button")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Create New Alert</DialogTitle>
+              <DialogTitle>{t("alert.dialogTitle")}</DialogTitle>
             </DialogHeader>
             <AlertForm onSubmit={handleCreateAlert} />
           </DialogContent>
@@ -228,11 +230,11 @@ function AlertForm({ onSubmit }: AlertFormProps) {
     };
     onSubmit(newAlert);
   };
-
+  const { t } = useTranslation();
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Severity</Label>
+        <Label>{t("alertForm.label")}</Label>
         <Select
           value={formData.severity}
           onValueChange={(value) =>
@@ -243,38 +245,46 @@ function AlertForm({ onSubmit }: AlertFormProps) {
             <SelectValue placeholder="Select severity" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="red">Red</SelectItem>
-            <SelectItem value="orange">Orange</SelectItem>
-            <SelectItem value="yellow">Yellow</SelectItem>
-            <SelectItem value="green">Green</SelectItem>
+            <SelectItem value="red">
+              {t("alertForm.severity.options.red")}
+            </SelectItem>
+            <SelectItem value="orange">
+              {t("alertForm.severity.options.orange")}
+            </SelectItem>
+            <SelectItem value="yellow">
+              {t("alertForm.severity.options.yellow")}
+            </SelectItem>
+            <SelectItem value="green">
+              {t("alertForm.severity.options.green")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Title</Label>
+        <Label>{t("alertForm.alertTitle.title")}</Label>
         <Input
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          placeholder="Enter alert title"
+          placeholder={t("alertForm.alertTitle.placeholder")}
           required
         />
       </div>
 
       <div>
-        <Label>Description</Label>
+        <Label>{t("alertForm.alertDescription.title")}</Label>
         <Input
           value={formData.description}
           onChange={(e) =>
             setFormData({ ...formData, description: e.target.value })
           }
-          placeholder="Enter alert description"
+          placeholder={t("alertForm.alertDescription.placeholder")}
           required
         />
       </div>
 
       <div>
-        <Label>Affected Area Name</Label>
+        <Label>{t("alertForm.location.title")}</Label>
         <Input
           value={formData.affected_Areas[0].name}
           onChange={(e) =>
@@ -288,13 +298,13 @@ function AlertForm({ onSubmit }: AlertFormProps) {
               ],
             })
           }
-          placeholder="Enter affected area name"
+          placeholder={t("alertForm.location.placeholder")}
           required
         />
       </div>
 
       <div>
-        <Label>Population</Label>
+        <Label>{t("alertForm.population.title")}</Label>
         <Input
           type="number"
           value={formData.affected_Areas[0].population}
@@ -309,23 +319,23 @@ function AlertForm({ onSubmit }: AlertFormProps) {
               ],
             })
           }
-          placeholder="Enter population"
+          placeholder={t("alertForm.population.placeholder")}
           required
         />
       </div>
 
       <div>
-        <Label>Media URLs</Label>
+        <Label>{t("alertForm.mediaUrls.title")}</Label>
         <Input
           value={formData.mediaUrls?.join(", ")}
           onChange={(e) =>
             setFormData({ ...formData, mediaUrls: e.target.value.split(", ") })
           }
-          placeholder="Enter media URLs separated by commas"
+          placeholder={t("alertForm.mediaUrls.placeholder")}
         />
       </div>
 
-      <div>
+      {/* <div>
         <Label>Voice Transcription</Label>
         <Input
           value={formData.voiceTranscription}
@@ -334,10 +344,10 @@ function AlertForm({ onSubmit }: AlertFormProps) {
           }
           placeholder="Enter voice transcription"
         />
-      </div>
+      </div> */}
 
       <div>
-        <Label>Enable SMS</Label>
+        <Label>{t("alertForm.enableSMS.title")}</Label>
         <Select
           value={formData.smsEnabled ? "true" : "false"}
           onValueChange={(value) =>
@@ -345,27 +355,27 @@ function AlertForm({ onSubmit }: AlertFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Enable SMS" />
+            <SelectValue placeholder={t("alertForm.enableSMS.placeholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="true">Yes</SelectItem>
-            <SelectItem value="false">No</SelectItem>
+            <SelectItem value="true">{t("alertForm.enableSMS.yes")}</SelectItem>
+            <SelectItem value="false">{t("alertForm.enableSMS.no")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>USSD Code</Label>
+        <Label>{t("alertForm.ussdCode.title")}</Label>
         <Input
           value={formData.ussdCode}
           onChange={(e) =>
             setFormData({ ...formData, ussdCode: e.target.value })
           }
-          placeholder="Enter USSD code"
+          placeholder={t("alertForm.ussdCode.placeholder")}
         />
       </div>
 
-      <Button type="submit">Create Alert</Button>
+      <Button type="submit">{t("alertForm.submitButton")}</Button>
     </form>
   );
 }
