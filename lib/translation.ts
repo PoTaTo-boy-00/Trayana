@@ -8,6 +8,31 @@ export const translations: TranslationDictionary = {
       title: "Alert Management",
       button: "Create Alert",
       dialogTitle: "Create New Alert",
+      // mediaUrls: "Media URLs (Images/Videos)",
+      smsEnabled: {
+        title: "SMS Enabled",
+        yes: "Yes",
+        no: "No",
+      },
+      ussdCode: "USSD Code",
+      mediaUrls: "Media URLs (Images/Videos)",
+      voiceTranscriptions: "Voice Transcriptions",
+    },
+
+    //!alertBadge
+    alertBadge: {
+      red: {
+        label: "Extreme Danger",
+      },
+      orange: {
+        label: "High Risk",
+      },
+      yellow: {
+        label: "Moderate Risk",
+      },
+      green: {
+        label: "Safe",
+      },
     },
 
     //! alertform
@@ -170,10 +195,35 @@ export const translations: TranslationDictionary = {
     },
   },
   hi: {
+    //!alertBadge
+    alertBadge: {
+      red: {
+        label: "अत्यधिक खतरा",
+      },
+      orange: {
+        label: "उच्च जोखिम",
+      },
+      yellow: {
+        label: "मध्यम जोखिम",
+      },
+      green: {
+        label: "सुरक्षित",
+      },
+    },
+
     alert: {
       title: "अलर्ट प्रबंधन",
       button: "अलर्ट बनाएं",
       dialogTitle: "नया अलर्ट बनाएं",
+      // mediaUrls: "मीडिया यूआरएल (छवियाँ/वीडियो)",
+      smsEnabled: {
+        title: "एसएमएस सक्षम करें",
+        yes: "हाँ",
+        no: "नहीं",
+      },
+      ussdCode: "यूएसएसडी कोड",
+      mediaUrls: "मीडिया यूआरएल (छवियाँ/वीडियो)",
+      voiceTranscriptions: "वॉयस ट्रांसक्रिप्शन",
     },
 
     alertForm: {
