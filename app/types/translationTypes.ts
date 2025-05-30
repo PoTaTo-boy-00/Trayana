@@ -73,12 +73,38 @@ interface TranslationDictionary {
       optimizedRecommendation: string;
     };
 
+    //!AlertsBadge
+
+    alertBadge: {
+      red: {
+        label: string;
+      };
+      orange: {
+        label: string;
+      };
+      yellow: {
+        label: string;
+      };
+      green: {
+        label: string;
+      };
+    };
+
     //!alerts
 
     alert: {
       title: string;
       button: string;
       dialogTitle: string;
+      smsEnabled: {
+        title: string;
+
+        yes: string;
+        no: string;
+      };
+      ussdCode: string;
+      mediaUrls: string;
+      voiceTranscriptions: string;
     };
 
     //!alertForm

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid"; // Import the UUID library
 import { useState, useEffect, useRef } from "react";
 import { Plus, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertBadge } from "../../components/alert-badge";
 import { Alert, AlertSeverity } from "@/app/types";
@@ -25,7 +26,8 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/lib/translation-context";
-
+// import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -89,11 +91,49 @@ export default function AlertsPage() {
       setIsDialogOpen(false);
     }
   };
-  const msg = {
-    message: "Alert Created",
-    phone: ["+2348130000000"],
-  };
-  const { t } = useTranslation();
+
+  const { t, language } = useTranslation();
+  // console.log(language);
+
+  const [translatedAlerts, setTranslatedAlerts] = useState<Alert[]>([]);
+
+  useEffect(() => {
+    const translateAlerts = async () => {
+      const translated = await Promise.all(
+        alerts.map(async (alert) => {
+          if (language === "en") return alert; // No need to translate if English
+
+          try {
+            const [titleRes, descRes] = await Promise.all([
+              axios.post("/api/translate", {
+                text: alert.title,
+                targetLang: language,
+              }),
+
+              axios.post("/api/translate", {
+                text: alert.description,
+                targetLang: language,
+              }),
+            ]);
+
+            return {
+              ...alert,
+              title: titleRes.data.translatedText || alert.title,
+              description: descRes.data.translatedText || alert.description,
+            };
+          } catch (error) {
+            console.error("Translation error:", error);
+            return alert; // Return original alert if translation fails
+          }
+        })
+      );
+      setTranslatedAlerts(translated);
+    };
+
+    if (alerts.length > 0) {
+      translateAlerts();
+    }
+  }, [alerts, language]); // Change dependency from locale to language
 
   return (
     <div className="space-y-6">
@@ -115,7 +155,7 @@ export default function AlertsPage() {
       </div>
 
       <div className="grid gap-4">
-        {alerts.map((alert) => (
+        {translatedAlerts.map((alert) => (
           <Card key={alert.id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -138,7 +178,7 @@ export default function AlertsPage() {
               <p className="text-muted-foreground mb-4">{alert.description}</p>
               <div className="flex justify-between items-center text-sm">
                 <span>
-                  Affected Areas:{" "}
+                  {t("alertForm.location.title")}:{" "}
                   {alert.affected_Areas.map((a) => a.name).join(", ")}
                 </span>
                 <span className="text-muted-foreground">
@@ -147,7 +187,9 @@ export default function AlertsPage() {
               </div>
               {alert.mediaUrls && alert.mediaUrls.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-sm text-muted-foreground">Media URLs</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("alert.mediaUrls")}
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {alert.mediaUrls.map((url, index) => (
                       <a
@@ -166,20 +208,24 @@ export default function AlertsPage() {
               {alert.voiceTranscription && (
                 <div className="mt-4">
                   <p className="text-sm text-muted-foreground">
-                    Voice Transcription
+                    {t("alert.voiceTranscription")}
                   </p>
                   <p className="text-sm">{alert.voiceTranscription}</p>
                 </div>
               )}
               {alert.smsEnabled && (
                 <div className="mt-4">
-                  <p className="text-sm text-muted-foreground">SMS Enabled</p>
-                  <p className="text-sm">Yes</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("alert.smsEnabled.title")}
+                  </p>
+                  <p className="text-sm">{t("alert.smsEnabled.yes")}</p>
                 </div>
               )}
               {alert.ussdCode && (
                 <div className="mt-4">
-                  <p className="text-sm text-muted-foreground">USSD Code</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("alert.ussdCode")}
+                  </p>
                   <p className="text-sm">{alert.ussdCode}</p>
                 </div>
               )}
@@ -335,8 +381,8 @@ function AlertForm({ onSubmit }: AlertFormProps) {
         />
       </div>
 
-      {/* <div>
-        <Label>Voice Transcription</Label>
+      <div>
+        <Label>{t("alert.voiceTranscription")}</Label>
         <Input
           value={formData.voiceTranscription}
           onChange={(e) =>
@@ -344,7 +390,7 @@ function AlertForm({ onSubmit }: AlertFormProps) {
           }
           placeholder="Enter voice transcription"
         />
-      </div> */}
+      </div>
 
       <div>
         <Label>{t("alertForm.enableSMS.title")}</Label>
