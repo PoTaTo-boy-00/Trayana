@@ -1,5 +1,19 @@
 interface TranslationDictionary {
   [language: string]: {
+    //!maps
+    maps: {
+      title: string;
+      description: string;
+      legends: {
+        personnel: string;
+        sosAlerts: string;
+        organizations: string;
+        resources: string;
+      };
+    };
+
+    //!settings
+
     settings: {
       title: string;
       tabs: {
@@ -38,6 +52,132 @@ interface TranslationDictionary {
         feedbackRequestsLabel: string;
         saveButton: string;
       };
+    };
+
+    //!dashboard
+
+    dashboard: {
+      title: string;
+      cards: {
+        activeAlerts: string;
+        activeOrganizations: string;
+        organizationInfo: string;
+        fieldPersonnel: string;
+        personnelInfo: string;
+        systemStatus: string;
+        systemOperational: string;
+        allSystemsNormal: string;
+      };
+      floodPrediction: string;
+      resourceAnalysis: string;
+      optimizedRecommendation: string;
+    };
+
+    //!alerts
+
+    alert: {
+      title: string;
+      button: string;
+      dialogTitle: string;
+    };
+
+    //!alertForm
+    alertForm: {
+      label: string;
+      severity: {
+        placeholder: string;
+        options: {
+          red: string;
+          orange: string;
+          yellow: string;
+          green: string;
+        };
+      };
+      alertTitle: {
+        title: string;
+        placeholder: string;
+      };
+
+      alertDescription: {
+        title: string;
+        placeholder: string;
+      };
+
+      location: {
+        title: string;
+        placeholder: string;
+      };
+
+      population: {
+        title: string;
+        placeholder: string;
+      };
+
+      mediaUrls: {
+        title: string;
+        placeholder: string;
+      };
+
+      // voiceTransciptions:{
+      //   title:string,
+      //   placeholder:string
+      // },
+
+      enableSMS: {
+        title: string;
+        placeholder: string;
+        yes: string;
+        no: string;
+      };
+
+      ussdCode: {
+        title: string;
+        placeholder: string;
+      };
+
+      submitButton: string;
+    };
+
+    //!organizations
+    organizations: {
+      title: string;
+      button: string;
+      dialogTitle: string;
+    };
+
+    //!organizationForm
+    organizationForm: {
+      orgName: string;
+      orgTypes: {
+        title: string;
+        placeholder: string;
+        options: {
+          healthcare: string;
+          ngo: string;
+          essentials: string;
+          infrastructure: string;
+          community: string;
+          private: string;
+          specialized: string;
+        };
+      };
+      orgCapabilities: {
+        title: string;
+        placeholder: string;
+      };
+      contactEmail: {
+        title: string;
+        // placeholder:string;
+      };
+      contactPhone: {
+        title: string;
+        // placeholder:string;
+      };
+      address: {
+        title: string;
+        // placeholder:string;
+      };
+      submitButton: string;
     };
   };
 }

@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/lib/translation-context";
 
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -80,20 +81,21 @@ export default function OrganizationsPage() {
       setOrganizations((prev) => prev.filter((org) => org.id !== id));
     }
   };
-
+  const { t } = useTranslation();
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Organizations</h1>
+        <h1 className="text-3xl font-bold">{t("organizations.title")}</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Organization
+              <Plus className="mr-2 h-4 w-4" />
+              {t("organizations.button")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Organization</DialogTitle>
+              <DialogTitle>{t("organizations.dialogTitle")}</DialogTitle>
             </DialogHeader>
             <OrganizationForm onSubmit={handleAddOrganization} />
           </DialogContent>
@@ -210,10 +212,12 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
     onSubmit(newOrg);
   };
 
+  const { t } = useTranslation();
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Name</Label>
+        <Label>{t("organizationForm.orgName")}</Label>
         <Input
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -222,7 +226,7 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
       </div>
 
       <div>
-        <Label>Type</Label>
+        <Label>{t("organizationForm.orgTypes.title")}</Label>
         <Select
           value={formData.type}
           onValueChange={(value) =>
@@ -230,22 +234,38 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select type" />
+            <SelectValue
+              placeholder={t("organizationForm.orgTypes.placeholder")}
+            />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="healthcare">Healthcare</SelectItem>
-            <SelectItem value="ngo">NGO</SelectItem>
-            <SelectItem value="essential">Essential</SelectItem>
-            <SelectItem value="infrastructure">Infrastructure</SelectItem>
-            <SelectItem value="community">Community</SelectItem>
-            <SelectItem value="private">Private</SelectItem>
-            <SelectItem value="specialized">Specialized</SelectItem>
+            <SelectItem value="healthcare">
+              {t("organizationForm.orgTypes.options.healthcare")}
+            </SelectItem>
+            <SelectItem value="ngo">
+              {t("organizationForm.orgTypes.options.ngo")}
+            </SelectItem>
+            <SelectItem value="essential">
+              {t("organizationForm.orgTypes.options.essentials")}
+            </SelectItem>
+            <SelectItem value="infrastructure">
+              {t("organizationForm.orgTypes.options.infrastructure")}
+            </SelectItem>
+            <SelectItem value="community">
+              {t("organizationForm.orgTypes.options.community")}
+            </SelectItem>
+            <SelectItem value="private">
+              {t("organizationForm.orgTypes.options.private")}
+            </SelectItem>
+            <SelectItem value="specialized">
+              {t("organizationForm.orgTypes.options.specialized")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Capabilities</Label>
+        <Label>{t("organizationForm.orgCapabilities.title")}</Label>
         <Input
           value={formData.capabilities.join(", ")}
           onChange={(e) =>
@@ -254,12 +274,12 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
               capabilities: e.target.value.split(", "),
             })
           }
-          placeholder="Enter capabilities separated by commas"
+          placeholder={t("organizationForm.orgCapabilities.placeholder")}
         />
       </div>
 
       <div>
-        <Label>Contact Email</Label>
+        <Label>{t("organizationForm.contactEmail.title")}</Label>
         <Input
           value={formData.contact.email}
           onChange={(e) =>
@@ -273,7 +293,7 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
       </div>
 
       <div>
-        <Label>Contact Phone</Label>
+        <Label>{t("organizationForm.contactPhone.title")}</Label>
         <Input
           value={formData.contact.phone}
           onChange={(e) =>
@@ -287,7 +307,7 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
       </div>
 
       <div>
-        <Label>Address</Label>
+        <Label>{t("organizationForm.address.title")}</Label>
         <Input
           value={formData.address}
           onChange={(e) =>
@@ -297,7 +317,7 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
         />
       </div>
 
-      <Button type="submit">Add Organization</Button>
+      <Button type="submit">{t("organizationForm.submitButton")}</Button>
     </form>
   );
 }

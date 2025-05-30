@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Header } from "../components/header";
 import { Sidebar } from "../components/sidebar";
+import { LanguageProvider } from "@/lib/translation-context";
 
 export default function AdminLayout({
   children,
