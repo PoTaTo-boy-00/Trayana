@@ -82,8 +82,8 @@ export default function ResourcesPage() {
     if (error) {
       console.error("Error creating alert:", error);
     } else {
-      setResources((prev) => [...prev, data[0]]);
-      setIsReqDialogOpen(false);
+      // setResources((prev) => [...prev, data[0]]);
+      setIsDialogOpen(false);
     }
   };
   const handleRequestResources = async (newResource: requestResources) => {
@@ -94,10 +94,28 @@ export default function ResourcesPage() {
     if (error) {
       console.error("Error creating alert:", error);
     } else {
-      setRequestResources((prev) => [...prev, data[0]]);
-      setIsDialogOpen(false);
+      // setRequestResources((prev) => [...prev, data[0]]);
+      setIsReqDialogOpen(false);
     }
   };
+
+  const handleDeleteResource = async (id: string) => {
+  const { error } = await supabase.from("resources").delete().eq("id", id);
+  if (error) {
+    console.error("Error deleting resource:", error);
+  } else {
+    setResources((prev) => prev.filter((res) => res.id !== id));
+  }
+};
+
+const handleDeleteRequestResource = async (id: string) => {
+  const { error } = await supabase.from("requestresources").delete().eq("id", id);
+  if (error) {
+    console.error("Error deleting requested resource:", error);
+  } else {
+    setRequestResources((prev) => prev.filter((res) => res.id !== id));
+  }
+};
 
   useEffect(() => {
     const channel = supabase
@@ -182,6 +200,7 @@ export default function ResourcesPage() {
                 <Package className="h-5 w-5" />
                 {resource.name}
               </CardTitle>
+              <div className="flex items-center gap-2">
               <span
                 className={`px-2 py-1 rounded-full text-sm ${
                   resource.status === "available"
@@ -194,6 +213,14 @@ export default function ResourcesPage() {
                 {resource.status.charAt(0).toUpperCase() +
                   resource.status.slice(1)}
               </span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={()=>handleDeleteResource(resource.id)}
+              >
+                Delete
+              </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
@@ -222,20 +249,13 @@ export default function ResourcesPage() {
                     <p className="text-sm text-muted-foreground">Conditions</p>
                     <div className="flex gap-2 mt-1">
                       {resource.conditions.map((condition) => (
-                        <div>
                         <span
                           key={condition}
                           className="px-2 py-1 bg-secondary rounded-full text-xs"
                         >
                           {condition}
                         </span>
-                        <span
-                          key={condition}
-                          className="px-2 py-1 bg-secondary rounded-full text-xs"
-                        >
-                          Delete
-                        </span>
-                        </div>
+                        
                       ))}
                     </div>
                   </div>
@@ -260,6 +280,7 @@ export default function ResourcesPage() {
                 <Package className="h-5 w-5" />
                 {resource.name}
               </CardTitle>
+              <div className="flex items-center gap-2">
               <span
                 className={`px-2 py-1 rounded-full text-sm ${
                   resource.status === "requested"
@@ -272,6 +293,14 @@ export default function ResourcesPage() {
                 {resource.status.charAt(0).toUpperCase() +
                   resource.status.slice(1)}
               </span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={()=>handleDeleteRequestResource(resource.id)}
+              >
+                Delete
+              </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
