@@ -222,12 +222,20 @@ export default function ResourcesPage() {
                     <p className="text-sm text-muted-foreground">Conditions</p>
                     <div className="flex gap-2 mt-1">
                       {resource.conditions.map((condition) => (
+                        <div>
                         <span
                           key={condition}
                           className="px-2 py-1 bg-secondary rounded-full text-xs"
                         >
                           {condition}
                         </span>
+                        <span
+                          key={condition}
+                          className="px-2 py-1 bg-secondary rounded-full text-xs"
+                        >
+                          Delete
+                        </span>
+                        </div>
                       ))}
                     </div>
                   </div>
