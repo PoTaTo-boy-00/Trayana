@@ -213,13 +213,13 @@ const handleDeleteRequestResource = async (id: string) => {
                 {resource.status.charAt(0).toUpperCase() +
                   resource.status.slice(1)}
               </span>
-              <Button
+              {/* <Button
                 variant="destructive"
                 size="sm"
                 onClick={()=>handleDeleteResource(resource.id)}
               >
                 Delete
-              </Button>
+              </Button> */}
               </div>
             </CardHeader>
             <CardContent>
