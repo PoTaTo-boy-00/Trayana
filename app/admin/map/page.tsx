@@ -11,11 +11,16 @@ import MapComponent from "@/components/ui/MapComponent";
 import { personnel } from "@/data/personnel";
 import { sosAlerts } from "@/data/sos";
 import { useTranslation } from "@/lib/translation-context";
+import {
+  fetchPersonnelLocation,
+  personnel as staticPersonnel,
+} from "@/data/personnel";
 
 export default function MapPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
+  const [personnelData, setPersonnelData] = useState(staticPersonnel);
 
   const supabase = createClientComponentClient();
 
@@ -80,6 +85,9 @@ export default function MapPage() {
           }))
         );
       }
+      // fetch personnel from Supabase
+      await fetchPersonnelLocation();
+      setPersonnelData([...staticPersonnel]);
     }
 
     fetchData();
@@ -95,7 +103,13 @@ export default function MapPage() {
         <Card className="md:col-span-3">
           <CardContent className="p-0">
             <div className="h-[600px] w-full">
-              <MapComponent personnel={personnel} sosAlerts={sosAlerts} />
+              <MapComponent
+                personnel={personnelData.map((p) => ({
+                  ...p,
+                  id: typeof p.id === "string" ? Number(p.id) : p.id,
+                }))}
+                sosAlerts={sosAlerts}
+              />
             </div>
           </CardContent>
         </Card>

@@ -500,25 +500,6 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       </div>
 
       <div>
-        <Label>Status</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) =>
-            setFormData({ ...formData, status: value as Resource["status"] })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="allocated">Allocated</SelectItem>
-            <SelectItem value="depleted">Depleted</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
         <Label>Expiry Date</Label>
         <Input
           type="date"

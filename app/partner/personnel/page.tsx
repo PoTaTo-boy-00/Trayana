@@ -13,61 +13,109 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
+import { StatusBadge } from "@/components/ui/statusBadge";
+import { DeployForm } from "@/components/ui/deployForm";
 
 export default function PersonnelPage() {
   const [personnel, setPersonnel] = useState<Personnel[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch personnel data with proper error handling
   useEffect(() => {
-    const testSupabaseConnection = async () => {
+    const fetchPersonnel = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.from("personnel").select("*");
+
+        if (error) throw error;
+        setPersonnel(data || []);
+      } catch (err) {
+        console.error("Error fetching personnel:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load personnel"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPersonnel();
+  }, []);
+
+  const updatePersonnelStatus = async (
+    id: string,
+    newStatus: Personnel["status"],
+    location?: string | null
+  ) => {
+    try {
+      const updateData: {
+        status: Personnel["status"];
+        location: string | null;
+        updatedAt: string;
+      } = {
+        status: newStatus,
+        location: newStatus === "available" ? null : location || null,
+        updatedAt: new Date().toISOString(),
+      };
+
       const { data, error } = await supabase
         .from("personnel")
-        .select("*")
-        .limit(1);
-      if (error) {
-        console.error("Supabase connection error:", error);
-      } else {
-        console.log("Supabase connection successful. Data:", data);
-      }
-    };
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
 
-    testSupabaseConnection();
-  }, []);
-  useEffect(() => {
-    const fetchMessages = async () => {
-      const { data, error } = await supabase.from("personnel").select("*");
-      if (error) {
-        console.error("Error fetching alerts:", error);
-      } else {
-        setPersonnel(data);
-      }
-    };
+      if (error) throw error;
+      if (!data) throw new Error("No data returned");
 
-    fetchMessages();
-  }, []);
+      setPersonnel((prev) =>
+        prev.map((person) =>
+          person.id === id ? { ...person, ...data } : person
+        )
+      );
 
-  const handleSendMessage = async (newPersonnel: Personnel) => {
-    const { data, error } = await supabase
-      .from("personnel")
-      .insert([newPersonnel])
-      .select();
-    if (error) {
-      console.error("Error creating alert:", error);
-    } else {
-      setPersonnel((prev) => [...prev, data[0]]);
-      setIsDialogOpen(false);
+      return { success: true };
+    } catch (err) {
+      console.error("Update failed:", err);
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      };
     }
   };
+
+  const handleAddPersonnel = async (
+    newPersonnel: Omit<Personnel, "id" | "timestamp">
+  ) => {
+    try {
+      const completePersonnel: Personnel = {
+        ...newPersonnel,
+        id: uuidv4(),
+        timestamp: new Date().toISOString(),
+      };
+
+      const { data, error } = await supabase
+        .from("personnel")
+        .insert(completePersonnel)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setPersonnel((prev) => [...prev, data]);
+      setIsDialogOpen(false);
+    } catch (err) {
+      console.error("Error adding personnel:", err);
+    }
+  };
+
+  if (loading) return <div>Loading personnel...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="space-y-6">
@@ -81,141 +129,156 @@ export default function PersonnelPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Personnel Information</DialogTitle>
+              <DialogTitle>Add New Personnel</DialogTitle>
             </DialogHeader>
-            <MessageForm onSubmit={handleSendMessage} />
+            <PersonnelForm onSubmit={handleAddPersonnel} />
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {personnel.map((person) => (
-          <Card key={person.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                {person.name}
-              </CardTitle>
-              <span
-                className={`px-2 py-1 rounded-full text-sm ${
-                  person.status === "available"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                    : person.status === "deployed"
-                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"
-                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-                }`}
-              >
-                {person.status.charAt(0).toUpperCase() + person.status.slice(1)}
-              </span>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Role</p>
-                <p className="font-medium">{person.role}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-muted-foreground">Skills</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {person.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="px-2 py-1 bg-secondary rounded-full text-xs"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{person.contact.phone}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{person.contact.email}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <PersonnelCard
+            key={person.id}
+            person={person}
+            onStatusUpdate={(id, status, location) => {
+              // Call async function but don't await, to match void signature
+              void updatePersonnelStatus(id, status, location);
+            }}
+          />
         ))}
       </div>
     </div>
   );
 }
-// Form component for sending a new message
-interface MessageFormProps {
-  onSubmit: (personnel: Personnel) => void;
+
+// Extracted Personnel Card Component
+function PersonnelCard({
+  person,
+  onStatusUpdate,
+}: {
+  person: Personnel;
+  onStatusUpdate: (
+    id: string,
+    status: Personnel["status"],
+    location?: string | null
+  ) => void;
+}) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-xl font-semibold flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          {person.name}
+        </CardTitle>
+        <div className="flex items-center gap-2">
+          <StatusBadge status={person.status} />
+          {person.status === "available" ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm">Deploy</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Deploy {person.name}</DialogTitle>
+                </DialogHeader>
+                <DeployForm
+                  onSubmit={(location) => {
+                    onStatusUpdate(person.id, "deployed", location);
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onStatusUpdate(person.id, "available")}
+            >
+              Mark Available
+            </Button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Role</p>
+          <p className="font-medium">{person.role}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Skills</p>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {person.skills.map((skill) => (
+              <span
+                key={skill}
+                className="px-2 py-1 bg-secondary rounded-full text-xs"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Phone</p>
+            <p className="font-medium">{person.contact.phone}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Email</p>
+            <p className="font-medium">{person.contact.email}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
-function MessageForm({ onSubmit }: MessageFormProps) {
+// Improved Form Component
+function PersonnelForm({
+  onSubmit,
+}: {
+  onSubmit: (personnel: Omit<Personnel, "id" | "timestamp">) => void;
+}) {
   const [formData, setFormData] = useState<Omit<Personnel, "id" | "timestamp">>(
     {
-      name: "user1", // Default sender (can be dynamic based on logged-in user)
+      name: "",
       role: "",
       status: "available",
       skills: [],
-
-      contact: {
-        phone: "",
-        email: "",
-      },
+      contact: { phone: "", email: "" },
+      location: undefined,
+      updatedAt: "",
     }
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newPersonnel: Personnel = {
-      ...formData,
-      id: uuidv4(), // Generate a unique ID
-      timestamp: new Date().toISOString(),
-      status: "available", // Default status
-    };
-    onSubmit(newPersonnel);
+    onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Name</Label>
+        <Label htmlFor="name">Name*</Label>
         <Input
+          id="name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
       </div>
-
       <div>
-        <Label>Role</Label>
+        <Label htmlFor="role">Role</Label>
         <Input
+          id="role"
           value={formData.role}
           onChange={(e) => setFormData({ ...formData, role: e.target.value })}
         />
       </div>
-
       <div>
-        <Label>Status</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) =>
-            setFormData({ ...formData, status: value as Personnel["status"] })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="deployed">Deployed</SelectItem>
-            <SelectItem value="unavailable">Unavailable</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label>Phone</Label>
+        <Label htmlFor="phone">Phone</Label>
         <Input
+          id="phone"
           value={formData.contact.phone}
           onChange={(e) =>
             setFormData({
@@ -226,8 +289,10 @@ function MessageForm({ onSubmit }: MessageFormProps) {
         />
       </div>
       <div>
-        <Label>Email</Label>
+        <Label htmlFor="email">Email</Label>
         <Input
+          id="email"
+          type="email"
           value={formData.contact.email}
           onChange={(e) =>
             setFormData({
@@ -237,8 +302,9 @@ function MessageForm({ onSubmit }: MessageFormProps) {
           }
         />
       </div>
-
-      <Button type="submit">Add Personnel</Button>
+      <Button type="submit" className="w-full">
+        Add Personnel
+      </Button>
     </form>
   );
 }

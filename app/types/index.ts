@@ -129,7 +129,7 @@ export interface Personnel {
   name: string;
   role: string;
   status: "available" | "deployed" | "unavailable";
-  location?: GeoLocation;
+  location?: string | null;
   skills: string[];
   contact: {
     phone: string;
@@ -139,9 +139,10 @@ export interface Personnel {
     alertId: string;
     startTime: string;
     endTime?: string;
-    location: GeoLocation;
+    location: GeoLocation | null;
   }[];
   timestamp: string;
+  updatedAt: string;
 }
 
 export interface Message {
@@ -169,6 +170,7 @@ export interface Attachment {
 export interface GeoLocation {
   lat: number;
   lng: number;
+  address?: string;
 }
 
 export interface GeoArea {
