@@ -7,7 +7,7 @@ import { Alert, Organization, Resource } from "@/app/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Building2, Package } from "lucide-react";
 import * as turf from "@turf/turf";
-import MapComponent from "@/components/ui/MapComponent";
+import { MapComponent2 } from "@/components/ui/MapComponent";
 import { personnel } from "@/data/personnel";
 import { sosAlerts } from "@/data/sos";
 import { useTranslation } from "@/lib/translation-context";
@@ -19,13 +19,15 @@ import {
   fetchOrganizations,
   organization as staticOrg,
 } from "@/data/organization";
+import { fetchResources, resource as staticRes } from "@/data/resource";
 
 export default function MapPage() {
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  // const [alerts, setAlerts] = useState<Alert[]>([]);
   // const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [personnelData, setPersonnelData] = useState(staticPersonnel);
+  // const [resources, setResources] = useState<Resource[]>([]);
+  // const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [organizationsData, setOrganizationsData] = useState(staticOrg);
+  const [resourceData, setResourceData] = useState(staticRes);
 
   // console.log(personnelData);
   console.log(organizationsData);
@@ -45,19 +47,19 @@ export default function MapPage() {
   useEffect(() => {
     async function fetchData() {
       // Fetch alerts
-      const { data: alertsData } = await supabase
-        .from("alerts")
-        .select("*")
-        .eq("is_active", true);
+      // const { data: alertsData } = await supabase
+      //   .from("alerts")
+      //   .select("*")
+      //   .eq("is_active", true);
 
-      if (alertsData) {
-        setAlerts(
-          alertsData.map((alert) => ({
-            ...alert,
-            affected_Areas: alert.affected_areas as any,
-          }))
-        );
-      }
+      // if (alertsData) {
+      //   setAlerts(
+      //     alertsData.map((alert) => ({
+      //       ...alert,
+      //       affected_Areas: alert.affected_areas as any,
+      //     }))
+      //   );
+      // }
 
       // Fetch organizations
       // const { data: orgsData } = await supabase
@@ -78,29 +80,33 @@ export default function MapPage() {
       // }
 
       // Fetch resources
-      const { data: resourcesData } = await supabase
-        .from("resources")
-        .select("*")
-        .eq("status", "available");
+      // const { data: resourcesData } = await supabase
+      //   .from("resources")
+      //   .select("*")
+      //   .eq("status", "available");
 
-      if (resourcesData) {
-        setResources(
-          resourcesData.map((resource) => ({
-            ...resource,
-            location: {
-              lat: resource.location_lat,
-              lng: resource.location_lng,
-            },
-          }))
-        );
-      }
+      // if (resourcesData) {
+      //   setResources(
+      //     resourcesData.map((resource) => ({
+      //       ...resource,
+      //       location: {
+      //         lat: resource.location_lat,
+      //         lng: resource.location_lng,
+      //       },
+      //     }))
+      //   );
+      // }
+
       // fetch personnel from Supabase
-      await fetchPersonnelLocation();
-      setPersonnelData([...staticPersonnel]);
+      // await fetchPersonnelLocation();
+      // setPersonnelData([...staticPersonnel]);
 
       // fetch organizations from Supabase
       await fetchOrganizations();
       setOrganizationsData([...staticOrg]);
+
+      await fetchResources();
+      setResourceData([...staticRes]);
     }
 
     fetchData();
@@ -116,15 +122,19 @@ export default function MapPage() {
         <Card className="md:col-span-3">
           <CardContent className="p-0">
             <div className="h-[600px] w-full">
-              <MapComponent
-                personnel={personnelData.map((p) => ({
-                  ...p,
-                  id: typeof p.id === "string" ? Number(p.id) : p.id,
-                }))}
-                sosAlerts={sosAlerts}
+              <MapComponent2
+                // personnel={personnelData.map((p) => ({
+                //   ...p,
+                //   id: typeof p.id === "string" ? Number(p.id) : p.id,
+                // }))}
+                // sosAlerts={sosAlerts}
                 organization={organizationsData.map((org) => ({
                   ...org,
                   id: typeof org.id === "string" ? Number(org.id) : org.id,
+                }))}
+                resource={resourceData.map((res) => ({
+                  ...res,
+                  id: typeof res.id === "string" ? Number(res.id) : res.id,
                 }))}
               />
             </div>

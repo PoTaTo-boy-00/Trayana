@@ -18,7 +18,7 @@ import { supabase } from "@/lib/supabase";
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { PersonnelLocation, SOSAlert } from "../types";
-import MapComponent from "@/components/ui/MapComponent";
+import { MapComponent } from "@/components/ui/MapComponent";
 import {
   fetchPersonnelLocation,
   personnel as staticPersonnel,
@@ -28,6 +28,7 @@ import {
   organization as staticOrg,
 } from "@/data/organization";
 
+import { fetchResources, resource as staticRes } from "@/data/resource";
 export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
@@ -35,6 +36,7 @@ export default function PartnerDashboard() {
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [organizationsData, setOrganizationsData] = useState(staticOrg);
+  const [resourceData, setResourceData] = useState(staticRes);
 
   const supabase = createClientComponentClient();
   const personnel = [
@@ -155,6 +157,10 @@ export default function PartnerDashboard() {
         organization={organizationsData.map((org) => ({
           ...org,
           id: typeof org.id === "string" ? Number(org.id) : org.id,
+        }))}
+        resource={resourceData.map((res) => ({
+          ...res,
+          id: typeof res.id === "string" ? Number(res.id) : res.id,
         }))}
       />
       <div></div>
