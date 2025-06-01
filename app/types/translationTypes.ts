@@ -10,6 +10,7 @@ interface TranslationDictionary {
         organizations: string;
         resources: string;
       };
+      cardTitle: string;
     };
 
     //!settings
@@ -203,6 +204,8 @@ interface TranslationDictionary {
         title: string;
         // placeholder:string;
       };
+      longitude: string;
+      latitude: string;
       submitButton: string;
     };
   };

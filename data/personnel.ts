@@ -31,5 +31,5 @@ export const fetchPersonnelLocation = async () => {
     });
 
   personnel.splice(0, personnel.length, ...processed); // Modify array in place
-  console.log("Personnel array populated:", personnel);
+  // console.log("Personnel array populated:", personnel);
 };

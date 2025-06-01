@@ -1,4 +1,10 @@
 export type AlertSeverity = "red" | "orange" | "yellow" | "green";
+export type ResourceStatus = "available" | "allocated" | "depleted";
+export type RequestStatus = "requested" | "allocated" | "fulfilled";
+export type PriorityLevel = "critical" | "high" | "medium" | "low";
+export type ResourceType = "food" | "medicine" | "shelter" | "equipment";
+export type DisasterType = "earthquake" | "flood" | "fire" | "other";
+export type UrgencyLevel = "immediate" | "urgent" | "normal";
 
 export interface User {
   id: string;
@@ -42,16 +48,18 @@ export interface AlertUpdate {
 
 export interface Resource {
   id: string;
-  type: "food" | "medicine" | "shelter" | "equipment";
+  type: ResourceType;
   name: string;
   quantity: number;
   unit: string;
   location: GeoLocation;
-  status: "available" | "allocated" | "depleted";
+  status: ResourceStatus;
   organizationId: string;
   lastUpdated: string;
   expiryDate?: string;
   conditions?: string[];
+  // priority: PriorityLevel;
+  // disasterType: DisasterType;
   utilizationHistory?: ResourceUtilization[];
 }
 
@@ -67,16 +75,19 @@ export interface allocateResource {
 
 export interface requestResources {
   id: string;
-  type: "food" | "medicine" | "shelter" | "equipment";
+  type: ResourceType;
   name: string;
   quantity: number;
   unit: string;
   location: GeoLocation;
-  status: "requested" | "allocated" | "depleted";
+  status: RequestStatus;
   organizationId: string;
   lastUpdated: string;
   expiryDate?: string;
   conditions?: string[];
+  urgency: UrgencyLevel;
+  disasterType?: DisasterType;
+  requestedBy?: string;
   utilizationHistory?: ResourceUtilization[];
 }
 

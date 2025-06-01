@@ -15,15 +15,24 @@ import {
   fetchPersonnelLocation,
   personnel as staticPersonnel,
 } from "@/data/personnel";
+import {
+  fetchOrganizations,
+  organization as staticOrg,
+} from "@/data/organization";
 
 export default function MapPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  // const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
+  const [organizationsData, setOrganizationsData] = useState(staticOrg);
+
+  // console.log(personnelData);
+  console.log(organizationsData);
 
   const supabase = createClientComponentClient();
 
+  // console.log(organizations);
   // const personnel = [
   //   {
   //     id: 1,
@@ -51,22 +60,22 @@ export default function MapPage() {
       }
 
       // Fetch organizations
-      const { data: orgsData } = await supabase
-        .from("organizations")
-        .select("*")
-        .eq("status", "active");
+      // const { data: orgsData } = await supabase
+      //   .from("organizations")
+      //   .select("*")
+      //   .eq("status", "active");
 
-      if (orgsData) {
-        setOrganizations(
-          orgsData.map((org) => ({
-            ...org,
-            coverage: {
-              center: { lat: org.coverage_lat, lng: org.coverage_lng },
-              radius: org.coverage_radius,
-            },
-          }))
-        );
-      }
+      // if (orgsData) {
+      //   setOrganizations(
+      //     orgsData.map((org) => ({
+      //       ...org,
+      //       coverage: {
+      //         center: { lat: org.coverage_lat, lng: org.coverage_lng },
+      //         // radius: org.coverage_radius,
+      //       },
+      //     }))
+      //   );
+      // }
 
       // Fetch resources
       const { data: resourcesData } = await supabase
@@ -88,6 +97,10 @@ export default function MapPage() {
       // fetch personnel from Supabase
       await fetchPersonnelLocation();
       setPersonnelData([...staticPersonnel]);
+
+      // fetch organizations from Supabase
+      await fetchOrganizations();
+      setOrganizationsData([...staticOrg]);
     }
 
     fetchData();
@@ -109,6 +122,10 @@ export default function MapPage() {
                   id: typeof p.id === "string" ? Number(p.id) : p.id,
                 }))}
                 sosAlerts={sosAlerts}
+                organization={organizationsData.map((org) => ({
+                  ...org,
+                  id: typeof org.id === "string" ? Number(org.id) : org.id,
+                }))}
               />
             </div>
           </CardContent>
@@ -117,7 +134,9 @@ export default function MapPage() {
         {/* <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Legend</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                {t("maps.cardTitle")}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
@@ -126,7 +145,7 @@ export default function MapPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-primary" />
-                <span>Organization</span>
+                <span>{t("maps.legends.organizations")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Package className="h-4 w-4 text-primary" />

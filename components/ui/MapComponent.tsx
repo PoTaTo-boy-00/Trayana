@@ -18,6 +18,7 @@ interface Location {
 interface MapComponentProps {
   personnel: Location[];
   sosAlerts: Location[];
+  organization: Location[];
 }
 
 // Map container style
@@ -37,6 +38,7 @@ const center = {
 const MapComponent: React.FC<MapComponentProps> = ({
   personnel,
   sosAlerts,
+  organization,
 }) => {
   const { t } = useTranslation();
   // Load the Google Maps script
@@ -63,6 +65,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
     fillOpacity: 1,
     strokeWeight: 0,
     scale: 10,
+  };
+
+  const orgIcon = {
+    url: "https://maps.google.com/mapfiles/kml/shapes/library_maps.png", // Example building icon
+    scaledSize: new google.maps.Size(32, 32),
   };
   // console.log(sosIcon);
   const Legend = () => {
@@ -121,6 +128,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
             {t("maps.legends.sosAlerts")}
           </span>
         </div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <img
+            src="https://maps.google.com/mapfiles/kml/shapes/library_maps.png"
+            alt="Organization Icon"
+            style={{ width: "16px", height: "16px", marginRight: "8px" }}
+          />
+          <span
+            style={{
+              fontSize: "14px",
+              fontWeight: "bold",
+              color: "black",
+            }}
+          >
+            {t("maps.legends.organizations")}
+          </span>
+        </div>
       </div>
     );
   };
@@ -146,7 +169,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           }}
         >
           {/* Render personnel markers */}
-          {personnel.map((p) => (
+          {personnel?.map((p) => (
             <MarkerF
               key={p.id}
               position={{ lat: p.location_lat, lng: p.location_lng }}
@@ -155,13 +178,21 @@ const MapComponent: React.FC<MapComponentProps> = ({
           ))}
 
           {/* Render SOS alert markers */}
-          {sosAlerts.map((sos) => (
+          {sosAlerts?.map((sos) => (
             <MarkerF
               key={sos.id}
               position={{ lat: sos.location_lat, lng: sos.location_lng }}
               icon={sosIcon}
             />
           ))}
+          {organization?.map((org) => (
+            <MarkerF
+              key={org.id}
+              position={{ lat: org.location_lat, lng: org.location_lng }}
+              icon={orgIcon}
+            />
+          ))}
+
           <Legend />
         </GoogleMap>
       </CardContent>
