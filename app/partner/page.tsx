@@ -24,6 +24,8 @@ import {
   personnel as staticPersonnel,
 } from "@/data/personnel";
 
+//Easter Egg
+
 export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
