@@ -100,6 +100,56 @@ export const translations: TranslationDictionary = {
       resourceAnalysis: "Resource Allocation Analysis",
       optimizedRecommendation: "Optimized Resource Recommendation",
     },
+
+    //!messages
+    messages: {
+      title: "Messages",
+      button: "Send Message",
+    },
+
+    //!messageForm
+    messageForm: {
+      title: "Send a Message",
+      type: {
+        title: "Message Type",
+        placeholder: "Select message type",
+        options: {
+          direct: "Direct",
+          group: "Group",
+          broadcast: "Broadcast",
+          sms: "SMS",
+          ussd: "USSD",
+        },
+      },
+      recipientId: {
+        title: "Recipient ID",
+        placeholder: "Enter recipient ID (leave blank for broadcast)",
+      },
+      priority: {
+        title: "Priority",
+        placeholder: "Select priority",
+        options: {
+          normal: "Normal",
+          urgent: "Urgent",
+          emergency: "Emergency",
+        },
+      },
+      deliveryMethod: {
+        title: "Delivery Method",
+        placeholder: "Select delivery method",
+        options: {
+          internet: "Internet",
+          sms: "SMS",
+          ussd: "USSD",
+        },
+      },
+      content: {
+        title: "Message Content",
+        placeholder: "Type your message...",
+      },
+      submitButton: "Send Message",
+    },
+
     // !maps
     maps: {
       title: "Maps",
@@ -308,6 +358,53 @@ export const translations: TranslationDictionary = {
         // placeholder:"पता दर्ज करें",
       },
       submitButton: "संगठन जोड़ें",
+    },
+
+    messages: {
+      title: "संदेश",
+      button: "संदेश भेजें",
+    },
+
+    messageForm: {
+      title: "संदेश भेजें",
+      type: {
+        title: "संदेश प्रकार",
+        placeholder: "संदेश प्रकार चुनें",
+        options: {
+          direct: "प्रत्यक्ष",
+          group: "समूह",
+          broadcast: "प्रसारण",
+          sms: "एसएमएस",
+          ussd: "यूएसएसडी",
+        },
+      },
+      recipientId: {
+        title: "प्राप्तकर्ता आईडी",
+        placeholder: "प्राप्तकर्ता आईडी दर्ज करें (प्रसारण के लिए खाली छोड़ें)",
+      },
+      priority: {
+        title: "प्राथमिकता",
+        placeholder: "प्राथमिकता चुनें",
+        options: {
+          normal: "सामान्य",
+          urgent: "तत्काल",
+          emergency: "आपातकालीन",
+        },
+      },
+      deliveryMethod: {
+        title: "डिलीवरी विधि",
+        placeholder: "डिलीवरी विधि चुनें",
+        options: {
+          internet: "इंटरनेट",
+          sms: "एसएमएस",
+          ussd: "यूएसएसडी",
+        },
+      },
+      content: {
+        title: "संदेश सामग्री",
+        placeholder: "अपना संदेश टाइप करें...",
+      },
+      submitButton: "संदेश भेजें",
     },
 
     maps: {

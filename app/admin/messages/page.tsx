@@ -23,10 +23,12 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/lib/supabase";
+import { useTranslation } from "@/lib/translation-context";
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { t, language, setLanguage } = useTranslation();
 
   useEffect(() => {
     const testSupabaseConnection = async () => {
@@ -90,16 +92,16 @@ export default function MessagesPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Messages</h1>
+        <h1 className="text-3xl font-bold">{t("messages.title")}</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> New Message
+              <Plus className="mr-2 h-4 w-4" /> {t("messages.button")}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Send New Message</DialogTitle>
+              <DialogTitle>{t("messageForm.title")}</DialogTitle>
             </DialogHeader>
             <MessageForm onSubmit={handleSendMessage} />
           </DialogContent>
@@ -150,6 +152,7 @@ interface MessageFormProps {
 }
 
 function MessageForm({ onSubmit }: MessageFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<
     Omit<Message, "id" | "timestamp" | "status">
   >({
@@ -175,7 +178,7 @@ function MessageForm({ onSubmit }: MessageFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Message Type</Label>
+        <Label>{t("messageForm.type.title")}</Label>
         <Select
           value={formData.type}
           onValueChange={(value) =>
@@ -183,31 +186,31 @@ function MessageForm({ onSubmit }: MessageFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select message type" />
+            <SelectValue placeholder={t("messageForm.type.placeholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="direct">Direct</SelectItem>
-            <SelectItem value="group">Group</SelectItem>
-            <SelectItem value="broadcast">Broadcast</SelectItem>
-            <SelectItem value="sms">SMS</SelectItem>
-            <SelectItem value="ussd">USSD</SelectItem>
+            <SelectItem value="direct">{t("messageForm.type.options.direct")}</SelectItem>
+            <SelectItem value="group">{t("messageForm.type.options.group")}</SelectItem>
+            <SelectItem value="broadcast">{t("messageForm.type.options.broadcast")}</SelectItem>
+            <SelectItem value="sms">{t("messageForm.type.options.sms")}</SelectItem>
+            <SelectItem value="ussd">{t("messageForm.type.options.ussd")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Recipient ID</Label>
+        <Label> {t("messageForm.recipientId.title")} </Label>
         <Input
           value={formData.recipientId || ""}
           onChange={(e) =>
             setFormData({ ...formData, recipientId: e.target.value || null })
           }
-          placeholder="Enter recipient ID (leave blank for broadcast)"
+          placeholder={t("messageForm.recipientId.placeholder")}
         />
       </div>
 
       <div>
-        <Label>Priority</Label>
+        <Label>{t("messageForm.priority.title")}</Label>
         <Select
           value={formData.priority}
           onValueChange={(value) =>
@@ -215,18 +218,18 @@ function MessageForm({ onSubmit }: MessageFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select priority" />
+            <SelectValue placeholder={t("messageForm.priority.placeholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="normal">Normal</SelectItem>
-            <SelectItem value="urgent">Urgent</SelectItem>
-            <SelectItem value="emergency">Emergency</SelectItem>
+            <SelectItem value="normal">{t("messageForm.priority.options.normal")}</SelectItem>
+            <SelectItem value="urgent">{t("messageForm.priority.options.urgent")}</SelectItem>
+            <SelectItem value="emergency">{t("messageForm.priority.options.emergency")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Delivery Method</Label>
+        <Label>{t("messageForm.deliveryMethod.title")}</Label>
         <Select
           value={formData.deliveryMethod}
           onValueChange={(value) =>
@@ -237,29 +240,29 @@ function MessageForm({ onSubmit }: MessageFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select delivery method" />
+            <SelectValue placeholder={t("messageForm.deliveryMethod.placeholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="internet">Internet</SelectItem>
-            <SelectItem value="sms">SMS</SelectItem>
-            <SelectItem value="ussd">USSD</SelectItem>
+            <SelectItem value="internet">{t("messageForm.deliveryMethod.options.internet")}</SelectItem>
+            <SelectItem value="sms">{t("messageForm.deliveryMethod.options.sms")}</SelectItem>
+            <SelectItem value="ussd">{t("messageForm.deliveryMethod.options.ussd")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Message Content</Label>
+        <Label>{t("messageForm.content.title")}</Label>
         <Input
           value={formData.content}
           onChange={(e) =>
             setFormData({ ...formData, content: e.target.value })
           }
-          placeholder="Type your message..."
+          placeholder={t("messageForm.content.placeholder")}
           required
         />
       </div>
 
-      <Button type="submit">Send Message</Button>
+      <Button type="submit">{t("messageForm.submitButton")}</Button>
     </form>
   );
 }

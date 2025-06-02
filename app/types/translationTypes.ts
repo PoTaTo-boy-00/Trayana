@@ -12,6 +12,54 @@ interface TranslationDictionary {
       };
     };
 
+    //!messages
+    messages: {
+      title: string;
+      button: string
+    };
+    //message form
+    messageForm: {
+      title: string;
+      type: {
+        title: string;
+        placeholder: string;
+        options: {
+          direct: string;
+          group: string;
+          broadcast: string;
+          sms: string;
+          ussd: string;
+        };
+      }
+      recipientId: {
+        title: string;
+        placeholder: string;
+      };
+      priority: {
+        title: string;
+        placeholder: string;
+        options: {
+          normal: string;
+          urgent: string;
+          emergency: string;
+        };
+      }
+      deliveryMethod: {
+        title: string;
+        placeholder: string;
+        options: {
+          internet: string;
+          sms: string;
+          ussd: string;
+        };
+      };
+      content: {
+        title: string;
+        placeholder: string;
+      };
+      submitButton: string;
+    };
+
     //!settings
 
     settings: {

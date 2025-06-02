@@ -70,7 +70,6 @@ export default function ResourcesPage() {
     if (error) {
       console.error("Error creating alert:", error);
     } else {
-      setResources((prev) => [...prev, data[0]]);
       setIsDialogOpen(false);
     }
   };
