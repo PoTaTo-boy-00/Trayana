@@ -274,3 +274,30 @@ export interface SOSAlert {
     role: string;
   };
 }
+
+export interface DepletionPrediction {
+  type: string;
+  currentAmount: number;
+  depletionTime: Date;
+  depletionProbability: number;
+}
+
+export interface GapAnalysis {
+  missingTypes: Array<{
+    type: string;
+    quantityNeeded: number;
+  }>;
+  immediateNeeds: string[];
+  surplusResources: Array<{
+    type: string;
+    quantity: number;
+  }>;
+}
+
+export interface PriorityScore {
+  [location: string]: {
+    score: number;
+    confidence: number;
+    trend: "increasing" | "stable" | "decreasing";
+  };
+}

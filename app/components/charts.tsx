@@ -1,34 +1,35 @@
 "useclient";
 
-import { Bar, Pie } from "react-chartjs-2";
+import { Bar, Pie, Line } from "react-chartjs-2";
 import { Chart as ChartJS, registerables } from "chart.js";
 ChartJS.register(...registerables);
 
-export const BarChart = ({
-  data,
-}: {
-  data: { label: string; value: number }[];
-}) => {
-  return (
-    <Bar
-      data={{
-        labels: data.map((item) => item.label),
-        datasets: [
-          {
-            label: "Priority Score",
-            data: data.map((item) => item.value),
-            backgroundColor: "rgba(59, 130, 246, 0.7)",
-          },
-        ],
-      }}
-      options={{
-        scales: {
-          y: { beginAtZero: true, max: 10 },
+interface ChartData {
+  label: string;
+  value: number;
+  trend?: string;
+}
+
+export const BarChart = ({ data }: { data: ChartData[] }) => (
+  <Bar
+    data={{
+      labels: data.map((d) => d.label),
+      datasets: [
+        {
+          label: "Priority Score",
+          data: data.map((d) => d.value),
+          backgroundColor: data.map((d) =>
+            d.trend === "increasing"
+              ? "#ef4444"
+              : d.trend === "decreasing"
+              ? "#10b981"
+              : "#3b82f6"
+          ),
         },
-      }}
-    />
-  );
-};
+      ],
+    }}
+  />
+);
 
 export const PieChart = ({
   data,
@@ -66,4 +67,25 @@ export const PieChart = ({
       />
     </div>
   );
+};
+
+interface Prediction {
+  type: string;
+  currentAmount: number;
+  depletionTime: Date;
+  depletionProbability: number;
+}
+
+export const PredictionTimeline = ({ data }: { data: any[] }) => {
+  const chartData = {
+    labels: data.map((p) => `Hour ${p.hour}`),
+    datasets: Object.keys(data[0]?.resources || {}).map((type) => ({
+      label: type,
+      data: data.map((p) => p.resources[type]?.remaining || 0),
+      borderColor: `hsl(${Math.random() * 360}, 70%, 50%)`,
+      tension: 0.4,
+    })),
+  };
+
+  return <Line data={chartData} options={{ responsive: true }} />;
 };
