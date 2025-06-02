@@ -24,9 +24,9 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 
-
 export default function ResourcesPage() {
-  const [selectedRequest, setSelectedRequest] = useState<requestResources | null>(null);
+  const [selectedRequest, setSelectedRequest] =
+    useState<requestResources | null>(null);
   const [allocateQuantity, setAllocateQuantity] = useState<number>(0);
   const [isAllocDialogOpen, setIsAllocDialogOpen] = useState(false);
 
@@ -120,7 +120,7 @@ export default function ResourcesPage() {
             <Filter className="mr-2 h-4 w-4" /> Filter
           </Button>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" /> Add Resource
@@ -133,7 +133,7 @@ export default function ResourcesPage() {
 
               <ResourceForm onSubmit={handleAddResource} />
             </DialogContent>
-          </Dialog>
+          </Dialog> */}
         </div>
       </div>
 
@@ -275,34 +275,42 @@ export default function ResourcesPage() {
                   </p>
                 </div>
               </div>
-              {resources.some((res) => res.name === resource.name && res.type === resource.type && res.quantity > 0) ? (
-              <Button
-                onClick={() => {
-                  setSelectedRequest(resource);
-                  setIsAllocDialogOpen(true);
-                }}
-                disabled={resource.status === "allocated"}
+              {resources.some(
+                (res) =>
+                  res.name === resource.name &&
+                  res.type === resource.type &&
+                  res.quantity > 0
+              ) ? (
+                <Button
+                  onClick={() => {
+                    setSelectedRequest(resource);
+                    setIsAllocDialogOpen(true);
+                  }}
+                  disabled={resource.status === "allocated"}
+                >
+                  Allocate Resources
+                </Button>
+              ) : (
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" /> Add Resource
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New Resource</DialogTitle>
+                    </DialogHeader>
+
+                    <ResourceForm onSubmit={handleAddResource} />
+                  </DialogContent>
+                </Dialog>
+              )}
+
+              <Dialog
+                open={isAllocDialogOpen}
+                onOpenChange={setIsAllocDialogOpen}
               >
-                Allocate Resources
-              </Button>
-            ) : (
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" /> Add Resource
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Resource</DialogTitle>
-                  </DialogHeader>
-
-                  <ResourceForm onSubmit={handleAddResource} />
-                </DialogContent>
-              </Dialog>
-            )}
-
-              <Dialog open={isAllocDialogOpen} onOpenChange={setIsAllocDialogOpen}>
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Allocate Resource</DialogTitle>
@@ -320,88 +328,120 @@ export default function ResourcesPage() {
                           type="number"
                           min={1}
                           max={
-                            resources.find((res) => res.type === selectedRequest.type)?.quantity || 0
+                            resources.find(
+                              (res) => res.type === selectedRequest.type
+                            )?.quantity || 0
                           }
                           value={allocateQuantity}
-                          onChange={(e) => setAllocateQuantity(Number(e.target.value))}
+                          onChange={(e) =>
+                            setAllocateQuantity(Number(e.target.value))
+                          }
                         />
                         <p className="text-sm text-muted-foreground mt-1">
-                          Available:{' '}
-                          {
-                            resources.find((res) => res.type === selectedRequest.type)?.quantity || 0
-                          }{' '}
+                          Available:{" "}
+                          {resources.find(
+                            (res) => res.type === selectedRequest.type
+                          )?.quantity || 0}{" "}
                           {selectedRequest.unit}
                         </p>
                       </div>
 
-                      <Button onClick={async () => {
-                        const matchingResource = resources.find((res) => res.type === selectedRequest.type);
+                      <Button
+                        onClick={async () => {
+                          const matchingResource = resources.find(
+                            (res) => res.type === selectedRequest.type
+                          );
 
-                        if (!matchingResource || allocateQuantity <= 0 || allocateQuantity > matchingResource.quantity) {
-                          alert("Invalid allocation amount.");
-                          return;
-                        }
-                        let updatedRequest: requestResources[] = [];
-                        let reqError = null;
+                          if (
+                            !matchingResource ||
+                            allocateQuantity <= 0 ||
+                            allocateQuantity > matchingResource.quantity
+                          ) {
+                            alert("Invalid allocation amount.");
+                            return;
+                          }
+                          let updatedRequest: requestResources[] = [];
+                          let reqError = null;
 
-                        if (selectedRequest.quantity - allocateQuantity <= 0) {
-                          const { error: deleteError } = await supabase
-                            .from("requestresources")
-                            .delete()
-                            .eq("id", selectedRequest.id);
+                          if (
+                            selectedRequest.quantity - allocateQuantity <=
+                            0
+                          ) {
+                            const { error: deleteError } = await supabase
+                              .from("requestresources")
+                              .delete()
+                              .eq("id", selectedRequest.id);
 
-                          reqError = deleteError;
+                            reqError = deleteError;
+
+                            setRequestResources((prev) =>
+                              prev.filter((r) => r.id !== selectedRequest.id)
+                            );
+                          } else {
+                            const { data, error } = await supabase
+                              .from("requestresources")
+                              .update({
+                                quantity:
+                                  selectedRequest.quantity - allocateQuantity,
+                                status: "requested",
+                              })
+                              .eq("id", selectedRequest.id)
+                              .select();
+
+                            reqError = error;
+                            updatedRequest = data || [];
+
+                            if (!error && data) {
+                              setRequestResources((prev) =>
+                                prev.map((r) =>
+                                  r.id === selectedRequest.id ? data[0] : r
+                                )
+                              );
+                            }
+                          }
+
+                          const { data: updatedRes, error: resError } =
+                            await supabase
+                              .from("resources")
+                              .update({
+                                quantity:
+                                  matchingResource.quantity - allocateQuantity,
+                                status:
+                                  matchingResource.quantity -
+                                    allocateQuantity ===
+                                  0
+                                    ? "depleted"
+                                    : matchingResource.status,
+                              })
+                              .eq("id", matchingResource.id)
+                              .select();
+
+                          if (reqError || resError) {
+                            console.error(
+                              "Error during allocation:",
+                              reqError || resError
+                            );
+                            alert("Failed to allocate.");
+                            return;
+                          }
 
                           setRequestResources((prev) =>
-                            prev.filter((r) => r.id !== selectedRequest.id)
+                            prev.map((r) =>
+                              r.id === selectedRequest.id
+                                ? updatedRequest[0]
+                                : r
+                            )
                           );
-                        } else {
 
-                          const { data, error } = await supabase
-                            .from("requestresources")
-                            .update({
-                              quantity: selectedRequest.quantity - allocateQuantity,
-                              status: "requested",
-                            })
-                            .eq("id", selectedRequest.id)
-                            .select();
+                          setResources((prev) =>
+                            prev.map((r) =>
+                              r.id === matchingResource.id ? updatedRes[0] : r
+                            )
+                          );
 
-                          reqError = error;
-                          updatedRequest = data || [];
-
-                          if (!error && data) {
-                            setRequestResources((prev) =>
-                              prev.map((r) => (r.id === selectedRequest.id ? data[0] : r))
-                            );
-                          }
-                        }
-
-                        const { data: updatedRes, error: resError } = await supabase
-                          .from("resources")
-                          .update({
-                            quantity: matchingResource.quantity - allocateQuantity,
-                            status: matchingResource.quantity - allocateQuantity === 0 ? "depleted" : matchingResource.status,
-                          })
-                          .eq("id", matchingResource.id)
-                          .select();
-
-                        if (reqError || resError) {
-                          console.error("Error during allocation:", reqError || resError);
-                          alert("Failed to allocate.");
-                          return;
-                        }
-
-
-                        setRequestResources((prev) =>
-                          prev.map((r) => (r.id === selectedRequest.id ? updatedRequest[0] : r))
-                        );
-
-                        setResources((prev) =>
-                          prev.map((r) => (r.id === matchingResource.id ? updatedRes[0] : r))
-                        );
-
-                        setIsAllocDialogOpen(false);
-                      }}>
+                          setIsAllocDialogOpen(false);
+                        }}
+                      >
                         Confirm Allocation
                       </Button>
                     </div>
@@ -434,10 +474,18 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
     organizationId: "",
     expiryDate: "",
     conditions: [],
+    // priority: "medium",
+    // disasterType: "other",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.name || formData.quantity <= 0 || !formData.unit) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
     const newResource: Resource = {
       ...formData,
       id: uuidv4(), // Generate a unique ID
@@ -496,25 +544,6 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
           onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
           required
         />
-      </div>
-
-      <div>
-        <Label>Status</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value) =>
-            setFormData({ ...formData, status: value as Resource["status"] })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="allocated">Allocated</SelectItem>
-            <SelectItem value="depleted">Depleted</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div>

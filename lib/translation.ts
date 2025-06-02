@@ -1,3 +1,4 @@
+import { Card } from "../components/ui/card";
 // import { DashboardTranslation } from '../app/types/translationTypes';
 
 export const translations: TranslationDictionary = {
@@ -160,6 +161,7 @@ export const translations: TranslationDictionary = {
         organizations: "Organizations",
         resources: "Resources",
       },
+      cardTitle: "Legend",
     },
     // !settings
     settings: {
@@ -241,6 +243,8 @@ export const translations: TranslationDictionary = {
         title: "Address",
         // placeholder:"Enter address",
       },
+      latitude: "Latitude",
+      longitude: "Longitude",
       submitButton: "Add Organization",
     },
   },
@@ -357,6 +361,8 @@ export const translations: TranslationDictionary = {
         title: "पता",
         // placeholder:"पता दर्ज करें",
       },
+      latitude: "अक्षांश",
+      longitude: "देशांतर",
       submitButton: "संगठन जोड़ें",
     },
 
@@ -416,6 +422,7 @@ export const translations: TranslationDictionary = {
         organizations: "संगठन",
         resources: "संसाधन",
       },
+      cardTitle: "विधि",
     },
     settings: {
       title: "सेटिंग्स",
