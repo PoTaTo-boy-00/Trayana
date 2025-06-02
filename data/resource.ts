@@ -3,19 +3,19 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Organization } from "@/app/types";
 
-export interface OrganizationWithCoords {
+export interface ResourceWithCoords {
   id: string;
   location_lat: number;
   location_lng: number;
 }
 
-export const organization: OrganizationWithCoords[] = [];
+export const resource: ResourceWithCoords[] = [];
 
-export const fetchOrganizations = async () => {
+export const fetchResources = async () => {
   const { data, error } = await supabase
-    .from("organizations")
+    .from("resources")
     .select("*")
-    .eq("status", "active");
+    .eq("status", "available");
 
   if (error) {
     console.error("Error fetching organizations:", error.message);
@@ -23,12 +23,12 @@ export const fetchOrganizations = async () => {
     return;
   }
 
-  const processed = (data || []).map((org) => ({
-    id: org.id,
-    location_lat: org.coverage.center.lat,
-    location_lng: org.coverage.center.lng,
+  const processed = (data || []).map((res) => ({
+    id: res.id,
+    location_lat: res.location?.lat,
+    location_lng: res.location?.lng,
   }));
-  organization.splice(0, organization.length, ...processed); // Modify array in place
+  resource.splice(0, resource.length, ...processed); // Modify array in place
   // console.log("Organizations array populated:", otganization);
   // return otganization;
 };

@@ -18,12 +18,25 @@ import { supabase } from "@/lib/supabase";
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { PersonnelLocation, SOSAlert } from "../types";
-import MapComponent from "@/components/ui/MapComponent";
+import { MapComponent } from "@/components/ui/MapComponent";
+import {
+  fetchPersonnelLocation,
+  personnel as staticPersonnel,
+} from "@/data/personnel";
+import {
+  fetchOrganizations,
+  organization as staticOrg,
+} from "@/data/organization";
 
+import { fetchResources, resource as staticRes } from "@/data/resource";
 export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
+
+  const [personnelData, setPersonnelData] = useState(staticPersonnel);
+  const [organizationsData, setOrganizationsData] = useState(staticOrg);
+  const [resourceData, setResourceData] = useState(staticRes);
 
   const supabase = createClientComponentClient();
   const personnel = [
@@ -135,7 +148,21 @@ export default function PartnerDashboard() {
           </CardContent>
         </Card>
       </div>
-      <MapComponent personnel={personnel} sosAlerts={sosAlerts} />
+      <MapComponent
+        personnel={personnelData.map((p) => ({
+          ...p,
+          id: typeof p.id === "string" ? Number(p.id) : p.id,
+        }))}
+        sosAlerts={sosAlerts}
+        organization={organizationsData.map((org) => ({
+          ...org,
+          id: typeof org.id === "string" ? Number(org.id) : org.id,
+        }))}
+        resource={resourceData.map((res) => ({
+          ...res,
+          id: typeof res.id === "string" ? Number(res.id) : res.id,
+        }))}
+      />
       <div></div>
     </div>
   );
