@@ -19,7 +19,14 @@ import {
   fetchOrganizations,
   organization as staticOrg,
 } from "@/data/organization";
-import { fetchResources, resource as staticRes } from "@/data/resource";
+import {
+  fetchReqResources,
+  fetchResources,
+  reqResource,
+  reqResource as staticReq,
+  resource as staticRes,
+} from "@/data/resource";
+import { stat } from "node:fs";
 
 export default function MapPage() {
   // const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -28,9 +35,10 @@ export default function MapPage() {
   // const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [organizationsData, setOrganizationsData] = useState(staticOrg);
   const [resourceData, setResourceData] = useState(staticRes);
+  const [reqResourceData, setReqResourceData] = useState(staticReq);
 
   // console.log(personnelData);
-  console.log(organizationsData);
+  // console.log(reqResourceData);
 
   const supabase = createClientComponentClient();
 
@@ -107,6 +115,9 @@ export default function MapPage() {
 
       await fetchResources();
       setResourceData([...staticRes]);
+
+      await fetchReqResources();
+      setReqResourceData([...staticReq]);
     }
 
     fetchData();
@@ -135,6 +146,10 @@ export default function MapPage() {
                 resource={resourceData.map((res) => ({
                   ...res,
                   id: typeof res.id === "string" ? Number(res.id) : res.id,
+                }))}
+                reqResource={reqResourceData.map((req) => ({
+                  ...req,
+                  id: typeof req.id === "string" ? Number(req.id) : req.id,
                 }))}
               />
             </div>

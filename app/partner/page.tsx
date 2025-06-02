@@ -23,69 +23,93 @@ import {
   fetchPersonnelLocation,
   personnel as staticPersonnel,
 } from "@/data/personnel";
-import {
-  fetchOrganizations,
-  organization as staticOrg,
-} from "@/data/organization";
 
-import { fetchResources, resource as staticRes } from "@/data/resource";
 export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
-  const [organizationsData, setOrganizationsData] = useState(staticOrg);
-  const [resourceData, setResourceData] = useState(staticRes);
+  // const [SOSdata, setSOSData] = useState(staticSOS);
 
   const supabase = createClientComponentClient();
-  const personnel = [
-    {
-      id: 1,
-      location_lat: 26.544205506857356,
-      location_lng: 88.70577006096832,
-    }, // Jalpaiguri
-  ];
+  // const personnel = [
+  //   {
+  //     id: 1,
+  //     location_lat: 26.544205506857356,
+  //     location_lng: 88.70577006096832,
+  //   }, // Jalpaiguri
+  // ];
 
   const sosAlerts = [
     { id: 1, location_lat: 26.54, location_lng: 88.71 }, // Near Jalpaiguri
   ];
 
   useEffect(() => {
-    const fetchAlerts = async () => {
-      const { data, error } = await supabase.from("alerts").select("*");
-      if (error) {
-        console.error("Error fetching alerts:", error.message);
-      } else {
-        setAlertCount(data.length);
-      }
-    };
-    fetchAlerts();
-  }, []);
-  useEffect(() => {
-    const fetchResources = async () => {
-      const { data, error } = await supabase.from("resources").select("*");
-      if (error) {
-        console.error("Error fetching alerts:", error);
-      } else {
-        setResourceCount(data.length);
-      }
-    };
+    async function fetchData() {
+      // Fetch alerts
+      // const { data: alertsData } = await supabase
+      //   .from("alerts")
+      //   .select("*")
+      //   .eq("is_active", true);
 
-    fetchResources();
-  }, []);
-  useEffect(() => {
-    const fetchPersonnel = async () => {
-      const { data, error } = await supabase.from("personnel").select("*");
-      if (error) {
-        console.error("Error fetching alerts:", error);
-      } else {
-        setPersonnelCount(data.length);
-      }
-    };
+      // if (alertsData) {
+      //   setAlerts(
+      //     alertsData.map((alert) => ({
+      //       ...alert,
+      //       affected_Areas: alert.affected_areas as any,
+      //     }))
+      //   );
+      // }
 
-    fetchPersonnel();
+      // Fetch organizations
+      // const { data: orgsData } = await supabase
+      //   .from("organizations")
+      //   .select("*")
+      //   .eq("status", "active");
+
+      // if (orgsData) {
+      //   setOrganizations(
+      //     orgsData.map((org) => ({
+      //       ...org,
+      //       coverage: {
+      //         center: { lat: org.coverage_lat, lng: org.coverage_lng },
+      //         // radius: org.coverage_radius,
+      //       },
+      //     }))
+      //   );
+      // }
+
+      // Fetch resources
+      // const { data: resourcesData } = await supabase
+      //   .from("resources")
+      //   .select("*")
+      //   .eq("status", "available");
+
+      // if (resourcesData) {
+      //   setResources(
+      //     resourcesData.map((resource) => ({
+      //       ...resource,
+      //       location: {
+      //         lat: resource.location_lat,
+      //         lng: resource.location_lng,
+      //       },
+      //     }))
+      //   );
+      // }
+
+      // fetch personnel from Supabase
+      await fetchPersonnelLocation();
+      setPersonnelData([...staticPersonnel]);
+      // await fetchSOSLocation();
+      // setSOSdata([...staticSOS]);
+
+      // fetch organizations from Supabase
+    }
+
+    fetchData();
   }, []);
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Partner Dashboard</h1>
@@ -153,17 +177,12 @@ export default function PartnerDashboard() {
           ...p,
           id: typeof p.id === "string" ? Number(p.id) : p.id,
         }))}
+        // sosAlerts={SOSdata.map((p) => ({
+        //   ...p,
+        //   id: typeof p.id === "string" ? Number(p.id) : p.id,
+        // }))}
         sosAlerts={sosAlerts}
-        organization={organizationsData.map((org) => ({
-          ...org,
-          id: typeof org.id === "string" ? Number(org.id) : org.id,
-        }))}
-        resource={resourceData.map((res) => ({
-          ...res,
-          id: typeof res.id === "string" ? Number(res.id) : res.id,
-        }))}
       />
-      <div></div>
     </div>
   );
 }

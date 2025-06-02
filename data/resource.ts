@@ -10,6 +10,7 @@ export interface ResourceWithCoords {
 }
 
 export const resource: ResourceWithCoords[] = [];
+export const reqResource: ResourceWithCoords[] = [];
 
 export const fetchResources = async () => {
   const { data, error } = await supabase
@@ -31,4 +32,24 @@ export const fetchResources = async () => {
   resource.splice(0, resource.length, ...processed); // Modify array in place
   // console.log("Organizations array populated:", otganization);
   // return otganization;
+};
+
+export const fetchReqResources = async () => {
+  const { data, error } = await supabase
+    .from("requestresources")
+    .select("*")
+    .eq("status", "requested");
+
+  if (error) {
+    console.error("Error fetching requested resources:", error.message);
+    return;
+  }
+  const processed = (data || []).map((req) => {
+    return {
+      id: req.id,
+      location_lat: req.location?.lat,
+      location_lng: req.location?.lng,
+    };
+  });
+  reqResource.splice(0, reqResource.length, ...processed);
 };
