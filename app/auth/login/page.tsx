@@ -28,6 +28,9 @@ export default function Login() {
     name: "",
     organizationType: "healthcare",
     organizationName: "",
+    // lat: "",
+    // lng: "",
+    // role: "partner", // Default role for new users
   });
   const [user, setUser] = useState<User[]>([]);
 

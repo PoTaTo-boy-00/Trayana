@@ -4,6 +4,7 @@ import { TranslationServiceClient } from "@google-cloud/translate";
 const client = new TranslationServiceClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
+// console.log(process.env.GOOGLE_PROJECT_ID);
 
 const projectId = process.env.GOOGLE_PROJECT_ID;
 const location = "global";

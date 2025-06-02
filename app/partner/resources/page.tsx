@@ -47,6 +47,7 @@ export default function ResourcesPage() {
 
     testSupabaseConnection();
   }, []);
+
   useEffect(() => {
     const fetchResources = async () => {
       const { data, error } = await supabase.from("resources").select("*");
@@ -100,22 +101,25 @@ export default function ResourcesPage() {
   };
 
   const handleDeleteResource = async (id: string) => {
-  const { error } = await supabase.from("resources").delete().eq("id", id);
-  if (error) {
-    console.error("Error deleting resource:", error);
-  } else {
-    setResources((prev) => prev.filter((res) => res.id !== id));
-  }
-};
+    const { error } = await supabase.from("resources").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting resource:", error);
+    } else {
+      setResources((prev) => prev.filter((res) => res.id !== id));
+    }
+  };
 
-const handleDeleteRequestResource = async (id: string) => {
-  const { error } = await supabase.from("requestresources").delete().eq("id", id);
-  if (error) {
-    console.error("Error deleting requested resource:", error);
-  } else {
-    setRequestResources((prev) => prev.filter((res) => res.id !== id));
-  }
-};
+  const handleDeleteRequestResource = async (id: string) => {
+    const { error } = await supabase
+      .from("requestresources")
+      .delete()
+      .eq("id", id);
+    if (error) {
+      console.error("Error deleting requested resource:", error);
+    } else {
+      setRequestResources((prev) => prev.filter((res) => res.id !== id));
+    }
+  };
 
   useEffect(() => {
     const channel = supabase
@@ -201,25 +205,25 @@ const handleDeleteRequestResource = async (id: string) => {
                 {resource.name}
               </CardTitle>
               <div className="flex items-center gap-2">
-              <span
-                className={`px-2 py-1 rounded-full text-sm ${
-                  resource.status === "available"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                    : resource.status === "allocated"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-                }`}
-              >
-                {resource.status.charAt(0).toUpperCase() +
-                  resource.status.slice(1)}
-              </span>
-              {/* <Button
-                variant="destructive"
-                size="sm"
-                onClick={()=>handleDeleteResource(resource.id)}
-              >
-                Delete
-              </Button> */}
+                <span
+                  className={`px-2 py-1 rounded-full text-sm ${
+                    resource.status === "available"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                      : resource.status === "allocated"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                  }`}
+                >
+                  {resource.status.charAt(0).toUpperCase() +
+                    resource.status.slice(1)}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteResource(resource.id)}
+                >
+                  Delete
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -255,7 +259,6 @@ const handleDeleteRequestResource = async (id: string) => {
                         >
                           {condition}
                         </span>
-                        
                       ))}
                     </div>
                   </div>
@@ -281,25 +284,25 @@ const handleDeleteRequestResource = async (id: string) => {
                 {resource.name}
               </CardTitle>
               <div className="flex items-center gap-2">
-              <span
-                className={`px-2 py-1 rounded-full text-sm ${
-                  resource.status === "requested"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                    : resource.status === "allocated"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-                }`}
-              >
-                {resource.status.charAt(0).toUpperCase() +
-                  resource.status.slice(1)}
-              </span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={()=>handleDeleteRequestResource(resource.id)}
-              >
-                Delete
-              </Button>
+                <span
+                  className={`px-2 py-1 rounded-full text-sm ${
+                    resource.status === "requested"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                      : resource.status === "allocated"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                  }`}
+                >
+                  {resource.status.charAt(0).toUpperCase() +
+                    resource.status.slice(1)}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteRequestResource(resource.id)}
+                >
+                  Delete
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -375,7 +378,55 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
     organizationId: "",
     expiryDate: "",
     conditions: [],
+    // priority: "low",
+    // disasterType: "flood",
   });
+
+  const [organizarionId, setOrganizationId] = useState<string>("");
+  const [locData, setLocData] = useState<string>("");
+
+  useEffect(() => {
+    const fetchOrgID = async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("id ");
+
+      if (error) {
+        console.error("Error fetching organization ID:", error);
+      } else if (data && data.length > 0) {
+        setOrganizationId(data[0].id);
+      } else {
+        console.warn("No organization ID found.");
+      }
+    };
+    fetchOrgID();
+  }, []);
+  useEffect(() => {
+    const fetchOrgID = async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("coverage ");
+
+      if (error) {
+        console.error("Error fetching organization ID:", error);
+      } else if (data && data.length > 0) {
+        const centre = data[0].coverage?.center;
+        if (centre) {
+          // setLocData(centre);
+          setFormData((prev) => ({
+            ...prev,
+            location: {
+              lat: centre.lat,
+              lng: centre.lng,
+            },
+          }));
+        }
+      } else {
+        console.warn("No organization ID found.");
+      }
+    };
+    fetchOrgID();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -383,6 +434,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       ...formData,
       id: uuidv4(), // Generate a unique ID
       lastUpdated: new Date().toISOString(),
+      organizationId: organizarionId,
     };
     onSubmit(newResource);
   };
@@ -500,14 +552,71 @@ function RequestResourceForm({ onSubmit }: RequestResourceFormProps) {
     organizationId: "",
     expiryDate: "",
     conditions: [],
+    // priority: "medium",
+    disasterType: "flood",
+    urgency: "normal",
+    requestedBy: "",
   });
+
+  const [organizarionId, setOrganizationId] = useState<string>("");
+  const [locData, setLocData] = useState<string>("");
+
+  useEffect(() => {
+    const fetchOrgID = async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("id ");
+
+      if (error) {
+        console.error("Error fetching organization ID:", error);
+      } else if (data && data.length > 0) {
+        setOrganizationId(data[0].id);
+      } else {
+        console.warn("No organization ID found.");
+      }
+    };
+    fetchOrgID();
+  }, []);
+  useEffect(() => {
+    const fetchOrgID = async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("coverage ");
+
+      if (error) {
+        console.error("Error fetching organization ID:", error);
+      } else if (data && data.length > 0) {
+        const centre = data[0].coverage?.center;
+        if (centre) {
+          // setLocData(centre);
+          setFormData((prev) => ({
+            ...prev,
+            location: {
+              lat: centre.lat,
+              lng: centre.lng,
+            },
+          }));
+        }
+      } else {
+        console.warn("No organization ID found.");
+      }
+    };
+    fetchOrgID();
+  }, []);
+
+  console.log(locData);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newResource: requestResources = {
       ...formData,
       id: uuidv4(), // Generate a unique ID
+      // location: {
+      //   lat: locData.lat,
+      //   lng: formData.location.lng,
+      // },
       lastUpdated: new Date().toISOString(),
+      requestedBy: organizarionId,
     };
     onSubmit(newResource);
   };
@@ -610,6 +719,65 @@ function RequestResourceForm({ onSubmit }: RequestResourceFormProps) {
           placeholder="Enter conditions separated by commas"
         />
       </div>
+
+      <div>
+        <Label>Urgency</Label>
+        <Select
+          value={formData.urgency}
+          onValueChange={(value) =>
+            setFormData({
+              ...formData,
+              urgency: value as requestResources["urgency"],
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select urgency" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="low">Low</SelectItem>
+            <SelectItem value="normal">Normal</SelectItem>
+            <SelectItem value="high">High</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div>
+        <Label>Disaster Type</Label>
+        <Select
+          value={formData.disasterType}
+          onValueChange={(value) =>
+            setFormData({
+              ...formData,
+              disasterType: value as requestResources["disasterType"],
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select disaster type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="earthquake">Earthquake</SelectItem>
+            <SelectItem value="flood">Flood</SelectItem>
+            <SelectItem value="fire">Fire</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {/* <div>
+        <Label>Location</Label>
+        <Input
+          type="text"
+          value={`${formData.location.lat}, ${formData.location.lng}`}
+          onChange={(e) => {
+            const [lat, lng] = e.target.value
+              .split(",")
+              .map((s) => parseFloat(s.trim()));
+            setFormData({ ...formData, location: { lat, lng } });
+          }}
+          placeholder="Enter latitude, longitude"
+          required
+        />
+      </div> */}
 
       <Button type="submit">Request Resource</Button>
     </form>

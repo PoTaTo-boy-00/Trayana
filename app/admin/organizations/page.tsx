@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/lib/translation-context";
+import { parse } from "node:path";
 
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -313,6 +314,45 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
           onChange={(e) =>
             setFormData({ ...formData, address: e.target.value })
           }
+          required
+        />
+      </div>
+      <div>
+        <Label>{t("organizationForm.latitude")}</Label>
+        <Input
+          type="number"
+          value={formData.coverage.center.lat}
+          onChange={(e) => {
+            setFormData({
+              ...formData,
+              coverage: {
+                ...formData.coverage,
+                center: {
+                  ...formData.coverage.center,
+                  lat: parseFloat(e.target.value),
+                },
+              },
+            });
+          }}
+          required
+        />
+      </div>
+      <div>
+        <Label>{t("organizationForm.longitude")}</Label>
+        <Input
+          value={formData.coverage.center.lng}
+          onChange={(e) => {
+            setFormData({
+              ...formData,
+              coverage: {
+                ...formData.coverage,
+                center: {
+                  ...formData.coverage.center,
+                  lng: parseFloat(e.target.value),
+                },
+              },
+            });
+          }}
           required
         />
       </div>
