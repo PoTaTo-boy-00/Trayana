@@ -24,6 +24,7 @@ const navigation = [
   { name: "Map", href: "/partner/map", icon: Map },
   { name: "Messages", href: "/partner/messages", icon: MessageSquare },
   { name: "Organization", href: "/partner/organization", icon: Building2 },
+  { name: "SOS", href: "/partner/sos", icon: AlertTriangle },
   { name: "Settings", href: "/partner/settings", icon: Settings },
 ];
 
