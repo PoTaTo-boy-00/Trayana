@@ -31,6 +31,7 @@ import {
 } from "../types";
 import FloodPredictorForm from "../components/floodPrediction";
 import { useTranslation } from "@/lib/translation-context";
+import DynamicDisasterPrediction from "../components/Diaster/DisasterPrediction";
 // import { FloodPrediction } from "../components/floodPrediction";
 // import { count } from "console";
 
@@ -179,17 +180,7 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center gap-2">
-            <CardTitle>{t("dashboard.floodPrediction")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <FloodPredictorForm />
-          </CardContent>
-        </Card>
-      </div>
-
+      <DynamicDisasterPrediction />
       <div className="grid gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
