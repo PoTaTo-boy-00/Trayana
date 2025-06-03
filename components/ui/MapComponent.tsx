@@ -233,8 +233,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 };
 
 export const MapComponent2: React.FC<MapComponentProps> = ({
-  // personnel,
-  // sosAlerts,
   organization,
   resource,
 }) => {
@@ -248,15 +246,6 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Maps...</div>;
 
-  // // Define custom icons
-  // const personnelIcon = {
-  //   path: google.maps.SymbolPath.CIRCLE,
-  //   fillColor: "blue",
-  //   fillOpacity: 1,
-  //   strokeWeight: 0,
-  //   scale: 8,
-  // };
-  // // console.log(personnelIcon);
   const resIcon = {
     path: google.maps.SymbolPath.CIRCLE,
     fillColor: "green",
@@ -276,11 +265,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
     url: "https://maps.google.com/mapfiles/kml/shapes/library_maps.png", // Example building icon
     scaledSize: new google.maps.Size(32, 32),
   };
-  // const resIcon = {
-  //   url: "http://maps.google.com/mapfiles/kml/pal2/icon7.png", // Example building icon
-  //   scaledSize: new google.maps.Size(32, 32),
-  // };
-  // console.log(sosIcon);
+
   const Legend = () => {
     return (
       <div
@@ -339,26 +324,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
             Requested Resources
           </span>
         </div>
-        {/* <div style={{ display: "flex", alignItems: "center" }}>
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-              backgroundColor: "red",
-              borderRadius: "50%",
-              marginRight: "8px",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "black",
-            }}
-          >
-            {t("maps.legends.sosAlerts")}
-          </span>
-        </div> */}
+
         <div style={{ display: "flex", alignItems: "center" }}>
           <img
             src="https://maps.google.com/mapfiles/kml/shapes/library_maps.png"
@@ -375,22 +341,6 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
             {t("maps.legends.organizations")}
           </span>
         </div>
-        {/* <div style={{ display: "flex", alignItems: "center" }}>
-          <img
-            src="http://maps.google.com/mapfiles/kml/pal2/icon7.png"
-            alt="Resource Icon"
-            style={{ width: "16px", height: "16px", marginRight: "8px" }}
-          />
-          <span
-            style={{
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "black",
-            }}
-          >
-            Resource
-          </span> */}
-        {/* </div> */}
       </div>
     );
   };
