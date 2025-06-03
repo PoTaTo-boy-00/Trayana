@@ -1,50 +1,35 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { GoogleAuth } from "google-auth-library";
-import axios from "axios";
+// pages/api/predictFloodIndia.ts
+import { NextApiRequest, NextApiResponse } from "next";
+import { GoogleGenAI } from "@google/genai";
 
-const PROJECT_ID = "your-project-id";
-const LOCATION = "your-region";
-const ENDPOINT_ID = "your-endpoint-id";
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== "POST") return res.status(405).end("Only POST allowed");
+  const { location, rainfall, riverLevel, soilMoisture } = req.body;
 
-  const { rainfall, riverLevel, soilSaturation } = req.body;
+  // Compose India-specific prompt
+  const prompt = `
+    Flood risk assessment for Indian location: ${location}.
+    Recent rainfall: ${rainfall} mm,
+    River level: ${riverLevel} meters,
+    Soil moisture: ${soilMoisture}%.
+    Consider typical Indian monsoon patterns, urban drainage capacity in ${location},
+    and historical flood data for the region.
+    Provide flood risk prediction for the next week in this Indian location.
+    `;
 
   try {
-    const auth = new GoogleAuth({
-      scopes: "https://www.googleapis.com/auth/cloud-platform",
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-pro",
+      contents: prompt,
     });
-    const client = await auth.getClient();
-    const token = await client.getAccessToken();
-
-    const vertexRes = await axios.post(
-      `https://${LOCATION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${LOCATION}/endpoints/${ENDPOINT_ID}:predict`,
-      {
-        instances: [
-          {
-            rainfall_mm: rainfall,
-            river_level_m: riverLevel,
-            soil_saturation: soilSaturation,
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token.token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const prediction = vertexRes.data.predictions?.[0] ?? "Unknown";
-
+    const prediction = response.text ? response.text.trim() : "";
     res.status(200).json({ prediction });
-  } catch (err) {
-    console.error("Flood prediction error:", err);
-    res.status(500).json({ error: "Vertex AI request failed" });
+  } catch (error) {
+    console.error("Gemini error:", error);
+    res.status(500).json({ error: "Prediction failed" });
   }
 }
