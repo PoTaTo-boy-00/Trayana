@@ -29,86 +29,16 @@ import {
 import { stat } from "node:fs";
 
 export default function MapPage() {
-  // const [alerts, setAlerts] = useState<Alert[]>([]);
-  // const [organizations, setOrganizations] = useState<Organization[]>([]);
-  // const [resources, setResources] = useState<Resource[]>([]);
-  // const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [organizationsData, setOrganizationsData] = useState(staticOrg);
   const [resourceData, setResourceData] = useState(staticRes);
   const [reqResourceData, setReqResourceData] = useState(staticReq);
 
-  // console.log(personnelData);
-  // console.log(reqResourceData);
-
   const supabase = createClientComponentClient();
 
-  // console.log(organizations);
-  // const personnel = [
-  //   {
-  //     id: 1,
-  //     location_lat: 26.544205506857356,
-  //     location_lng: 88.70577006096832,
-  //   }, // Jalpaiguri
-  // ];
   const { t, language, setLanguage } = useTranslation();
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch alerts
-      // const { data: alertsData } = await supabase
-      //   .from("alerts")
-      //   .select("*")
-      //   .eq("is_active", true);
-
-      // if (alertsData) {
-      //   setAlerts(
-      //     alertsData.map((alert) => ({
-      //       ...alert,
-      //       affected_Areas: alert.affected_areas as any,
-      //     }))
-      //   );
-      // }
-
-      // Fetch organizations
-      // const { data: orgsData } = await supabase
-      //   .from("organizations")
-      //   .select("*")
-      //   .eq("status", "active");
-
-      // if (orgsData) {
-      //   setOrganizations(
-      //     orgsData.map((org) => ({
-      //       ...org,
-      //       coverage: {
-      //         center: { lat: org.coverage_lat, lng: org.coverage_lng },
-      //         // radius: org.coverage_radius,
-      //       },
-      //     }))
-      //   );
-      // }
-
-      // Fetch resources
-      // const { data: resourcesData } = await supabase
-      //   .from("resources")
-      //   .select("*")
-      //   .eq("status", "available");
-
-      // if (resourcesData) {
-      //   setResources(
-      //     resourcesData.map((resource) => ({
-      //       ...resource,
-      //       location: {
-      //         lat: resource.location_lat,
-      //         lng: resource.location_lng,
-      //       },
-      //     }))
-      //   );
-      // }
-
-      // fetch personnel from Supabase
-      // await fetchPersonnelLocation();
-      // setPersonnelData([...staticPersonnel]);
-
       // fetch organizations from Supabase
       await fetchOrganizations();
       setOrganizationsData([...staticOrg]);
@@ -134,11 +64,6 @@ export default function MapPage() {
           <CardContent className="p-0">
             <div className="h-[600px] w-full">
               <MapComponent2
-                // personnel={personnelData.map((p) => ({
-                //   ...p,
-                //   id: typeof p.id === "string" ? Number(p.id) : p.id,
-                // }))}
-                // sosAlerts={sosAlerts}
                 organization={organizationsData.map((org) => ({
                   ...org,
                   id: typeof org.id === "string" ? Number(org.id) : org.id,
@@ -155,30 +80,6 @@ export default function MapPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                {t("maps.cardTitle")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-500" />
-                <span>Active Alert</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-primary" />
-                <span>{t("maps.legends.organizations")}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-primary" />
-                <span>Resource</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div> */}
       </div>
     </div>
   );
