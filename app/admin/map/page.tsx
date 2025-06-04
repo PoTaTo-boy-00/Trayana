@@ -3,18 +3,13 @@
 import { useState, useEffect } from "react";
 import Map, { Marker, Source, Layer, LayerProps } from "react-map-gl";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Alert, Organization, Resource } from "@/app/types";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Building2, Package } from "lucide-react";
-import * as turf from "@turf/turf";
+
 import { MapComponent2 } from "@/components/ui/MapComponent";
-import { personnel } from "@/data/personnel";
-import { sosAlerts } from "@/data/sos";
+
 import { useTranslation } from "@/lib/translation-context";
-import {
-  fetchPersonnelLocation,
-  personnel as staticPersonnel,
-} from "@/data/personnel";
+
 import {
   fetchOrganizations,
   organization as staticOrg,
@@ -22,18 +17,14 @@ import {
 import {
   fetchReqResources,
   fetchResources,
-  reqResource,
   reqResource as staticReq,
   resource as staticRes,
 } from "@/data/resource";
-import { stat } from "node:fs";
 
 export default function MapPage() {
   const [organizationsData, setOrganizationsData] = useState(staticOrg);
   const [resourceData, setResourceData] = useState(staticRes);
   const [reqResourceData, setReqResourceData] = useState(staticReq);
-
-  const supabase = createClientComponentClient();
 
   const { t, language, setLanguage } = useTranslation();
 

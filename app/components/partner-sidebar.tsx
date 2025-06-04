@@ -20,11 +20,11 @@ const navigation = [
   { name: "Dashboard", href: "/partner", icon: LayoutDashboard },
   { name: "Alerts", href: "/partner/alerts", icon: AlertTriangle },
   { name: "Resources", href: "/partner/resources", icon: Box },
+  { name: "SOS", href: "/partner/sos", icon: AlertTriangle },
   { name: "Personnel", href: "/partner/personnel", icon: Users },
   { name: "Map", href: "/partner/map", icon: Map },
   { name: "Messages", href: "/partner/messages", icon: MessageSquare },
   { name: "Organization", href: "/partner/organization", icon: Building2 },
-  { name: "SOS", href: "/partner/sos", icon: AlertTriangle },
   { name: "Settings", href: "/partner/settings", icon: Settings },
 ];
 

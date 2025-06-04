@@ -8,8 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertTriangle, Building2, Package } from "lucide-react";
 import * as turf from "@turf/turf";
 import { MapComponent2 } from "@/components/ui/MapComponent";
-import { personnel } from "@/data/personnel";
-import { sosAlerts } from "@/data/sos";
+
 import { useTranslation } from "@/lib/translation-context";
 import {
   fetchPersonnelLocation,
