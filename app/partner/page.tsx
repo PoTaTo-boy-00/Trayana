@@ -23,6 +23,7 @@ import {
   fetchPersonnelLocation,
   personnel as staticPersonnel,
 } from "@/data/personnel";
+import { fetchSOS, sosReport as staticSOS } from "@/data/sos";
 
 //Easter Egg
 
@@ -32,7 +33,7 @@ export default function PartnerDashboard() {
   const [personnelCount, setPersonnelCount] = useState<number>(0);
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
-  // const [SOSdata, setSOSData] = useState(staticSOS);
+  const [SOSdata, setSOSData] = useState(staticSOS);
 
   const supabase = createClientComponentClient();
   // const personnel = [
@@ -104,7 +105,7 @@ export default function PartnerDashboard() {
       await fetchPersonnelLocation();
       setPersonnelData([...staticPersonnel]);
       // await fetchSOSLocation();
-      // setSOSdata([...staticSOS]);
+      setSOSData([...staticSOS]);
 
       // fetch organizations from Supabase
     }
@@ -179,11 +180,11 @@ export default function PartnerDashboard() {
           ...p,
           id: typeof p.id === "string" ? Number(p.id) : p.id,
         }))}
-        // sosAlerts={SOSdata.map((p) => ({
-        //   ...p,
-        //   id: typeof p.id === "string" ? Number(p.id) : p.id,
-        // }))}
-        sosAlerts={sosAlerts}
+        sosAlerts={SOSdata.map((p) => ({
+          ...p,
+          id: typeof p.id === "string" ? Number(p.id) : p.id,
+        }))}
+        // sosAlerts={sosAlerts}
       />
     </div>
   );

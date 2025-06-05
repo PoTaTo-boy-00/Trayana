@@ -39,4 +39,6 @@ next-env.d.ts
 
 
 google-cloud
+# app\admin\analytics\page.tsx
 .early.coverage
+trailPage.tsx
