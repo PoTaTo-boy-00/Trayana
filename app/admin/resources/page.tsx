@@ -23,6 +23,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { set } from "date-fns";
 
 export default function ResourcesPage() {
   const [selectedRequest, setSelectedRequest] =
@@ -35,32 +36,26 @@ export default function ResourcesPage() {
     []
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchResources = async () => {
-      const { data, error } = await supabase.from("resources").select("*");
-      if (error) {
-        console.error("Error fetching alerts:", error);
-      } else {
-        setResources(data);
+    const fetchData = async () => {
+      const [resourceRes, requestRes] = await Promise.all([
+        supabase.from("resources").select("*"),
+        supabase.from("requestresources").select("*"),
+      ]);
+
+      if (resourceRes.error || requestRes.error) {
+        console.error("Fetch error:", resourceRes.error || requestRes.error);
+        return;
       }
+
+      setResources(resourceRes.data || []);
+      // setIsLoading(false);
+      setRequestResources(requestRes.data || []);
     };
 
-    fetchResources();
-  }, []);
-  useEffect(() => {
-    const fetchResources = async () => {
-      const { data, error } = await supabase
-        .from("requestresources")
-        .select("*");
-      if (error) {
-        console.error("Error fetching alerts:", error);
-      } else {
-        setRequestResources(data);
-      }
-    };
-
-    fetchResources();
+    fetchData();
   }, []);
   const handleAddResource = async (newResource: Resource) => {
     const { data, error } = await supabase
@@ -75,16 +70,43 @@ export default function ResourcesPage() {
   };
 
   useEffect(() => {
-    const channel = supabase
-      .channel("resources")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "resources" },
-        (payload) => {
-          setResources((prev) => [...prev, payload.new as Resource]);
-        }
-      )
-      .subscribe();
+    const channel = supabase.channel("resources");
+
+    channel.on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "resources" },
+
+      (payload) => {
+        setResources((prev) => [...prev, payload.new as Resource]);
+      }
+    );
+
+    channel.on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "resources" },
+      (payload) => {
+        setResources((prev) =>
+          prev.map((r) =>
+            r.id === payload.new.id ? (payload.new as Resource) : r
+          )
+        );
+      }
+    );
+
+    channel.on(
+      "postgres_changes",
+      { event: "DELETE", schema: "public", table: "resources" },
+      (payload) => {
+        setResources((prev) =>
+          prev.filter((r) => r.id !== (payload.old as Resource).id)
+        );
+      }
+    );
+    channel.subscribe((status) => {
+      if (status !== "SUBSCRIBED") {
+        console.warn("Subscription failed or not yet established:", status);
+      }
+    });
 
     return () => {
       supabase.removeChannel(channel);
@@ -92,24 +114,61 @@ export default function ResourcesPage() {
   }, []);
 
   useEffect(() => {
-    const channel = supabase
-      .channel("requestresources")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "requestresources" },
-        (payload) => {
-          setRequestResources((prev) => [
-            ...prev,
-            payload.new as requestResources,
-          ]);
-        }
-      )
-      .subscribe();
+    const channel = supabase.channel("requestresources");
+
+    channel.on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "requestresources" },
+      (payload) => {
+        setRequestResources((prev) => [
+          ...prev,
+          payload.new as requestResources,
+        ]);
+      }
+    );
+    channel.on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "requestresources" },
+      (payload) => {
+        setRequestResources((prev) =>
+          prev.map((r) =>
+            r.id === payload.new.id ? (payload.new as requestResources) : r
+          )
+        );
+      }
+    );
+
+    channel.on(
+      "postgres_changes",
+      { event: "DELETE", schema: "public", table: "requestresources" },
+      (payload) => {
+        setRequestResources((prev) =>
+          prev.filter((r) => r.id !== (payload.old as requestResources).id)
+        );
+      }
+    );
+
+    // channel.subscribe();
+
+    channel.subscribe((status) => {
+      if (status !== "SUBSCRIBED") {
+        console.warn("Subscription failed or not yet established:", status);
+      }
+    });
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const handleDeleteResource = async (id: string) => {
+    const { error } = await supabase.from("resources").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting resource:", error);
+    } else {
+      setResources((prev) => prev.filter((res) => res.id !== id));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -157,6 +216,13 @@ export default function ResourcesPage() {
                 {resource.status.charAt(0).toUpperCase() +
                   resource.status.slice(1)}
               </span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => handleDeleteResource(resource.id)}
+              >
+                Delete
+              </Button>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
@@ -183,7 +249,7 @@ export default function ResourcesPage() {
                     <div className="flex gap-2 mt-1">
                       {resource.conditions.map((condition) => (
                         <span
-                          key={condition}
+                          key={`${resource.id}-${condition}`}
                           className="px-2 py-1 bg-secondary rounded-full text-xs"
                         >
                           {condition}
@@ -271,7 +337,7 @@ export default function ResourcesPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Requested By</p>
                   <p className="font-medium">
-                    Jalpaiguri Superspeciality Hospital
+                    {resource.organizationId || "Unknown Organization"}
                   </p>
                 </div>
               </div>
@@ -360,86 +426,55 @@ export default function ResourcesPage() {
                             alert("Invalid allocation amount.");
                             return;
                           }
-                          let updatedRequest: requestResources[] = [];
-                          let reqError = null;
 
-                          if (
-                            selectedRequest.quantity - allocateQuantity <=
-                            0
-                          ) {
-                            const { error: deleteError } = await supabase
-                              .from("requestresources")
-                              .delete()
-                              .eq("id", selectedRequest.id);
-
-                            reqError = deleteError;
-
-                            setRequestResources((prev) =>
-                              prev.filter((r) => r.id !== selectedRequest.id)
-                            );
-                          } else {
-                            const { data, error } = await supabase
-                              .from("requestresources")
-                              .update({
-                                quantity:
-                                  selectedRequest.quantity - allocateQuantity,
-                                status: "requested",
-                              })
-                              .eq("id", selectedRequest.id)
-                              .select();
-
-                            reqError = error;
-                            updatedRequest = data || [];
-
-                            if (!error && data) {
-                              setRequestResources((prev) =>
-                                prev.map((r) =>
-                                  r.id === selectedRequest.id ? data[0] : r
-                                )
-                              );
-                            }
-                          }
-
-                          const { data: updatedRes, error: resError } =
-                            await supabase
+                          try {
+                            // 1. Update the resource quantity first
+                            const newResourceQuantity =
+                              matchingResource.quantity - allocateQuantity;
+                            const { error: resError } = await supabase
                               .from("resources")
                               .update({
-                                quantity:
-                                  matchingResource.quantity - allocateQuantity,
+                                quantity: newResourceQuantity,
                                 status:
-                                  matchingResource.quantity -
-                                    allocateQuantity ===
-                                  0
+                                  newResourceQuantity === 0
                                     ? "depleted"
-                                    : matchingResource.status,
+                                    : "available",
                               })
-                              .eq("id", matchingResource.id)
-                              .select();
+                              .eq("id", matchingResource.id);
 
-                          if (reqError || resError) {
-                            console.error(
-                              "Error during allocation:",
-                              reqError || resError
+                            if (resError) throw resError;
+
+                            // 2. Then handle the request
+                            if (selectedRequest.quantity <= allocateQuantity) {
+                              // Delete request if fully allocated
+                              const { error: reqError } = await supabase
+                                .from("requestresources")
+                                .delete()
+                                .eq("id", selectedRequest.id);
+                              if (reqError) throw reqError;
+                            } else {
+                              // Update request quantity if partially allocated
+                              const newRequestQuantity =
+                                selectedRequest.quantity - allocateQuantity;
+                              const { error: reqError } = await supabase
+                                .from("requestresources")
+                                .update({
+                                  quantity: newRequestQuantity,
+                                  status: "requested",
+                                })
+                                .eq("id", selectedRequest.id);
+                              if (reqError) throw reqError;
+                            }
+
+                            // Success - close dialog and reset state
+                            setIsAllocDialogOpen(false);
+                            setAllocateQuantity(0);
+                          } catch (error) {
+                            console.error("Allocation failed:", error);
+                            alert(
+                              "Failed to allocate resources. Please try again."
                             );
-                            alert("Failed to allocate.");
-                            return;
                           }
-
-                          setRequestResources((prev) =>
-                            prev.map((r) =>
-                              r.id === selectedRequest.id
-                                ? updatedRequest[0]
-                                : r
-                            )
-                          );
-
-                          setResources((prev) =>
-                            prev.map((r) =>
-                              r.id === matchingResource.id ? updatedRes[0] : r
-                            )
-                          );
-
-                          setIsAllocDialogOpen(false);
                         }}
                       >
                         Confirm Allocation
@@ -469,7 +504,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
     name: "",
     quantity: 0,
     unit: "",
-    location: { lat: 0, lng: 0 },
+    location: { lat: 28.7041, lng: 77.1025 }, // Default to Delhi coordinates
     status: "available",
     organizationId: "",
     expiryDate: "",

@@ -18,33 +18,65 @@ import { supabase } from "@/lib/supabase";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/statusBadge";
 import { DeployForm } from "@/components/ui/deployForm";
+import { User } from "@supabase/supabase-js";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function PersonnelPage() {
+  const supabase = createClientComponentClient();
+  const [user, setUser] = useState<User | null>(null);
   const [personnel, setPersonnel] = useState<Personnel[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch personnel data with proper error handling
-  useEffect(() => {
-    const fetchPersonnel = async () => {
-      try {
-        setLoading(true);
-        const { data, error } = await supabase.from("personnel").select("*");
+  const [organizationId, setOrganizationId] = useState<string | null>(null);
 
-        if (error) throw error;
-        setPersonnel(data || []);
+  // Fetch user and organization
+  useEffect(() => {
+    const fetchUserAndPersonnel = async () => {
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        console.log(user);
+
+        if (userError || !user) throw new Error("User not logged in");
+
+        // Fetch organization_id of the user
+        const { data: userDetails, error: userDetailsError } = await supabase
+          .from("users")
+          .select("organization_id")
+          .eq("id", user.id)
+          .single();
+
+        console.log(userDetails);
+
+        if (userDetailsError || !userDetails)
+          throw new Error("Failed to fetch user details");
+
+        const { organization_id } = userDetails;
+
+        // Now fetch only personnel for this org
+        const { data: personnelData, error: personnelError } = await supabase
+          .from("personnel")
+          .select("*")
+          .eq("organization_id", organization_id);
+
+        if (personnelError) throw personnelError;
+
+        setPersonnel(personnelData || []);
       } catch (err) {
-        console.error("Error fetching personnel:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to load personnel"
-        );
+        console.error("Error fetching user and personnel:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPersonnel();
+    fetchUserAndPersonnel();
   }, []);
 
   const updatePersonnelStatus = async (
@@ -53,11 +85,7 @@ export default function PersonnelPage() {
     location?: string | null
   ) => {
     try {
-      const updateData: {
-        status: Personnel["status"];
-        location: string | null;
-        updatedAt: string;
-      } = {
+      const updateData = {
         status: newStatus,
         location: newStatus === "available" ? null : location || null,
         updatedAt: new Date().toISOString(),
@@ -90,13 +118,16 @@ export default function PersonnelPage() {
   };
 
   const handleAddPersonnel = async (
-    newPersonnel: Omit<Personnel, "id" | "timestamp">
+    newPersonnel: Omit<Personnel, "id" | "timestamp" | "organization_id">
   ) => {
+    if (!organizationId) return;
+
     try {
       const completePersonnel: Personnel = {
         ...newPersonnel,
         id: uuidv4(),
         timestamp: new Date().toISOString(),
+        organization_id: organizationId,
       };
 
       const { data, error } = await supabase
@@ -142,7 +173,6 @@ export default function PersonnelPage() {
             key={person.id}
             person={person}
             onStatusUpdate={(id, status, location) => {
-              // Call async function but don't await, to match void signature
               void updatePersonnelStatus(id, status, location);
             }}
           />
@@ -237,19 +267,22 @@ function PersonnelCard({
 function PersonnelForm({
   onSubmit,
 }: {
-  onSubmit: (personnel: Omit<Personnel, "id" | "timestamp">) => void;
+  onSubmit: (
+    personnel: Omit<Personnel, "id" | "timestamp" | "organization_id">
+  ) => void;
 }) {
-  const [formData, setFormData] = useState<Omit<Personnel, "id" | "timestamp">>(
-    {
-      name: "",
-      role: "",
-      status: "available",
-      skills: [],
-      contact: { phone: "", email: "" },
-      location: undefined,
-      updatedAt: "",
-    }
-  );
+  const [formData, setFormData] = useState<
+    Omit<Personnel, "id" | "timestamp" | "organization_id">
+  >({
+    name: "",
+    role: "",
+    status: "available",
+    skills: [],
+    contact: { phone: "", email: "" },
+    location: undefined,
+
+    updatedAt: "",
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
