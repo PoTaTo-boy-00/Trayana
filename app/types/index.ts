@@ -114,7 +114,7 @@ export interface Organization {
     center: GeoLocation;
     radius: number;
   };
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "approved" | "pending" | "unapproved";
   contact: {
     email: string;
     phone: string;
@@ -139,7 +139,7 @@ export interface Personnel {
   id: string;
   name: string;
   role: string;
-  status: "available" | "deployed" | "unavailable";
+  status: "active" | "inactive" | "available" | "deployed";
   location?: string | null;
   skills: string[];
   contact: {
@@ -152,7 +152,9 @@ export interface Personnel {
     endTime?: string;
     location: GeoLocation | null;
   }[];
+  organization_id: string;
   timestamp: string;
+
   updatedAt: string;
 }
 

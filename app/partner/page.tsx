@@ -31,9 +31,12 @@ export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
+  const [organizationId, setOrganizationId] = useState<string | "">("");
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [SOSdata, setSOSData] = useState(staticSOS);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const supabase = createClientComponentClient();
   // const personnel = [
@@ -44,65 +47,47 @@ export default function PartnerDashboard() {
   //   }, // Jalpaiguri
   // ];
 
-  const sosAlerts = [
-    { id: 1, location_lat: 26.54, location_lng: 88.71 }, // Near Jalpaiguri
-  ];
+  useEffect(() => {
+    const fetchUserAndPersonnel = async () => {
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        // console.log(user);
+
+        if (userError || !user) throw new Error("User not logged in");
+
+        // Fetch organization_id of the user
+        const { data: userDetails, error: userDetailsError } = await supabase
+          .from("users")
+          .select("organization_id")
+          .eq("id", user.id)
+          .single();
+
+        console.log(userDetails?.organization_id);
+
+        if (userDetailsError || !userDetails)
+          throw new Error("Failed to fetch user details");
+        setOrganizationId(userDetails.organization_id);
+      } catch (err) {
+        console.error("Error fetching user and personnel:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserAndPersonnel();
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch alerts
-      // const { data: alertsData } = await supabase
-      //   .from("alerts")
-      //   .select("*")
-      //   .eq("is_active", true);
-
-      // if (alertsData) {
-      //   setAlerts(
-      //     alertsData.map((alert) => ({
-      //       ...alert,
-      //       affected_Areas: alert.affected_areas as any,
-      //     }))
-      //   );
-      // }
-
-      // Fetch organizations
-      // const { data: orgsData } = await supabase
-      //   .from("organizations")
-      //   .select("*")
-      //   .eq("status", "active");
-
-      // if (orgsData) {
-      //   setOrganizations(
-      //     orgsData.map((org) => ({
-      //       ...org,
-      //       coverage: {
-      //         center: { lat: org.coverage_lat, lng: org.coverage_lng },
-      //         // radius: org.coverage_radius,
-      //       },
-      //     }))
-      //   );
-      // }
-
-      // Fetch resources
-      // const { data: resourcesData } = await supabase
-      //   .from("resources")
-      //   .select("*")
-      //   .eq("status", "available");
-
-      // if (resourcesData) {
-      //   setResources(
-      //     resourcesData.map((resource) => ({
-      //       ...resource,
-      //       location: {
-      //         lat: resource.location_lat,
-      //         lng: resource.location_lng,
-      //       },
-      //     }))
-      //   );
-      // }
-
+      // setLoading(false);
       // fetch personnel from Supabase
-      await fetchPersonnelLocation();
+      await fetchPersonnelLocation(organizationId);
       setPersonnelData([...staticPersonnel]);
       // await fetchSOSLocation();
       setSOSData([...staticSOS]);
@@ -111,7 +96,7 @@ export default function PartnerDashboard() {
     }
 
     fetchData();
-  }, []);
+  }, [organizationId]);
 
   return (
     <div className="space-y-6">

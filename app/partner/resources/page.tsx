@@ -23,6 +23,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
+import { set } from "date-fns";
+
+interface orgDetail {
+  id: string;
+  name: string;
+}
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
@@ -31,6 +37,9 @@ export default function ResourcesPage() {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isReqDialogOpen, setIsReqDialogOpen] = useState(false);
+  const [orgId, setOrgId] = useState<orgDetail[]>([]);
+  // const [orgName, setOrgName] = useState<orgDetail[]>([]);
+  const [currentOrgId, setCurrentOrgId] = useState<string | null>(null);
 
   useEffect(() => {
     const testSupabaseConnection = async () => {
@@ -60,8 +69,32 @@ export default function ResourcesPage() {
 
     fetchResources();
   }, []);
+
   useEffect(() => {
-    const fetchResources = async () => {
+    const fetchOrgDetails = async () => {
+      const { data, error } = await supabase
+        .from("organizations")
+        .select("id, name, coverage");
+
+      if (error) {
+        console.error("Error fetching organization details:", error);
+      } else {
+        // console.log(data);
+
+        setOrgId(
+          data.map((org) => ({
+            id: org.id,
+            name: org.name,
+          }))
+        );
+      }
+    };
+
+    fetchOrgDetails();
+  }, []);
+
+  useEffect(() => {
+    const fetchReqResources = async () => {
       const { data, error } = await supabase
         .from("requestresources")
         .select("*");
@@ -72,7 +105,7 @@ export default function ResourcesPage() {
       }
     };
 
-    fetchResources();
+    fetchReqResources();
   }, []);
 
   const handleAddResource = async (newResource: Resource) => {
@@ -158,14 +191,35 @@ export default function ResourcesPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel("requestresources")
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "requestresources" },
+        (payload) => {
+          setRequestResources((prev) =>
+            prev.filter((res) => res.id !== payload.old.id)
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  console.log(orgId);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Resource Management</h1>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" /> Filter
-          </Button>
+          {/* <Button variant="outline">
+            <Filter className="mr-2 h-4 w-4" /> Filter //Not needed 
+          </Button> */}
           <Dialog open={isReqDialogOpen} onOpenChange={setIsReqDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -217,13 +271,6 @@ export default function ResourcesPage() {
                   {resource.status.charAt(0).toUpperCase() +
                     resource.status.slice(1)}
                 </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteResource(resource.id)}
-                >
-                  Delete
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -276,82 +323,88 @@ export default function ResourcesPage() {
       </div>
       <div>Requested Resources</div>
       <div className="grid gap-4">
-        {requestResource.map((resource) => (
-          <Card key={resource.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                {resource.name}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-sm ${
-                    resource.status === "requested"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                      : resource.status === "allocated"
-                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-                  }`}
-                >
-                  {resource.status.charAt(0).toUpperCase() +
-                    resource.status.slice(1)}
-                </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteRequestResource(resource.id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
-                  <p className="font-medium">{resource.type}</p>
+        {requestResource
+          .filter((resource) => resource.organizationId === orgId[0].id)
+          .map((resource) => (
+            <Card key={resource.id}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  {resource.name}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2 py-1 rounded-full text-sm ${
+                      resource.status === "requested"
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                        : resource.status === "allocated"
+                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                        : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                    }`}
+                  >
+                    {resource.status.charAt(0).toUpperCase() +
+                      resource.status.slice(1)}
+                  </span>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteRequestResource(resource.id)}
+                  >
+                    Delete
+                  </Button>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Quantity</p>
-                  <p className="font-medium">
-                    {resource.quantity} {resource.unit}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Location</p>
-                  <p className="font-medium">
-                    {resource.location.lat}, {resource.location.lng}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <p className="font-medium">{resource.status}</p>
-                </div>
-                {resource.conditions && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Conditions</p>
-                    <div className="flex gap-2 mt-1">
-                      {resource.conditions.map((condition) => (
-                        <span
-                          key={condition}
-                          className="px-2 py-1 bg-secondary rounded-full text-xs"
-                        >
-                          {condition}
-                        </span>
-                      ))}
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Type</p>
+                    <p className="font-medium">{resource.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Quantity</p>
+                    <p className="font-medium">
+                      {resource.quantity} {resource.unit}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="font-medium">
+                      {resource.location.lat}, {resource.location.lng}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Status</p>
+                    <p className="font-medium">{resource.status}</p>
+                  </div>
+                  {resource.conditions && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">
+                        Conditions
+                      </p>
+                      <div className="flex gap-2 mt-1">
+                        {resource.conditions.map((condition) => (
+                          <span
+                            key={condition}
+                            className="px-2 py-1 bg-secondary rounded-full text-xs"
+                          >
+                            {condition}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {resource.expiryDate && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Expiry Date</p>
-                    <p className="font-medium">{resource.expiryDate}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  )}
+                  {resource.expiryDate && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">
+                        Expiry Date
+                      </p>
+                      <p className="font-medium">{resource.expiryDate}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
       </div>
     </div>
   );
@@ -604,7 +657,7 @@ function RequestResourceForm({ onSubmit }: RequestResourceFormProps) {
     fetchOrgID();
   }, []);
 
-  console.log(locData);
+  // console.log(locData);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
