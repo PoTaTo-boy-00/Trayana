@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Building2, Phone, Mail, MapPin, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Organization } from "@/app/types";
+import { Organization, Status } from "@/app/types";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 import { useTranslation } from "@/lib/translation-context";
-import { parse } from "node:path";
+import { StatusBadge } from "@/app/components/StatusBadge";
 
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -71,6 +71,23 @@ export default function OrganizationsPage() {
     }
   };
 
+  const handleUpadteOrganizationStatus = async (
+    id: string,
+    newStatus: Status
+  ) => {
+    try {
+      const updateData = {
+        status: newStatus,
+      };
+      const { data, error } = await supabase
+        .from("organizations")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+    } catch (error) {}
+  };
+
   const handleDeleteOrganization = async (id: string) => {
     const { error } = await supabase
       .from("organizations")
@@ -112,15 +129,12 @@ export default function OrganizationsPage() {
                 {org.name}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <span
-                  className={`px-2 py-1 rounded-full text-sm ${
-                    org.status === "active"
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-                  }`}
-                >
-                  {org.status.charAt(0).toUpperCase() + org.status.slice(1)}
-                </span>
+                <StatusBadge
+                  status={org.status}
+                  onStatusChange={async (newStatus: Status) => {
+                    await handleUpadteOrganizationStatus(org.id, newStatus);
+                  }}
+                />
                 <Button
                   variant="destructive"
                   size="sm"
