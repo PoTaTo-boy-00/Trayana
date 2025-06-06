@@ -1,6 +1,6 @@
 export type AlertSeverity = "red" | "orange" | "yellow" | "green";
 export type ResourceStatus = "available" | "allocated" | "depleted";
-export type RequestStatus = "requested" | "allocated" | "fulfilled";
+export type RequestStatus = "requested" | "allocated";
 export type PriorityLevel = "critical" | "high" | "medium" | "low";
 export type ResourceType = "food" | "medicine" | "shelter" | "equipment";
 export type DisasterType = "earthquake" | "flood" | "fire" | "other";

@@ -162,12 +162,14 @@ export default function ResourcesPage() {
   }, []);
 
   const handleDeleteResource = async (id: string) => {
+    setIsLoading(false);
     const { error } = await supabase.from("resources").delete().eq("id", id);
     if (error) {
       console.error("Error deleting resource:", error);
     } else {
       setResources((prev) => prev.filter((res) => res.id !== id));
     }
+    setIsLoading(true);
   };
 
   return (
