@@ -35,6 +35,7 @@ export default function ResourcesPage() {
   const [requestResource, setRequestResources] = useState<requestResources[]>(
     []
   );
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isReqDialogOpen, setIsReqDialogOpen] = useState(false);
   const [orgId, setOrgId] = useState<orgDetail[]>([]);
@@ -72,6 +73,7 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     const fetchOrgDetails = async () => {
+      setIsLoading(false);
       const { data, error } = await supabase
         .from("organizations")
         .select("id, name, coverage");
@@ -79,7 +81,7 @@ export default function ResourcesPage() {
       if (error) {
         console.error("Error fetching organization details:", error);
       } else {
-        // console.log(data);
+        console.log(data);
 
         setOrgId(
           data.map((org) => ({
@@ -130,15 +132,6 @@ export default function ResourcesPage() {
     } else {
       // setRequestResources((prev) => [...prev, data[0]]);
       setIsReqDialogOpen(false);
-    }
-  };
-
-  const handleDeleteResource = async (id: string) => {
-    const { error } = await supabase.from("resources").delete().eq("id", id);
-    if (error) {
-      console.error("Error deleting resource:", error);
-    } else {
-      setResources((prev) => prev.filter((res) => res.id !== id));
     }
   };
 
@@ -271,6 +264,13 @@ export default function ResourcesPage() {
                   {resource.status.charAt(0).toUpperCase() +
                     resource.status.slice(1)}
                 </span>
+                {/* <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteResource(resource.id)}
+                >
+                  Delete
+                </Button> */}
               </div>
             </CardHeader>
             <CardContent>
