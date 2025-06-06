@@ -1,10 +1,18 @@
 export type AlertSeverity = "red" | "orange" | "yellow" | "green";
 export type ResourceStatus = "available" | "allocated" | "depleted";
-export type RequestStatus = "requested" | "allocated" | "fulfilled";
+export type RequestStatus = "requested" | "allocated";
 export type PriorityLevel = "critical" | "high" | "medium" | "low";
 export type ResourceType = "food" | "medicine" | "shelter" | "equipment";
 export type DisasterType = "earthquake" | "flood" | "fire" | "other";
 export type UrgencyLevel = "immediate" | "urgent" | "normal";
+export type Role = "admin" | "partner";
+
+export type Status =
+  | "active"
+  | "inactive"
+  | "approved"
+  | "pending"
+  | "unapproved";
 
 export interface User {
   id: string;
@@ -114,7 +122,7 @@ export interface Organization {
     center: GeoLocation;
     radius: number;
   };
-  status: "active" | "inactive" | "approved" | "pending" | "unapproved";
+  status: Status;
   contact: {
     email: string;
     phone: string;
