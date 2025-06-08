@@ -6,6 +6,7 @@ export type ResourceType = "food" | "medicine" | "shelter" | "equipment";
 export type DisasterType = "earthquake" | "flood" | "fire" | "other";
 export type UrgencyLevel = "immediate" | "urgent" | "normal";
 export type Role = "admin" | "partner";
+export type EventType = "insert" | "update" | "delete" | "requested";
 
 export type Status =
   | "active"
@@ -66,6 +67,7 @@ export interface Resource {
   lastUpdated: string;
   expiryDate?: string;
   conditions?: string[];
+  is_deleted?: boolean;
   // priority: PriorityLevel;
   // disasterType: DisasterType;
   utilizationHistory?: ResourceUtilization[];
@@ -104,6 +106,19 @@ export interface ResourceUtilization {
   quantity: number;
   purpose: string;
   alertId?: string;
+}
+
+export interface ResourceHistory {
+  id: string;
+  timestamp: string;
+  event_type: EventType;
+  quantity_changed: number;
+  status_after_event: string;
+  location: string;
+  performed_by: string;
+  remarks?: string;
+  quantity: number;
+  resource_id: string;
 }
 
 export interface Organization {

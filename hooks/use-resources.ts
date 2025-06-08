@@ -1,7 +1,7 @@
 // hooks/use-resources.ts
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { Resource, requestResources } from "@/app/types";
+import { Resource, ResourceHistory, requestResources } from "@/app/types";
 
 interface OrgDetail {
   id: string;
@@ -65,11 +65,22 @@ export const useResources = () => {
       lastUpdated: new Date().toISOString(),
     };
     const { error } = await supabase.from("resources").insert([newResource]);
-    if (error) console.error("Error creating resource:", error);
+    if (!error) {
+      await logResourceHistory({
+        resource_id: newResource.id,
+        event_type: "insert",
+        quantity_changed: newResource.quantity,
+        status_after_event: newResource.status,
+        location: `${newResource.location.lat}, ${newResource.location.lng}`,
+        performed_by: orgDetails.length > 0 ? orgDetails[0].name : "unknown",
+        quantity: newResource.quantity,
+      });
+    } else console.error("Error creating resource:", error);
     return !error;
   };
 
   // Request a new resource
+  // In use-resources.ts
   const requestResource = async (
     resource: Omit<requestResources, "id" | "lastUpdated">
   ) => {
@@ -78,11 +89,42 @@ export const useResources = () => {
       id: crypto.randomUUID(),
       lastUpdated: new Date().toISOString(),
     };
-    const { error } = await supabase
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const { error: insertError } = await supabase
       .from("requestresources")
       .insert([newResource]);
-    if (error) console.error("Error creating requested resource:", error);
-    return !error;
+
+    if (insertError) {
+      console.error("Error creating requested resource:", insertError);
+      return false;
+    }
+
+    // Insert into resource_history
+    const { error: historyError } = await supabase
+      .from("resource_history")
+      .insert([
+        {
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          event_type: "requested",
+          quantity_changed: newResource.quantity,
+          status_after_event: "pending",
+          location: `${newResource.location.lat},${newResource.location.lng}`,
+          performed_by: user?.id ?? "unknown",
+          resource_id: newResource.id,
+          quantity: newResource.quantity,
+        },
+      ]);
+
+    if (historyError) {
+      console.error("Error logging to resource history:", historyError);
+    }
+
+    return true;
   };
 
   // Delete a requested resource
@@ -135,6 +177,34 @@ export const useResources = () => {
       supabase.removeChannel(requestChannel);
     };
   }, []);
+
+  const logResourceHistory = async ({
+    resource_id,
+    event_type,
+    quantity_changed,
+    status_after_event,
+    location,
+    performed_by,
+    remarks,
+    quantity,
+  }: Omit<ResourceHistory, "id" | "timestamp">) => {
+    const { error } = await supabase.from("resource_history").insert([
+      {
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        resource_id,
+        event_type,
+        quantity_changed,
+        status_after_event,
+        location,
+        performed_by,
+        remarks: remarks || null,
+        quantity,
+      },
+    ]);
+
+    if (error) console.error("Error logging resource history:", error);
+  };
 
   // Initial data loading
   useEffect(() => {

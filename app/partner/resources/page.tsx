@@ -76,9 +76,11 @@ export default function ResourcesPage() {
       </div>
 
       <div className="grid gap-4">
-        {resources.map((resource) => (
-          <ResourceCard key={resource.id} resource={resource} />
-        ))}
+        {resources
+          .filter((res) => !res.is_deleted)
+          .map((resource) => (
+            <ResourceCard key={resource.id} resource={resource} />
+          ))}
       </div>
 
       <div className="text-xl font-semibold">Requested Resources</div>

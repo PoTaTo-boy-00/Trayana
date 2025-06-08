@@ -24,6 +24,13 @@ interface PredictionData {
     };
   };
 }
+interface ImmediateNeed {
+  name: string;
+  type: string;
+  quantity: number | string;
+  reason: string;
+  location: string;
+}
 
 interface EnhancedDepletionPrediction {
   type: string;
@@ -46,25 +53,30 @@ interface GapAnalysisItem {
 
 interface GapAnalysis {
   missingTypes: GapAnalysisItem[];
-  immediateNeeds: string[];
+  immediateNeeds: ImmediateNeed[];
   surplusResources: GapAnalysisItem[];
   emergingNeeds?: GapAnalysisItem[];
 }
-
 const AnalyticsPage = () => {
   const [requestedResources, setRequestedResources] = useState<any[]>([]);
   const [availableResources, setAvailableResources] = useState<any[]>([]);
   const [resourceHistory, setResourceHistory] = useState<ResourceHistory[]>([]);
+  const [gapAnalysis, setGapAnalysis] = useState<{
+    immediateNeeds: ImmediateNeed[];
+    missingTypes: any[];
+    surplusResources: any[];
+    emergingNeeds: any[];
+  }>({
+    immediateNeeds: [],
+    missingTypes: [],
+    surplusResources: [],
+    emergingNeeds: [],
+  });
+
   const [priorityScores, setPriorityScores] = useState<{
     [key: string]: number;
   }>({});
-  const [gapAnalysis, setGapAnalysis] = useState<any>({
-    missingTypes: [],
-    immediateNeeds: [],
-    surplusResources: [],
 
-    emergingNeeds: [],
-  });
   const [depletionPredictions, setDepletionPredictions] = useState<
     EnhancedDepletionPrediction[]
   >([]);
@@ -163,11 +175,20 @@ const AnalyticsPage = () => {
   // Helper function to parse Gemini response
   const parseGeminiResponse = (text: string) => {
     try {
-      const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[1]);
+      let cleanedText = text;
+
+      // Remove markdown code fences if present
+      const codeBlockMatch = text.match(/```(?:json)?\n([\s\S]*?)\n```/i);
+      if (codeBlockMatch) {
+        cleanedText = codeBlockMatch[1];
       }
-      return JSON.parse(text);
+
+      // Strip JavaScript-style comments (// or /* */)
+      cleanedText = cleanedText
+        .replace(/\/\/.*$/gm, "") // Remove inline comments
+        .replace(/\/\*[\s\S]*?\*\//gm, ""); // Remove block comments
+
+      return JSON.parse(cleanedText.trim());
     } catch (e) {
       console.error("Failed to parse response:", text);
       throw new Error("Invalid JSON response from AI model");
@@ -200,10 +221,14 @@ const AnalyticsPage = () => {
       
       Current Requests: ${JSON.stringify(requested.slice(0, 50))}
       Historical Data: ${JSON.stringify(history.slice(0, 100))}
+
+      - DO NOT include any comments, explanations, or trailing text. Only pure JSON.
       `;
 
       const priorityResult = await model.generateContent(priorityPrompt);
       const priorityText = await priorityResult.response.text();
+      4;
+      console.log("Protiy Test: ", priorityText);
       setPriorityScores(parseGeminiResponse(priorityText));
 
       // 2. Enhanced Gap Analysis with predictive elements
@@ -212,26 +237,112 @@ const AnalyticsPage = () => {
       - "missingTypes": Only items NOT in available resources OR below safety threshold
       - "emergingNeeds": Predict based on request trends and historical patterns
       - Validate against current inventory
-      
+      Use EXACT location names do not use Coordinates from requests as JSON keys.
       Output STRICT JSON format:
       {
-        "missingTypes": [{"name":"Pantop-D","type": "medicine", "quantityNeeded": 100, "reason": "earthquake injuries"}],
-        "immediateNeeds": [{"name":"Azithrmycin","type":"medicine","quantity":"200","reason":"earthquake injuries","location":"Location A"}],
-        "surplusResources": [{"type": "blankets", "quantity": 200, "location": "Warehouse B"}],
-        "emergingNeeds": [{"type": "generators", "predictedNeed": 50, "timeframe": "12h", "confidence": 0.85},
-        {"type": "water", "predictedNeed": 300, "timeframe": "24h", "confidence": 0.9}
-        ]
-      }
+  "missingTypes": [
+    {
+      "name": "Pantop-D",
+      "type": "medicine",
+      "quantityNeeded": 100,
+      "reason": "earthquake injuries",
+      "urgency": "high",
+      "thresholdDeficit": 75
+    }, {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "immediateNeeds": [
+    {
+      "name": "Azithromycin",
+      "type": "antibiotic",
+      "quantityNeeded": 200,
+      "reason": "earthquake-related infections",
+      "location": "Actual Location A",
+      "timeCriticality": "24h"
+    },
+     {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "surplusResources": [
+    {
+      "name": "blankets",
+      "type": "non-medical",
+      "quantity": 200,
+      "location": "Actual Location B",
+      "reallocationSuggestion": "Disaster Zone X"
+    },
+     {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "emergingNeeds": [
+    {
+      "name": "generators",
+      "type": "equipment",
+      "predictedNeed": 50,
+      "timeframe": "12h",
+      "confidence": 0.85,
+      "triggerFactor": "power grid failure"
+    },
+    {
+      "name": "water",
+      "type": "essential",
+      "predictedNeed": 300,
+      "timeframe": "24h",
+      "confidence": 0.9,
+      "triggerFactor": "sanitation crisis"
+    }, {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "meta": {
+    "analysisTimestamp": "2025-06-07T12:00:00Z",
+    "dataSources": ["currentInventory", "requestLogs", "historicalTrends"]
+  }
+}
       
       Current State: ${JSON.stringify({
         requested: requested.slice(0, 30),
         available: available.slice(0, 30),
       })}
       Historical Trends: ${JSON.stringify(history.slice(0, 50))}
+      - DO NOT include any comments, explanations, or trailing text. Only pure JSON.
       `;
 
       const gapResult = await model.generateContent(gapPrompt);
       const gapText = await gapResult.response.text();
+      console.log("Gap Text: ", gapText);
+
       setGapAnalysis(parseGeminiResponse(gapText));
 
       // 3. Enhanced Depletion Prediction with ML-like analysis
@@ -242,6 +353,7 @@ const AnalyticsPage = () => {
       - Trend velocity metrics
         Provide ONLY valid JSON output:
         [{
+        "name":"Pantop-D"
           "type": "medical",
           "currentAmount": 100,
           "depletionTime": "2023-12-25T15:00:00",
@@ -249,42 +361,76 @@ const AnalyticsPage = () => {
           "trend": "accelerating_decline",
           "velocity": -5.2,
           "confidence": 0.91
-        }]
+        }, {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }]
         
         Current Resources: ${JSON.stringify(available?.slice(0, 20))}
         Historical Consumption: ${JSON.stringify(history?.slice(0, 100))}
         Active Requests: ${JSON.stringify(requested?.slice(0, 20))}
+        - DO NOT include any comments, explanations, or trailing text. Only pure JSON.
       `;
 
       const depletionResult = await model.generateContent(depletionPrompt);
       const depletionText = await depletionResult.response.text();
+      console.log("Deplition Test: ", depletionText);
       setDepletionPredictions(parseGeminiResponse(depletionText));
 
       // 4. 24-hour Prediction Timeline
       const timelinePrompt = `
-       Generate 24-hour resource prediction timeline. Rules:
-      - Hourly intervals (0-24)
-      - Per-resource tracking
-      - Velocity calculated from historical trends
-      
-      Output STRICT JSON array:
-      [{
-        "hour": 0,
-        "resources": {
-          "water": {"remaining": 1500, "trend": "declining", "velocity": -120},
-          "medical_kits": {"remaining": 42, "trend": "critical", "velocity": -8}
-        }
-      }]
-      
-      Base Data: ${JSON.stringify({
-        current: available.slice(0, 10),
-        history: history.slice(0, 50),
-        requests: requested.slice(0, 10),
-      })}
+      Generate a 24-hour resource prediction timeline with these rules:
+
+- Output must be a JSON array of 24 items (hour 0 to 23)
+- Each object must contain "hour" and "resources" keys
+- "resources" maps to:
+  - "remaining": predicted amount
+  - "trend": based on velocity and thresholds
+  - "velocity": rate of change per hour (negative = usage)
+
+Assume:
+- No replenishment during this window
+- Velocity is derived from recent 6-hour trends
+- Use these thresholds to classify trend:
+  - water: critical if < 1000 liters
+  - medical_kits: critical if < 10 units
+  - medicine: critical if < 500 units
+  - food: critical if < 300 units
+- Trend definitions:
+  - "critical": below threshold
+  - "declining": velocity < 0 but above threshold
+  - "stable": velocity = 0
+  - "improving": velocity > 0
+
+Format:
+[
+  {
+    "hour": 0,
+    "resources": {
+      "water": {"remaining": 1500, "trend": "declining", "velocity": -120},
+      "medical_kits": {"remaining": 9, "trend": "critical", "velocity": -2}
+    }
+  }
+]
+Only return valid JSON. Do not include markdown, comments, or explanation.
+Use this base data:
+${JSON.stringify({
+  current: available.slice(0, 10),
+  history: history.slice(0, 50),
+  requests: requested.slice(0, 10),
+})}
+
       `;
 
       const timelineResult = await model.generateContent(timelinePrompt);
       const timelineText = await timelineResult.response.text();
+      console.log("Timelien Test: ", timelineText);
       setPredictionTimeline(parseGeminiResponse(timelineText));
     } catch (error) {
       console.error("Enhanced analysis failed:", error);
@@ -409,9 +555,11 @@ const AnalyticsPage = () => {
                     {gapAnalysis.missingTypes.map(
                       (item: any, index: number) => (
                         <li key={`missing-${index}`} className="text-sm">
-                          <span className="font-medium">{item.type}</span>
+                          <span className="font-medium">
+                            {item.name || item.type}
+                          </span>
                           <br />
-                          Need: {item.quantityNeeded}
+                          <span>Need: {item.quantityNeeded} units</span>
                           {item.trend && (
                             <span className="text-gray-600">
                               {" "}
@@ -432,9 +580,14 @@ const AnalyticsPage = () => {
                 {gapAnalysis.immediateNeeds?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
                     {gapAnalysis.immediateNeeds.map(
-                      (location: string, index: number) => (
+                      (item: ImmediateNeed, index: number) => (
                         <li key={`immediate-${index}`} className="text-sm">
-                          {String(location)}
+                          <strong>{item.name}</strong> ({item.type}) –{" "}
+                          {item.quantity} units needed at{" "}
+                          <span className="text-orange-700 font-medium">
+                            {item.location}
+                          </span>{" "}
+                          due to <em>{item.reason}</em>
                         </li>
                       )
                     )}
@@ -453,13 +606,12 @@ const AnalyticsPage = () => {
                     {gapAnalysis.surplusResources.map(
                       (item: any, index: number) => (
                         <li key={`surplus-${index}`} className="text-sm">
-                          <span className="font-medium">{item.type}</span>
+                          <span className="font-medium">{item.name}</span>
                           <br />
                           Extra: {item.quantity}
-                          {item.trend && (
-                            <span className="text-gray-600">
-                              {" "}
-                              ({item.trend})
+                          {item.location && (
+                            <span className="block text-xs text-gray-500">
+                              Location: {item.location}
                             </span>
                           )}
                         </li>
@@ -478,13 +630,18 @@ const AnalyticsPage = () => {
                     {gapAnalysis.emergingNeeds.map(
                       (item: any, index: number) => (
                         <li key={`emerging-${index}`} className="text-sm">
-                          <span className="font-medium">{item.type}</span>
+                          <span className="font-medium">{item.name}</span>
                           <br />
-                          Predicted: {item.predictedNeed}
+                          <span>Predicted: {item.predictedNeed} units</span>
                           <br />
                           <span className="text-gray-600">
                             in {item.timeframe}
                           </span>
+                          {item.confidence && (
+                            <span className="block text-xs text-gray-500">
+                              Confidence: {item.confidence * 100}%
+                            </span>
+                          )}
                         </li>
                       )
                     )}
@@ -507,7 +664,7 @@ const AnalyticsPage = () => {
               <>
                 <PieChart
                   data={depletionPredictions.map((item: any) => ({
-                    label: `${item.type} (${(
+                    label: `${item.name} (${(
                       item.depletionProbability * 100
                     ).toFixed(1)}%)`,
                     value: item.depletionProbability * 100,
@@ -518,6 +675,7 @@ const AnalyticsPage = () => {
                     <thead>
                       <tr className="text-left border-b bg-gray-50 dark:bg-gray-700">
                         <th className="p-3">Resource</th>
+                        <th className="p-3">Name</th>
                         <th className="p-3">Current</th>
                         <th className="p-3">Depletion Time</th>
                         <th className="p-3">Probability</th>
@@ -533,6 +691,7 @@ const AnalyticsPage = () => {
                           className="border-b hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                           <td className="p-3 font-medium">{item.type}</td>
+                          <td className="p-3 font-medium">{item.name}</td>
                           <td className="p-3">{item.currentAmount}</td>
                           <td className="p-3">
                             {new Date(item.depletionTime).toLocaleString()}

@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/lib/supabase";
 import { set } from "date-fns";
+import { getReadableAddress } from "@/data/geoLocation";
 
 export default function ResourcesPage() {
   const [selectedRequest, setSelectedRequest] =
@@ -162,14 +163,61 @@ export default function ResourcesPage() {
   }, []);
 
   const handleDeleteResource = async (id: string) => {
-    setIsLoading(false);
-    const { error } = await supabase.from("resources").delete().eq("id", id);
-    if (error) {
-      console.error("Error deleting resource:", error);
-    } else {
-      setResources((prev) => prev.filter((res) => res.id !== id));
-    }
     setIsLoading(true);
+
+    try {
+      // 1. Fetch current resource details
+      const { data: resourceData, error: fetchError } = await supabase
+        .from("resources")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !resourceData) {
+        console.error("Failed to fetch resource before delete:", fetchError);
+        return;
+      }
+
+      // 2. Soft-delete the resource
+      const { error: deleteError } = await supabase
+        .from("resources")
+        .update({ is_deleted: true })
+        .eq("id", id);
+
+      if (deleteError) {
+        console.error("Error deleting resource:", deleteError);
+        return;
+      }
+
+      // 3. Log to resource_history
+      const { error: historyError } = await supabase
+        .from("resource_history")
+        .insert([
+          {
+            id: crypto.randomUUID(),
+            timestamp: new Date().toISOString(),
+            event_type: "delete",
+            quantity_changed: -resourceData.quantity,
+            quantity: 0,
+            status_after_event: "deleted",
+            location: `${resourceData.location.lat}, ${resourceData.location.lng}`,
+            performed_by: "admin", // Ensure `user` is in scope
+            remarks: `Resource ${resourceData.name} was deleted.`,
+            resource_id: resourceData.id,
+          },
+        ]);
+
+      if (historyError) {
+        console.error("Error inserting into resource history:", historyError);
+      }
+
+      // 4. Update local state
+      setResources((prev) => prev.filter((res) => res.id !== id));
+    } catch (err) {
+      console.error("Unexpected error during deletion:", err);
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -181,7 +229,7 @@ export default function ResourcesPage() {
             <Filter className="mr-2 h-4 w-4" /> Filter
           </Button>
 
-          {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" /> Add Resource
@@ -194,82 +242,88 @@ export default function ResourcesPage() {
 
               <ResourceForm onSubmit={handleAddResource} />
             </DialogContent>
-          </Dialog> */}
+          </Dialog>
         </div>
       </div>
 
       <div className="grid gap-4">
-        {resources.map((resource) => (
-          <Card key={resource.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Package className="h-5 w-5" />
-                {resource.name}
-              </CardTitle>
-              <span
-                className={`px-2 py-1 rounded-full text-sm ${
-                  resource.status === "available"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
-                    : resource.status === "allocated"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
-                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
-                }`}
-              >
-                {resource.status.charAt(0).toUpperCase() +
-                  resource.status.slice(1)}
-              </span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDeleteResource(resource.id)}
-              >
-                Delete
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
-                  <p className="font-medium">{resource.type}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Quantity</p>
-                  <p className="font-medium">
-                    {resource.quantity} {resource.unit}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Location</p>
-                  <p className="font-medium">
-                    {resource.location.lat}, {resource.location.lng}
-                  </p>
-                </div>
+        {resources
+          .filter((res) => !res.is_deleted)
+          .map((resource) => (
+            <Card key={resource.id}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  {resource.name}
+                </CardTitle>
+                <span
+                  className={`px-2 py-1 rounded-full text-sm ${
+                    resource.status === "available"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"
+                      : resource.status === "allocated"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100"
+                  }`}
+                >
+                  {resource.status.charAt(0).toUpperCase() +
+                    resource.status.slice(1)}
+                </span>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteResource(resource.id)}
+                >
+                  Delete
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Type</p>
+                    <p className="font-medium">{resource.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Quantity</p>
+                    <p className="font-medium">
+                      {resource.quantity} {resource.unit}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="font-medium">
+                      {resource.location.lat}, {resource.location.lng}
+                    </p>
+                  </div>
 
-                {resource.conditions && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Conditions</p>
-                    <div className="flex gap-2 mt-1">
-                      {resource.conditions.map((condition) => (
-                        <span
-                          key={`${resource.id}-${condition}`}
-                          className="px-2 py-1 bg-secondary rounded-full text-xs"
-                        >
-                          {condition}
-                        </span>
-                      ))}
+                  {resource.conditions && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">
+                        Conditions
+                      </p>
+                      <div className="flex gap-2 mt-1">
+                        {resource.conditions.map((condition) => (
+                          <span
+                            key={`${resource.id}-${condition}`}
+                            className="px-2 py-1 bg-secondary rounded-full text-xs"
+                          >
+                            {condition}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                {resource.expiryDate && (
-                  <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Expiry Date</p>
-                    <p className="font-medium">{resource.expiryDate}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                  )}
+                  {resource.expiryDate && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-muted-foreground">
+                        Expiry Date
+                      </p>
+                      <p className="font-medium">{resource.expiryDate}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
       </div>
       <div>Requested Resources</div>
       <div className="grid gap-4">
@@ -339,7 +393,7 @@ export default function ResourcesPage() {
                 <div>
                   <p className="text-sm text-muted-foreground">Requested By</p>
                   <p className="font-medium">
-                    {resource.organizationId || "Unknown Organization"}
+                    {resource.name || "Unknown Organization"}
                   </p>
                 </div>
               </div>
@@ -446,6 +500,29 @@ export default function ResourcesPage() {
 
                             if (resError) throw resError;
 
+                            // 🟡 INSERT INTO resource_history
+                            const { error: historyError } = await supabase
+                              .from("resource_history")
+                              .insert([
+                                {
+                                  id: crypto.randomUUID(),
+                                  timestamp: new Date().toISOString(),
+                                  event_type: "update",
+                                  quantity_changed: -allocateQuantity,
+                                  quantity: newResourceQuantity,
+                                  status_after_event:
+                                    newResourceQuantity === 0
+                                      ? "depleted"
+                                      : "available",
+                                  location: `${matchingResource.location.lat}, ${matchingResource.location.lng}`,
+                                  performed_by: "admin",
+                                  remarks: `Allocated ${allocateQuantity} to fulfill request: ${selectedRequest.name}`,
+                                  resource_id: matchingResource.id,
+                                },
+                              ]);
+
+                            if (historyError) throw historyError;
+
                             // 2. Then handle the request
                             if (selectedRequest.quantity <= allocateQuantity) {
                               // Delete request if fully allocated
@@ -506,7 +583,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
     name: "",
     quantity: 0,
     unit: "",
-    location: { lat: 28.7041, lng: 77.1025 }, // Default to Delhi coordinates
+    location: { lat: 28.855, lng: 77.1025 }, // Default to Delhi coordinates
     status: "available",
     organizationId: "",
     expiryDate: "",
@@ -515,6 +592,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
     // disasterType: "other",
   });
 
+  const [address, setAddress] = useState("");
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -529,6 +607,41 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       lastUpdated: new Date().toISOString(),
     };
     onSubmit(newResource);
+  };
+
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Only fetch once from the API
+        try {
+          const readable = await getReadableAddress(latitude, longitude);
+          setFormData((prev) => ({
+            ...prev,
+            location: { lat: latitude, lng: longitude },
+          }));
+          setAddress(readable);
+        } catch (error) {
+          console.error("Reverse geocoding failed", error);
+          setAddress("Could not fetch address");
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Could not get your location");
+      },
+      {
+        enableHighAccuracy: true, // key fix
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
   };
 
   return (
@@ -581,6 +694,17 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
           onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
           required
         />
+      </div>
+      <div>
+        <Label>Location (Auto-detect)</Label>
+        <div className="flex gap-2">
+          <Button type="button" onClick={detectLocation}>
+            Detect Location
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            {address || "No address detected yet."}
+          </p>
+        </div>
       </div>
 
       <div>
