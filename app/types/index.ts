@@ -151,6 +151,7 @@ export interface Organization {
   };
   resources: Resource[];
   personnel: Personnel[];
+  is_deleted: boolean;
   performanceMetrics?: {
     responseTime: number;
     resourceUtilization: number;

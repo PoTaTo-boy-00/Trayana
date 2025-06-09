@@ -29,6 +29,7 @@ import { StatusBadge } from "@/app/components/StatusBadge";
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const testSupabaseConnection = async () => {
@@ -89,15 +90,37 @@ export default function OrganizationsPage() {
   };
 
   const handleDeleteOrganization = async (id: string) => {
-    const { error } = await supabase
-      .from("organizations")
-      .delete()
-      .eq("id", id);
-    if (error) {
-      console.error("Error deleting organization:", error);
-    } else {
+    setLoading(true);
+
+    try {
+      const { data: orgData, error: fetchError } = await supabase
+        .from("organizations")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      //  Soft-delete the resource
+      const { error: deleteError } = await supabase
+        .from("organizations")
+        .update({ is_deleted: true })
+        .eq("id", id);
+
+      if (deleteError) {
+        console.error("Error deleting resource:", deleteError);
+        return;
+      }
+
+      if (fetchError || !orgData) {
+        console.error("Failed to fetch resource before delete:", fetchError);
+        return;
+      }
+
       setOrganizations((prev) => prev.filter((org) => org.id !== id));
+    } catch (err) {
+      console.error("Unexpected error during deletion:", err);
     }
+
+    setLoading(false);
   };
   const { t } = useTranslation();
   return (
@@ -121,68 +144,70 @@ export default function OrganizationsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {organizations.map((org) => (
-          <Card key={org.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                {org.name}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <StatusBadge
-                  status={org.status}
-                  onStatusChange={async (newStatus: Status) => {
-                    await handleUpadteOrganizationStatus(org.id, newStatus);
-                  }}
-                />
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteOrganization(org.id)}
-                >
-                  Delete
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Type</p>
-                <p className="font-medium capitalize">{org.type}</p>
-              </div>
-
-              <div>
-                <p className="text-sm text-muted-foreground">Capabilities</p>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {org.capabilities.map((capability) => (
-                    <span
-                      key={capability}
-                      className="px-2 py-1 bg-secondary rounded-full text-xs"
-                    >
-                      {capability}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {organizations
+          .filter((org) => !org.is_deleted)
+          .map((org) => (
+            <Card key={org.id}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  {org.name}
+                </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{org.contact.phone}</span>
+                  <StatusBadge
+                    status={org.status}
+                    onStatusChange={async (newStatus: Status) => {
+                      await handleUpadteOrganizationStatus(org.id, newStatus);
+                    }}
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteOrganization(org.id)}
+                  >
+                    Delete
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span>{org.contact.email}</span>
-                </div>
-              </div>
+              </CardHeader>
 
-              <div className="flex items-start gap-2">
-                <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                <span>{org.address}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="font-medium capitalize">{org.type}</p>
+                </div>
+
+                <div>
+                  <p className="text-sm text-muted-foreground">Capabilities</p>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {org.capabilities.map((capability) => (
+                      <span
+                        key={capability}
+                        className="px-2 py-1 bg-secondary rounded-full text-xs"
+                      >
+                        {capability}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span>{org.contact.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <span>{org.contact.email}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
+                  <span>{org.address}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
       </div>
     </div>
   );
@@ -216,6 +241,7 @@ function OrganizationForm({ onSubmit }: OrganizationFormProps) {
     },
     resources: [],
     personnel: [],
+    is_deleted: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
