@@ -1,9 +1,3 @@
-// export const sosAlerts = [
-//   { id: 1, location_lat: 26.54, location_lng: 88.71 }, // Near Jalpaiguri
-//   { id: 2, location_lat: 26.58, location_lng: 88.71 }, // Near Jalpaiguri
-//   { id: 3, location_lat: 27, location_lng: 87 }, // Near Jalpaiguri
-// ];
-
 import { supabase } from "@/lib/supabase";
 
 export interface SOSWithCoords {
@@ -12,26 +6,28 @@ export interface SOSWithCoords {
   location_lng: number;
 }
 
+// Shared in-memory array to hold fetched SOS data
 export const sosReport: SOSWithCoords[] = [];
 
 export const fetchSOS = async () => {
   const { data, error } = await supabase
-    .from("sosReports")
-    .select("*")
-    .eq("active", "true");
+    .from("sosReport")
+    .select("id, latitude,longitude, status")
+    .eq("status", "pending");
 
   if (error) {
-    console.error("Error fetching organizations:", error.message);
-
+    console.error("Error fetching SOS reports:", error.message);
     return;
   }
 
-  const processed = (data || []).map((res) => ({
-    id: res.id,
-    location_lat: res.location?.lat,
-    location_lng: res.location?.lng,
-  }));
-  sosReport.splice(0, sosReport.length, ...processed); // Modify array in place
-  // console.log("Organizations array populated:", otganization);
-  // return otganization;
+  const processed: SOSWithCoords[] = (data || [])
+    .filter((res) => res?.latitude && res?.longitude)
+    .map((res) => ({
+      id: res.id,
+      location_lat: res.latitude,
+      location_lng: res.longitude,
+    }));
+
+  // In-place mutation of sosReport array
+  sosReport.splice(0, sosReport.length, ...processed);
 };

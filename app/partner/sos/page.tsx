@@ -355,11 +355,11 @@ export default function SOSPage() {
                     Resolved
                   </Button>
                 )}
-                {/* {report.personnel && (
+                {report.personnel && (
                   <p className="text-sm text-muted-foreground">
                     Assigned to: {report.personnel}
                   </p>
-                )} */}
+                )}
               </CardFooter>
             </Card>
           ))}

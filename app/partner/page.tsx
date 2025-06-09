@@ -23,7 +23,12 @@ import {
   fetchPersonnelLocation,
   personnel as staticPersonnel,
 } from "@/data/personnel";
-import { fetchSOS, sosReport as staticSOS } from "@/data/sos";
+import {
+  fetchSOS,
+  sosReport,
+  SOSWithCoords,
+  sosReport as staticSOS,
+} from "@/data/sos";
 
 //Easter Egg
 
@@ -34,18 +39,49 @@ export default function PartnerDashboard() {
   const [organizationId, setOrganizationId] = useState<string | "">("");
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
-  const [SOSdata, setSOSData] = useState(staticSOS);
-  const [loading, setLoading] = useState(true);
+  const [SOSdata, setSOSData] = useState<SOSWithCoords[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const supabase = createClientComponentClient();
-  // const personnel = [
-  //   {
-  //     id: 1,
-  //     location_lat: 26.544205506857356,
-  //     location_lng: 88.70577006096832,
-  //   }, // Jalpaiguri
-  // ];
+
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      const { data, error } = await supabase.from("alerts").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setAlertCount(data.length);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+  useEffect(() => {
+    const fetchResource = async () => {
+      const { data, error } = await supabase.from("resources").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setResourceCount(data.length);
+      }
+    };
+
+    fetchResource();
+  }, []);
+
+  useEffect(() => {
+    const fetchPersonnel = async () => {
+      const { data, error } = await supabase.from("personnel").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setPersonnelCount(data.length);
+      }
+    };
+
+    fetchPersonnel();
+  }, []);
 
   useEffect(() => {
     const fetchUserAndPersonnel = async () => {
@@ -85,16 +121,16 @@ export default function PartnerDashboard() {
 
   useEffect(() => {
     async function fetchData() {
-      // setLoading(false);
-      // fetch personnel from Supabase
+      setLoading(true);
+
       await fetchPersonnelLocation(organizationId);
       setPersonnelData([...staticPersonnel]);
-      // await fetchSOSLocation();
-      setSOSData([...staticSOS]);
+      await fetchSOS();
+      setSOSData([...sosReport]);
 
-      // fetch organizations from Supabase
+      console.log("SOSdata ", SOSdata);
+      setLoading(false);
     }
-
     fetchData();
   }, [organizationId]);
 
