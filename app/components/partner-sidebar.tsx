@@ -15,19 +15,20 @@ import {
 import Link from "next/link";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslation } from "@/lib/translation-context";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Organization, Role, Status } from "../types";
 
 const navigation = [
-  { name: "Dashboard", href: "/partner", icon: LayoutDashboard },
-  { name: "Alerts", href: "/partner/alerts", icon: AlertTriangle },
-  { name: "Resources", href: "/partner/resources", icon: Box },
-  { name: "SOS", href: "/partner/sos", icon: AlertTriangle },
-  { name: "Personnel", href: "/partner/personnel", icon: Users },
-  { name: "Map", href: "/partner/map", icon: Map },
-  { name: "Messages", href: "/partner/messages", icon: MessageSquare },
-  { name: "Organization", href: "/partner/organization", icon: Building2 },
-  { name: "Settings", href: "/partner/settings", icon: Settings },
+  { name: "ui.partner.components.dashboard", key: "Dashboard", href: "/partner", icon: LayoutDashboard },
+  { name: "ui.partner.components.alerts", key: "Alerts", href: "/partner/alerts", icon: AlertTriangle },
+  { name: "ui.partner.components.resources", key: "Resources", href: "/partner/resources", icon: Box },
+  { name: "ui.partner.components.personnel", key: "Personnel", href: "/partner/personnel", icon: Users },
+  { name: "ui.partner.components.map", key: "Map", href: "/partner/map", icon: Map },
+  { name: "ui.partner.components.messages", key: "Messages", href: "/partner/messages", icon: MessageSquare },
+  { name: "ui.partner.components.organization", key: "Organization", href: "/partner/organization", icon: Building2 },
+  { name: "ui.partner.components.sos", key: "SOS", href: "/partner/sos", icon: AlertTriangle },
+  { name: "ui.partner.components.settings", key: "Settings", href: "/partner/settings", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -36,6 +37,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
   const [status, setStatus] = useState<Status>("pending");
@@ -101,7 +103,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <div className={sidebarClasses}>
       <div className="flex h-16 items-center justify-between border-b px-6">
-        <span className="text-lg font-semibold">Partner Dashboard</span>
+        <span className="text-lg font-semibold">{t("ui.partner.title")}</span>
         {isMobile && (
           <button onClick={onClose} className="md:hidden">
             <X className="h-6 w-6" />
@@ -113,7 +115,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           const isActive = pathname === item.href;
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               onClick={isMobile ? onClose : undefined}
               className={cn(
@@ -127,7 +129,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 className="mr-3 h-5 w-5 flex-shrink-0"
                 aria-hidden="true"
               />
-              {item.name}
+              {t(item.name)}
             </Link>
           );
         })}

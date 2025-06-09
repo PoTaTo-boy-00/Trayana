@@ -15,15 +15,16 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useTranslation } from "@/lib/translation-context";
 const navigation = [
-  { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { name: "Alerts", href: "/admin/alerts", icon: AlertTriangle },
-  { name: "Resources", href: "/admin/resources", icon: Box },
-  { name: "Organizations", href: "/admin/organizations", icon: Building2 },
-  { name: "Map", href: "/admin/map", icon: Map },
-  { name: "Messages", href: "/admin/messages", icon: MessageSquare },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-  { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { name: "ui.admin.components.dashboard", key: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "ui.admin.components.alerts", key: "Alerts", href: "/admin/alerts", icon: AlertTriangle },
+  { name: "ui.admin.components.resources", key: "Resources", href: "/admin/resources", icon: Box },
+  { name: "ui.admin.components.organizations", key: "Organizations", href: "/admin/organizations", icon: Building2 },
+  { name: "ui.admin.components.maps", key: "Map", href: "/admin/map", icon: Map },
+  { name: "ui.admin.components.messages", key: "Messages", href: "/admin/messages", icon: MessageSquare },
+  { name: "ui.admin.components.settings", key: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "ui.admin.components.analytics", key: "Analytics", href: "/admin/analytics", icon: BarChart3 },
 ];
 
 interface SidebarProps {
@@ -32,6 +33,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -57,7 +59,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <div className={sidebarClasses}>
       <div className="flex h-16 items-center justify-between border-b px-6">
-        <span className="text-lg font-semibold">Admin Dashboard</span>
+        <span className="text-lg font-semibold">{t("ui.admin.title")}</span>
         {isMobile && (
           <button onClick={onClose} className="md:hidden">
             <X className="h-6 w-6" />
@@ -69,7 +71,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           const isActive = pathname === item.href;
           return (
             <Link
-              key={item.name}
+              key={item.key}
               href={item.href}
               onClick={isMobile ? onClose : undefined}
               className={cn(
@@ -83,7 +85,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 className={cn("mr-3 h-5 w-5 flex-shrink-0")}
                 aria-hidden="true"
               />
-              {item.name}
+              {t(item.name)}
             </Link>
           );
         })}
