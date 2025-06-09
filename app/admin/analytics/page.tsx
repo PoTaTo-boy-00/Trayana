@@ -5,6 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@/lib/supabase";
 import { BarChart, PieChart } from "@/app/components/charts";
 import PredictionTimeline from "@/app/components/predictiveTimeline";
+// import PredictionTimeline from "@/app/components/charts/PredictionTimeline";
 
 interface ResourceHistory {
   id: string;
@@ -22,6 +23,13 @@ interface PredictionData {
       velocity: number;
     };
   };
+}
+interface ImmediateNeed {
+  name: string;
+  type: string;
+  quantity: number | string;
+  reason: string;
+  location: string;
 }
 
 interface EnhancedDepletionPrediction {
@@ -45,24 +53,30 @@ interface GapAnalysisItem {
 
 interface GapAnalysis {
   missingTypes: GapAnalysisItem[];
-  immediateNeeds: string[];
+  immediateNeeds: ImmediateNeed[];
   surplusResources: GapAnalysisItem[];
   emergingNeeds?: GapAnalysisItem[];
 }
-
 const AnalyticsPage = () => {
   const [requestedResources, setRequestedResources] = useState<any[]>([]);
   const [availableResources, setAvailableResources] = useState<any[]>([]);
   const [resourceHistory, setResourceHistory] = useState<ResourceHistory[]>([]);
-  const [priorityScores, setPriorityScores] = useState<{
-    [key: string]: number;
-  }>({});
-  const [gapAnalysis, setGapAnalysis] = useState<GapAnalysis>({
-    missingTypes: [],
+  const [gapAnalysis, setGapAnalysis] = useState<{
+    immediateNeeds: ImmediateNeed[];
+    missingTypes: any[];
+    surplusResources: any[];
+    emergingNeeds: any[];
+  }>({
     immediateNeeds: [],
+    missingTypes: [],
     surplusResources: [],
     emergingNeeds: [],
   });
+
+  const [priorityScores, setPriorityScores] = useState<{
+    [key: string]: number;
+  }>({});
+
   const [depletionPredictions, setDepletionPredictions] = useState<
     EnhancedDepletionPrediction[]
   >([]);
@@ -95,7 +109,7 @@ const AnalyticsPage = () => {
         .from("resource_history")
         .select("*")
         .order("timestamp", { ascending: false })
-        .limit(1000);
+        .limit(1000); // Get last 1000 history records
 
       if (reqError || availError || historyError) {
         throw reqError || availError || historyError;
@@ -161,11 +175,20 @@ const AnalyticsPage = () => {
   // Helper function to parse Gemini response
   const parseGeminiResponse = (text: string) => {
     try {
-      const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[1]);
+      let cleanedText = text;
+
+      // Remove markdown code fences if present
+      const codeBlockMatch = text.match(/```(?:json)?\n([\s\S]*?)\n```/i);
+      if (codeBlockMatch) {
+        cleanedText = codeBlockMatch[1];
       }
-      return JSON.parse(text);
+
+      // Strip JavaScript-style comments (// or /* */)
+      cleanedText = cleanedText
+        .replace(/\/\/.*$/gm, "") // Remove inline comments
+        .replace(/\/\*[\s\S]*?\*\//gm, ""); // Remove block comments
+
+      return JSON.parse(cleanedText.trim());
     } catch (e) {
       console.error("Failed to parse response:", text);
       throw new Error("Invalid JSON response from AI model");
@@ -187,46 +210,150 @@ const AnalyticsPage = () => {
 
       // 1. Enhanced Priority Scoring with trend analysis
       const priorityPrompt = `
-        Analyze these disaster resource requests with historical context and calculate priority scores (1-10).
-        Consider trend analysis, depletion velocity, and urgency patterns.
-        Provide ONLY valid JSON output: { "location1": score, "location2": score }
-        
-        Current Requests: ${JSON.stringify(requested?.slice(0, 50))}
-        Historical Data: ${JSON.stringify(history?.slice(0, 100))}
+        Analyze disaster resource requests with historical context. Calculate priority scores (1-10) using:
+      - Request urgency and severity
+      - Historical trend patterns
+      - Resource depletion velocity
+      - Population impact metrics
+      
+      Use EXACT location names do not use Coordinates from requests as JSON keys. Output ONLY valid JSON:
+      { "Actual Location Name 1": score, "Actual Location Name 2": score }
+      
+      Current Requests: ${JSON.stringify(requested.slice(0, 50))}
+      Historical Data: ${JSON.stringify(history.slice(0, 100))}
+
+      - DO NOT include any comments, explanations, or trailing text. Only pure JSON.
       `;
 
       const priorityResult = await model.generateContent(priorityPrompt);
       const priorityText = await priorityResult.response.text();
+      4;
+      console.log("Protiy Test: ", priorityText);
       setPriorityScores(parseGeminiResponse(priorityText));
 
       // 2. Enhanced Gap Analysis with predictive elements
       const gapPrompt = `
-        Perform advanced gap analysis with historical trends and predictive insights.
-        Provide ONLY valid JSON output:
-        {
-          "missingTypes": [{"type": "water", "quantityNeeded": 100, "trend": "increasing"}],
-          "immediateNeeds": ["locationA"],
-          "surplusResources": [{"type": "blankets", "quantity": 50, "trend": "stable"}],
-          "emergingNeeds": [{"type": "medical", "predictedNeed": 75, "timeframe": "6 hours"}]
-        }
-        
-        Current State: ${JSON.stringify({
-          requested: requested?.slice(0, 30),
-          available: available?.slice(0, 30),
-        })}
-        Historical Trends: ${JSON.stringify(history?.slice(0, 50))}
+        Perform gap analysis with predictive insights. Follow these rules:
+      - "missingTypes": Only items NOT in available resources OR below safety threshold
+      - "emergingNeeds": Predict based on request trends and historical patterns
+      - Validate against current inventory
+      Use EXACT location names do not use Coordinates from requests as JSON keys.
+      Output STRICT JSON format:
+      {
+  "missingTypes": [
+    {
+      "name": "Pantop-D",
+      "type": "medicine",
+      "quantityNeeded": 100,
+      "reason": "earthquake injuries",
+      "urgency": "high",
+      "thresholdDeficit": 75
+    }, {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "immediateNeeds": [
+    {
+      "name": "Azithromycin",
+      "type": "antibiotic",
+      "quantityNeeded": 200,
+      "reason": "earthquake-related infections",
+      "location": "Actual Location A",
+      "timeCriticality": "24h"
+    },
+     {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "surplusResources": [
+    {
+      "name": "blankets",
+      "type": "non-medical",
+      "quantity": 200,
+      "location": "Actual Location B",
+      "reallocationSuggestion": "Disaster Zone X"
+    },
+     {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "emergingNeeds": [
+    {
+      "name": "generators",
+      "type": "equipment",
+      "predictedNeed": 50,
+      "timeframe": "12h",
+      "confidence": 0.85,
+      "triggerFactor": "power grid failure"
+    },
+    {
+      "name": "water",
+      "type": "essential",
+      "predictedNeed": 300,
+      "timeframe": "24h",
+      "confidence": 0.9,
+      "triggerFactor": "sanitation crisis"
+    }, {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }
+  ],
+  "meta": {
+    "analysisTimestamp": "2025-06-07T12:00:00Z",
+    "dataSources": ["currentInventory", "requestLogs", "historicalTrends"]
+  }
+}
+      
+      Current State: ${JSON.stringify({
+        requested: requested.slice(0, 30),
+        available: available.slice(0, 30),
+      })}
+      Historical Trends: ${JSON.stringify(history.slice(0, 50))}
+      - DO NOT include any comments, explanations, or trailing text. Only pure JSON.
       `;
 
       const gapResult = await model.generateContent(gapPrompt);
       const gapText = await gapResult.response.text();
+      console.log("Gap Text: ", gapText);
+
       setGapAnalysis(parseGeminiResponse(gapText));
 
       // 3. Enhanced Depletion Prediction with ML-like analysis
       const depletionPrompt = `
-        Create advanced depletion predictions using historical consumption patterns and trend analysis.
-        Analyze velocity, acceleration, and seasonal patterns if any.
+        Predict resource depletion with ML-style analysis. Include:
+      - Depletion time calculations
+      - Probability scores
+      - Trend velocity metrics
         Provide ONLY valid JSON output:
         [{
+        "name":"Pantop-D"
           "type": "medical",
           "currentAmount": 100,
           "depletionTime": "2023-12-25T15:00:00",
@@ -234,40 +361,76 @@ const AnalyticsPage = () => {
           "trend": "accelerating_decline",
           "velocity": -5.2,
           "confidence": 0.91
-        }]
+        }, {
+    "name": "no data available",
+    "type": "null",
+    "currentAmount": 0,
+    "depletionTime": "null",
+    "depletionProbability": 0.0,
+    "trend": "null",
+    "velocity": 0.0,
+    "confidence": 0.0
+  }]
         
         Current Resources: ${JSON.stringify(available?.slice(0, 20))}
         Historical Consumption: ${JSON.stringify(history?.slice(0, 100))}
         Active Requests: ${JSON.stringify(requested?.slice(0, 20))}
+        - DO NOT include any comments, explanations, or trailing text. Only pure JSON.
       `;
 
       const depletionResult = await model.generateContent(depletionPrompt);
       const depletionText = await depletionResult.response.text();
+      console.log("Deplition Test: ", depletionText);
       setDepletionPredictions(parseGeminiResponse(depletionText));
 
       // 4. 24-hour Prediction Timeline
       const timelinePrompt = `
-        Generate 24-hour resource prediction timeline based on historical patterns.
-        Provide ONLY valid JSON output as array of hourly predictions:
-        [
-          {
-            "hour": 1,
-            "resources": {
-              "water": {"remaining": 150, "trend": "decreasing", "velocity": -2.5},
-              "medical": {"remaining": 75, "trend": "stable", "velocity": 0.1}
-            }
-          }
-        ]
-        
-        Base Data: ${JSON.stringify({
-          current: available?.slice(0, 10),
-          history: history?.slice(0, 50),
-          requests: requested?.slice(0, 10),
-        })}
+      Generate a 24-hour resource prediction timeline with these rules:
+
+- Output must be a JSON array of 24 items (hour 0 to 23)
+- Each object must contain "hour" and "resources" keys
+- "resources" maps to:
+  - "remaining": predicted amount
+  - "trend": based on velocity and thresholds
+  - "velocity": rate of change per hour (negative = usage)
+
+Assume:
+- No replenishment during this window
+- Velocity is derived from recent 6-hour trends
+- Use these thresholds to classify trend:
+  - water: critical if < 1000 liters
+  - medical_kits: critical if < 10 units
+  - medicine: critical if < 500 units
+  - food: critical if < 300 units
+- Trend definitions:
+  - "critical": below threshold
+  - "declining": velocity < 0 but above threshold
+  - "stable": velocity = 0
+  - "improving": velocity > 0
+
+Format:
+[
+  {
+    "hour": 0,
+    "resources": {
+      "water": {"remaining": 1500, "trend": "declining", "velocity": -120},
+      "medical_kits": {"remaining": 9, "trend": "critical", "velocity": -2}
+    }
+  }
+]
+Only return valid JSON. Do not include markdown, comments, or explanation.
+Use this base data:
+${JSON.stringify({
+  current: available.slice(0, 10),
+  history: history.slice(0, 50),
+  requests: requested.slice(0, 10),
+})}
+
       `;
 
       const timelineResult = await model.generateContent(timelinePrompt);
       const timelineText = await timelineResult.response.text();
+      console.log("Timelien Test: ", timelineText);
       setPredictionTimeline(parseGeminiResponse(timelineText));
     } catch (error) {
       console.error("Enhanced analysis failed:", error);
@@ -282,7 +445,6 @@ const AnalyticsPage = () => {
     setIsClient(true);
     setLastUpdate(new Date());
   }, []);
-
   // Initial setup and cleanup
   useEffect(() => {
     if (!isClient) return;
@@ -307,9 +469,7 @@ const AnalyticsPage = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">
-          Enhanced Resource Analytics Dashboard
-        </h1>
+        <h1 className="text-2xl font-bold">Resource Analytics Dashboard</h1>
         <div className="flex items-center space-x-4">
           <div
             className={`flex items-center space-x-2 ${
@@ -391,17 +551,17 @@ const AnalyticsPage = () => {
                 {gapAnalysis.missingTypes?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
                     {gapAnalysis.missingTypes.map(
-                      (item: GapAnalysisItem, index: number) => (
+                      (item: any, index: number) => (
                         <li key={`missing-${index}`} className="text-sm">
                           <span className="font-medium">
-                            {String(item.type || "Unknown")}
+                            {item.name || item.type}
                           </span>
                           <br />
-                          Need: {String(item.quantityNeeded || "N/A")}
+                          <span>Need: {item.quantityNeeded} units</span>
                           {item.trend && (
                             <span className="text-gray-600">
                               {" "}
-                              ({String(item.trend)})
+                              ({item.trend})
                             </span>
                           )}
                         </li>
@@ -418,9 +578,14 @@ const AnalyticsPage = () => {
                 {gapAnalysis.immediateNeeds?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
                     {gapAnalysis.immediateNeeds.map(
-                      (location: string, index: number) => (
+                      (item: ImmediateNeed, index: number) => (
                         <li key={`immediate-${index}`} className="text-sm">
-                          {String(location)}
+                          <strong>{item.name}</strong> ({item.type}) –{" "}
+                          {item.quantity} units needed at{" "}
+                          <span className="text-orange-700 font-medium">
+                            {item.location}
+                          </span>{" "}
+                          due to <em>{item.reason}</em>
                         </li>
                       )
                     )}
@@ -437,17 +602,14 @@ const AnalyticsPage = () => {
                 {gapAnalysis.surplusResources?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
                     {gapAnalysis.surplusResources.map(
-                      (item: GapAnalysisItem, index: number) => (
+                      (item: any, index: number) => (
                         <li key={`surplus-${index}`} className="text-sm">
-                          <span className="font-medium">
-                            {String(item.type || "Unknown")}
-                          </span>
+                          <span className="font-medium">{item.name}</span>
                           <br />
-                          Extra: {String(item.quantity || "N/A")}
-                          {item.trend && (
-                            <span className="text-gray-600">
-                              {" "}
-                              ({String(item.trend)})
+                          Extra: {item.quantity}
+                          {item.location && (
+                            <span className="block text-xs text-gray-500">
+                              Location: {item.location}
                             </span>
                           )}
                         </li>
@@ -461,20 +623,23 @@ const AnalyticsPage = () => {
 
               <div>
                 <h3 className="font-medium text-blue-600">Emerging Needs</h3>
-                {(gapAnalysis.emergingNeeds ?? []).length > 0 ? (
+                {gapAnalysis.emergingNeeds?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
-                    {(gapAnalysis.emergingNeeds ?? []).map(
-                      (item: GapAnalysisItem, index: number) => (
+                    {gapAnalysis.emergingNeeds.map(
+                      (item: any, index: number) => (
                         <li key={`emerging-${index}`} className="text-sm">
-                          <span className="font-medium">
-                            {String(item.type || "Unknown")}
-                          </span>
+                          <span className="font-medium">{item.name}</span>
                           <br />
-                          Predicted: {String(item.predictedNeed || "N/A")}
+                          <span>Predicted: {item.predictedNeed} units</span>
                           <br />
                           <span className="text-gray-600">
-                            in {String(item.timeframe || "Unknown")}
+                            in {item.timeframe}
                           </span>
+                          {item.confidence && (
+                            <span className="block text-xs text-gray-500">
+                              Confidence: {item.confidence * 100}%
+                            </span>
+                          )}
                         </li>
                       )
                     )}
@@ -496,20 +661,19 @@ const AnalyticsPage = () => {
             {depletionPredictions.length > 0 ? (
               <>
                 <PieChart
-                  data={depletionPredictions.map(
-                    (item: EnhancedDepletionPrediction) => ({
-                      label: `${item.type} (${(
-                        item.depletionProbability * 100
-                      ).toFixed(1)}%)`,
-                      value: item.depletionProbability * 100,
-                    })
-                  )}
+                  data={depletionPredictions.map((item: any) => ({
+                    label: `${item.name} (${(
+                      item.depletionProbability * 100
+                    ).toFixed(1)}%)`,
+                    value: item.depletionProbability * 100,
+                  }))}
                 />
                 <div className="overflow-x-auto mt-4">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left border-b bg-gray-50 dark:bg-gray-700">
                         <th className="p-3">Resource</th>
+                        <th className="p-3">Name</th>
                         <th className="p-3">Current</th>
                         <th className="p-3">Depletion Time</th>
                         <th className="p-3">Probability</th>
@@ -519,68 +683,63 @@ const AnalyticsPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {depletionPredictions.map(
-                        (item: EnhancedDepletionPrediction, index: number) => (
-                          <tr
-                            key={`depletion-${index}`}
-                            className="border-b hover:bg-gray-50 dark:hover:bg-gray-700"
-                          >
-                            <td className="p-3 font-medium">
-                              {String(item.type)}
-                            </td>
-                            <td className="p-3">
-                              {String(item.currentAmount)}
-                            </td>
-                            <td className="p-3">
-                              {new Date(item.depletionTime).toLocaleString()}
-                            </td>
-                            <td className="p-3">
-                              <span
-                                className={`px-2 py-1 rounded text-xs ${
-                                  item.depletionProbability > 0.8
-                                    ? "bg-red-100 text-red-800"
-                                    : item.depletionProbability > 0.5
-                                    ? "bg-yellow-100 text-yellow-800"
-                                    : "bg-green-100 text-green-800"
-                                }`}
-                              >
-                                {(item.depletionProbability * 100).toFixed(1)}%
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              <span
-                                className={`text-xs ${
-                                  item.trend?.includes("accelerating")
-                                    ? "text-red-600"
-                                    : item.trend?.includes("stable")
-                                    ? "text-green-600"
-                                    : "text-yellow-600"
-                                }`}
-                              >
-                                {String(item.trend || "N/A")}
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              <span
-                                className={
-                                  item.velocity < 0
-                                    ? "text-red-600"
-                                    : "text-green-600"
-                                }
-                              >
-                                {item.velocity?.toFixed(2) || "N/A"}
-                              </span>
-                            </td>
-                            <td className="p-3">
-                              <span className="text-xs">
-                                {item.confidence
-                                  ? `${(item.confidence * 100).toFixed(1)}%`
-                                  : "N/A"}
-                              </span>
-                            </td>
-                          </tr>
-                        )
-                      )}
+                      {depletionPredictions.map((item: any, index: number) => (
+                        <tr
+                          key={`depletion-${index}`}
+                          className="border-b hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          <td className="p-3 font-medium">{item.type}</td>
+                          <td className="p-3 font-medium">{item.name}</td>
+                          <td className="p-3">{item.currentAmount}</td>
+                          <td className="p-3">
+                            {new Date(item.depletionTime).toLocaleString()}
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`px-2 py-1 rounded text-xs ${
+                                item.depletionProbability > 0.8
+                                  ? "bg-red-100 text-red-800"
+                                  : item.depletionProbability > 0.5
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {(item.depletionProbability * 100).toFixed(1)}%
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={`text-xs ${
+                                item.trend?.includes("accelerating")
+                                  ? "text-red-600"
+                                  : item.trend?.includes("stable")
+                                  ? "text-green-600"
+                                  : "text-yellow-600"
+                              }`}
+                            >
+                              {item.trend || "N/A"}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span
+                              className={
+                                item.velocity < 0
+                                  ? "text-red-600"
+                                  : "text-green-600"
+                              }
+                            >
+                              {item.velocity?.toFixed(2) || "N/A"}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="text-xs">
+                              {item.confidence
+                                ? `${(item.confidence * 100).toFixed(1)}%`
+                                : "N/A"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

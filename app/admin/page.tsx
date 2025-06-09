@@ -181,7 +181,7 @@ export default function AdminDashboard() {
       </div>
 
       <DynamicDisasterPrediction />
-      <div className="grid gap-6">
+      {/* <div className="grid gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center gap-2">
             <BarChart3 className="h-5 w-5" />
@@ -223,7 +223,7 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </div> */}
     </div>
   );
 }

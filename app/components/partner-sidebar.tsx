@@ -13,18 +13,20 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Organization, Role, Status } from "../types";
 
 const navigation = [
   { name: "Dashboard", href: "/partner", icon: LayoutDashboard },
   { name: "Alerts", href: "/partner/alerts", icon: AlertTriangle },
   { name: "Resources", href: "/partner/resources", icon: Box },
+  { name: "SOS", href: "/partner/sos", icon: AlertTriangle },
   { name: "Personnel", href: "/partner/personnel", icon: Users },
   { name: "Map", href: "/partner/map", icon: Map },
   { name: "Messages", href: "/partner/messages", icon: MessageSquare },
   { name: "Organization", href: "/partner/organization", icon: Building2 },
-  { name: "SOS", href: "/partner/sos", icon: AlertTriangle },
   { name: "Settings", href: "/partner/settings", icon: Settings },
 ];
 
@@ -36,17 +38,57 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
+  const [status, setStatus] = useState<Status>("pending");
+  const [role, setRole] = useState<Role>("partner");
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
-
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!user || !session) {
+        console.error("Fetching Error: Credential ERROR");
+        return;
+      }
+
+      const { data: orgData, error: orgError } = await supabase
+        .from("organizations")
+        .select("*")
+        .eq("admin_id", user.id)
+        .single();
+
+      if (orgError) {
+        console.error("Error fetching organization: ", orgError);
+        return;
+      }
+
+      setStatus(orgData.status);
+      setRole(session.user.role as Role);
+    };
+
+    fetchUserDetails();
+  }, []);
+
+  const filteredNavigation = useMemo(() => {
+    if (status === "unapproved" || status === "pending") {
+      return navigation.filter((item) =>
+        ["Organization", "Settings"].includes(item.name)
+      );
+    }
+    return navigation;
+  }, [status]);
 
   const sidebarClasses = cn(
     "fixed inset-y-0 left-0 z-50 w-64 flex-col border-r bg-background transition-transform duration-300 md:relative md:translate-x-0",
@@ -67,7 +109,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       </div>
       <nav className="flex-1 space-y-1 px-2 py-4">
-        {navigation.map((item) => {
+        {filteredNavigation.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
@@ -82,7 +124,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               )}
             >
               <item.icon
-                className={cn("mr-3 h-5 w-5 flex-shrink-0")}
+                className="mr-3 h-5 w-5 flex-shrink-0"
                 aria-hidden="true"
               />
               {item.name}

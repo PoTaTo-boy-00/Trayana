@@ -109,11 +109,11 @@ const createPredictionPrompt = (
   disasterType: string,
   formData: FormData
 ): string => {
-  const basePrompt = `You are an expert meteorologist and disaster prediction specialist. Analyze the following ${disasterType} conditions and provide a detailed risk assessment.
-
+  const basePrompt = `You are an expert Indian meteorologist and disaster prediction specialist. Analyze the following ${disasterType} conditions and provide a detailed risk assessment.
+DO NOT include any comments, explanations, or trailing text.
 IMPORTANT: Respond ONLY with a valid JSON object in this exact format:
 {
-  "risk": "High" | "Moderate" | "Low",
+  "risk": "Critical" | "High" | "Moderate" | "Low",
   "probability": "XX%",
   "message": "Brief assessment message",
   "recommendations": ["recommendation1", "recommendation2", "recommendation3"],
@@ -123,7 +123,6 @@ IMPORTANT: Respond ONLY with a valid JSON object in this exact format:
     "intensity": "intensity description"
   }
 }
-
 `;
 
   switch (disasterType) {
@@ -153,18 +152,30 @@ Provide specific timeline (hours/days), intensity scale (Category 1-5), and acti
         `
 Current Flood Conditions:
 - Location: ${formData.location}
-- Rainfall: ${formData.rainfall} mm
-- Water Level: ${formData.waterLevel} cm
 - Season: ${formData.season}
+- Rainfall (last 24h): ${formData.rainfall} mm
+- River Name: ${formData.riverName || "Not specified"}
+- River Water Level: ${formData.waterLevel} cm
+- Soil Moisture: ${formData.soilMoisture}%
 
-Consider factors like:
-- Heavy rainfall thresholds (>50mm/day moderate, >100mm/day high risk)
-- Water level changes and drainage capacity
-- Seasonal flooding patterns
-- Topography and urban drainage systems
-- Historical flood data for the region
+Perform flood risk analysis for ${formData.location}, India.
 
-Provide timeline, flood severity, and evacuation/safety recommendations.`
+Include and consider:
+- Typical Indian monsoon rainfall patterns
+- River catchment characteristics and danger level thresholds for ${
+          formData.riverName
+        }
+- Recent rainfall and saturation levels from soil moisture data
+- Urban/rural drainage capacity in ${formData.location}
+- **Historical flood records and recurrence trends** for ${
+          formData.riverName
+        } and the region
+
+Output:
+- Predicted flood risk level for the next **7 days**
+- Severity, intensity, and estimated timeline of flood onset
+- Clear, actionable recommendations for authorities and civilians
+`
       );
 
     case "earthquake":
@@ -313,10 +324,22 @@ const disasterTypes: DisasterType[] = [
         placeholder: "Enter rainfall amount",
       },
       {
+        name: "riverName",
+        label: "River Name",
+        type: "text",
+        placeholder: "Enter River name",
+      },
+      {
         name: "waterLevel",
         label: "Water Level (cm)",
         type: "number",
         placeholder: "Current water level",
+      },
+      {
+        name: "soilMoisture",
+        label: "Soil Moisture (%)",
+        type: "number",
+        placeholder: "Enter the soil moisture",
       },
       {
         name: "season",

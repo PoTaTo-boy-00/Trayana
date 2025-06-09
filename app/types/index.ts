@@ -1,10 +1,19 @@
 export type AlertSeverity = "red" | "orange" | "yellow" | "green";
 export type ResourceStatus = "available" | "allocated" | "depleted";
-export type RequestStatus = "requested" | "allocated" | "fulfilled";
+export type RequestStatus = "requested" | "allocated";
 export type PriorityLevel = "critical" | "high" | "medium" | "low";
 export type ResourceType = "food" | "medicine" | "shelter" | "equipment";
 export type DisasterType = "earthquake" | "flood" | "fire" | "other";
 export type UrgencyLevel = "immediate" | "urgent" | "normal";
+export type Role = "admin" | "partner";
+export type EventType = "insert" | "update" | "delete" | "requested";
+
+export type Status =
+  | "active"
+  | "inactive"
+  | "approved"
+  | "pending"
+  | "unapproved";
 
 export interface User {
   id: string;
@@ -58,6 +67,7 @@ export interface Resource {
   lastUpdated: string;
   expiryDate?: string;
   conditions?: string[];
+  is_deleted?: boolean;
   // priority: PriorityLevel;
   // disasterType: DisasterType;
   utilizationHistory?: ResourceUtilization[];
@@ -98,6 +108,19 @@ export interface ResourceUtilization {
   alertId?: string;
 }
 
+export interface ResourceHistory {
+  id: string;
+  timestamp: string;
+  event_type: EventType;
+  quantity_changed: number;
+  status_after_event: string;
+  location: string;
+  performed_by: string;
+  remarks?: string;
+  quantity: number;
+  resource_id: string;
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -114,7 +137,7 @@ export interface Organization {
     center: GeoLocation;
     radius: number;
   };
-  status: "active" | "inactive";
+  status: Status;
   contact: {
     email: string;
     phone: string;
@@ -128,6 +151,7 @@ export interface Organization {
   };
   resources: Resource[];
   personnel: Personnel[];
+  is_deleted: boolean;
   performanceMetrics?: {
     responseTime: number;
     resourceUtilization: number;
@@ -139,7 +163,7 @@ export interface Personnel {
   id: string;
   name: string;
   role: string;
-  status: "available" | "deployed" | "unavailable";
+  status: "active" | "inactive" | "available" | "deployed";
   location?: string | null;
   skills: string[];
   contact: {
@@ -152,7 +176,9 @@ export interface Personnel {
     endTime?: string;
     location: GeoLocation | null;
   }[];
+  organization_id: string;
   timestamp: string;
+
   updatedAt: string;
 }
 

@@ -23,6 +23,12 @@ import {
   fetchPersonnelLocation,
   personnel as staticPersonnel,
 } from "@/data/personnel";
+import {
+  fetchSOS,
+  sosReport,
+  SOSWithCoords,
+  sosReport as staticSOS,
+} from "@/data/sos";
 
 //Easter Egg
 
@@ -30,87 +36,103 @@ export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
+  const [organizationId, setOrganizationId] = useState<string | "">("");
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
-  // const [SOSdata, setSOSData] = useState(staticSOS);
+  const [SOSdata, setSOSData] = useState<SOSWithCoords[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const supabase = createClientComponentClient();
-  // const personnel = [
-  //   {
-  //     id: 1,
-  //     location_lat: 26.544205506857356,
-  //     location_lng: 88.70577006096832,
-  //   }, // Jalpaiguri
-  // ];
 
-  const sosAlerts = [
-    { id: 1, location_lat: 26.54, location_lng: 88.71 }, // Near Jalpaiguri
-  ];
+  useEffect(() => {
+    const fetchAlerts = async () => {
+      const { data, error } = await supabase.from("alerts").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setAlertCount(data.length);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
+  useEffect(() => {
+    const fetchResource = async () => {
+      const { data, error } = await supabase.from("resources").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setResourceCount(data.length);
+      }
+    };
+
+    fetchResource();
+  }, []);
+
+  useEffect(() => {
+    const fetchPersonnel = async () => {
+      const { data, error } = await supabase.from("personnel").select("*");
+      if (error) {
+        console.error("Error fetching alerts:", error);
+      } else {
+        setPersonnelCount(data.length);
+      }
+    };
+
+    fetchPersonnel();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserAndPersonnel = async () => {
+      setLoading(true);
+      try {
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        // console.log(user);
+
+        if (userError || !user) throw new Error("User not logged in");
+
+        // Fetch organization_id of the user
+        const { data: userDetails, error: userDetailsError } = await supabase
+          .from("users")
+          .select("organization_id")
+          .eq("id", user.id)
+          .single();
+
+        console.log(userDetails?.organization_id);
+
+        if (userDetailsError || !userDetails)
+          throw new Error("Failed to fetch user details");
+        setOrganizationId(userDetails.organization_id);
+      } catch (err) {
+        console.error("Error fetching user and personnel:", err);
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserAndPersonnel();
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
-      // Fetch alerts
-      // const { data: alertsData } = await supabase
-      //   .from("alerts")
-      //   .select("*")
-      //   .eq("is_active", true);
+      setLoading(true);
 
-      // if (alertsData) {
-      //   setAlerts(
-      //     alertsData.map((alert) => ({
-      //       ...alert,
-      //       affected_Areas: alert.affected_areas as any,
-      //     }))
-      //   );
-      // }
-
-      // Fetch organizations
-      // const { data: orgsData } = await supabase
-      //   .from("organizations")
-      //   .select("*")
-      //   .eq("status", "active");
-
-      // if (orgsData) {
-      //   setOrganizations(
-      //     orgsData.map((org) => ({
-      //       ...org,
-      //       coverage: {
-      //         center: { lat: org.coverage_lat, lng: org.coverage_lng },
-      //         // radius: org.coverage_radius,
-      //       },
-      //     }))
-      //   );
-      // }
-
-      // Fetch resources
-      // const { data: resourcesData } = await supabase
-      //   .from("resources")
-      //   .select("*")
-      //   .eq("status", "available");
-
-      // if (resourcesData) {
-      //   setResources(
-      //     resourcesData.map((resource) => ({
-      //       ...resource,
-      //       location: {
-      //         lat: resource.location_lat,
-      //         lng: resource.location_lng,
-      //       },
-      //     }))
-      //   );
-      // }
-
-      // fetch personnel from Supabase
-      await fetchPersonnelLocation();
+      await fetchPersonnelLocation(organizationId);
       setPersonnelData([...staticPersonnel]);
-      // await fetchSOSLocation();
-      // setSOSdata([...staticSOS]);
+      await fetchSOS();
+      setSOSData([...sosReport]);
 
-      // fetch organizations from Supabase
+      console.log("SOSdata ", SOSdata);
+      setLoading(false);
     }
-
     fetchData();
-  }, []);
+  }, [organizationId]);
 
   return (
     <div className="space-y-6">
@@ -179,11 +201,11 @@ export default function PartnerDashboard() {
           ...p,
           id: typeof p.id === "string" ? Number(p.id) : p.id,
         }))}
-        // sosAlerts={SOSdata.map((p) => ({
-        //   ...p,
-        //   id: typeof p.id === "string" ? Number(p.id) : p.id,
-        // }))}
-        sosAlerts={sosAlerts}
+        sosAlerts={SOSdata.map((p) => ({
+          ...p,
+          id: typeof p.id === "string" ? Number(p.id) : p.id,
+        }))}
+        // sosAlerts={sosAlerts}
       />
     </div>
   );

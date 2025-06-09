@@ -39,4 +39,11 @@ next-env.d.ts
 
 
 google-cloud
+# app\admin\analytics\page.tsx
 .early.coverage
+trailPage.tsx
+app\types\forecast.ts
+./lib/vertex-ai-forecatsingService.ts
+app\api\predictions\forecast.ts
+app\admin\forecast.tsx
+# app\types\forecast.ts
