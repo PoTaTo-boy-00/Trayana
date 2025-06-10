@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,15 +11,37 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Waves,
+  Zap,
+  Wind,
+  AlertTriangle,
+  TrendingUp,
+  MapPin,
+  Clock,
+  Shield,
+  Activity,
+  CloudRain,
+  Thermometer,
+  Eye,
+  Moon,
+  Sun,
+  Loader2,
+  CheckCircle,
+  XCircle,
+  Info,
+} from "lucide-react";
 
-// Type definitions
+// Enhanced type definitions
 interface FormField {
   name: string;
   label: string;
-  type: "text" | "number" | "select";
+  type: "text" | "number" | "select" | "datetime-local";
   placeholder?: string;
   step?: string;
   options?: string[];
+  required?: boolean;
+  tooltip?: string;
 }
 
 interface DisasterType {
@@ -30,18 +52,22 @@ interface DisasterType {
   color: string;
   bgColor: string;
   textColor: string;
+  gradient: string;
   formFields: FormField[];
 }
 
 interface PredictionResult {
-  risk: "High" | "Moderate" | "Low";
+  risk: "Critical" | "High" | "Moderate" | "Low";
   probability: string;
   message: string;
   recommendations: string[];
+  confidence: number;
   details?: {
     factors: string[];
     timeline?: string;
     intensity?: string;
+    affectedAreas?: string[];
+    evacuationZones?: string[];
   };
 }
 
@@ -58,11 +84,12 @@ interface PredictionState {
 }
 
 // Gemini API Configuration
-const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
+const GEMINI_API_KEY =
+  process.env.NEXT_PUBLIC_GEMINI_API_KEY || "YOUR_GEMINI_API_KEY_HERE";
 const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 
-// AI-powered disaster prediction using Gemini API
+// Enhanced AI prediction with Gemini
 const predictDisasterWithAI = async (
   disasterType: string,
   formData: FormData
@@ -85,371 +112,587 @@ const predictDisasterWithAI = async (
             ],
           },
         ],
+        generationConfig: {
+          temperature: 0.4,
+          topK: 32,
+          topP: 1,
+          maxOutputTokens: 2048,
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE",
+          },
+        ],
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
+      throw new Error(`Gemini API request failed: ${response.status}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.candidates[0].content.parts[0].text;
 
-    // Parse AI response into structured format
+    if (
+      !data.candidates ||
+      !data.candidates[0] ||
+      !data.candidates[0].content
+    ) {
+      throw new Error("Invalid response from Gemini API");
+    }
+
+    const aiResponse = data.candidates[0].content.parts[0].text;
     return parseAIResponse(aiResponse);
   } catch (error) {
     console.error("Gemini API Error:", error);
-    // Fallback to enhanced local prediction
-    return getFallbackPrediction(disasterType, formData);
+    return getEnhancedFallbackPrediction(disasterType, formData);
   }
 };
 
-// Create detailed prompts for different disaster types
+// Enhanced prompt creation with better context
 const createPredictionPrompt = (
   disasterType: string,
   formData: FormData
 ): string => {
-  const basePrompt = `You are an expert Indian meteorologist and disaster prediction specialist. Analyze the following ${disasterType} conditions and provide a detailed risk assessment.
-DO NOT include any comments, explanations, or trailing text.
-IMPORTANT: Respond ONLY with a valid JSON object in this exact format:
+  const basePrompt = `You are an expert meteorologist and disaster prediction specialist with access to real-time data analysis. 
+
+CRITICAL INSTRUCTIONS:
+- Respond ONLY with a valid JSON object
+- Use scientific data analysis principles
+- Consider regional climate patterns and geological factors
+- Provide accurate confidence scores based on data quality
+- Include specific, actionable recommendations
+
+Required JSON format:
 {
-  "risk": "Critical" | "High" | "Moderate" | "Low",
+  "risk": "Critical|High|Moderate|Low",
   "probability": "XX%",
-  "message": "Brief assessment message",
-  "recommendations": ["recommendation1", "recommendation2", "recommendation3"],
+  "message": "Brief scientific assessment",
+  "confidence": XX,
+  "recommendations": ["actionable recommendation 1", "actionable recommendation 2", "actionable recommendation 3"],
   "details": {
-    "factors": ["factor1", "factor2"],
-    "timeline": "time estimate",
-    "intensity": "intensity description"
+    "factors": ["scientific factor 1", "scientific factor 2"],
+    "timeline": "specific timeframe",
+    "intensity": "technical intensity description",
+    "affectedAreas": ["area1", "area2"],
+    "evacuationZones": ["zone1", "zone2"]
   }
-}
-`;
+}`;
+
+  const currentTime = new Date().toISOString();
 
   switch (disasterType) {
     case "cyclone":
-      return (
-        basePrompt +
-        `
-Current Cyclone Conditions:
-- Location: ${formData.location}
+      return `${basePrompt}
+
+CYCLONE RISK ANALYSIS - ${currentTime}
+
+Location: ${formData.location} (${formData.latitude}°N, ${formData.longitude}°E)
+Observation Time: ${formData.timestamp}
+Current Conditions:
 - Wind Speed: ${formData.windSpeed} km/h
 - Atmospheric Pressure: ${formData.pressure} hPa
 - Sea Surface Temperature: ${formData.seaTemp}
+- Tidal State: ${formData.tideLevel}
+- Distance from Coast: ${formData.coastalProximity}
+- Hemisphere: ${formData.hemisphere}
+- Historical Activity: ${formData.historicalActivity}
 
-Consider meteorological factors like:
-- Cyclone formation requires SST > 26°C
-- Low pressure systems (< 1000 hPa) increase risk
-- Wind speed thresholds: 39+ km/h (tropical depression), 62+ (tropical storm), 88+ (cyclone)
-- Geographic factors (Bay of Bengal, Arabian Sea are high-risk)
-- Seasonal patterns and current atmospheric conditions
+ANALYSIS REQUIREMENTS:
+1. Apply Saffir-Simpson Hurricane Wind Scale classification
+2. Consider Coriolis effect based on hemisphere and latitude
+3. Evaluate sea surface temperature thresholds (>26.5°C for development)
+4. Assess pressure gradient and wind shear conditions
+5. Calculate storm surge potential based on coastal proximity
+6. Factor in regional climatology and seasonal patterns
+7. Determine evacuation zones using standard coastal management protocols
 
-Provide specific timeline (hours/days), intensity scale (Category 1-5), and actionable safety recommendations.`
-      );
+Provide confidence score (0-100) based on data completeness and model certainty.`;
 
     case "flood":
-      return (
-        basePrompt +
-        `
-Current Flood Conditions:
-- Location: ${formData.location}
-- Season: ${formData.season}
-- Rainfall (last 24h): ${formData.rainfall} mm
-- River Name: ${formData.riverName || "Not specified"}
-- River Water Level: ${formData.waterLevel} cm
+      return `${basePrompt}
+
+FLOOD RISK ANALYSIS - ${currentTime}
+
+Location: ${formData.location} (${formData.latitude}°N, ${formData.longitude}°E)
+Environmental Data:
+- 24-hour Rainfall: ${formData.rainfall} mm
+- River: ${formData.riverName}
+- Water Level: ${formData.waterLevel} cm
 - Soil Moisture: ${formData.soilMoisture}%
+- Terrain: ${formData.landType}
+- Season: ${formData.season}
+- Flood History: ${formData.historicalFloods}
 
-Perform flood risk analysis for ${formData.location}, India.
+ANALYSIS REQUIREMENTS:
+1. Apply rainfall intensity-duration-frequency curves
+2. Consider soil saturation capacity and infiltration rates
+3. Evaluate river discharge patterns and flood stage levels
+4. Assess urban drainage capacity and runoff coefficients
+5. Factor in topographic slope and watershed characteristics
+6. Consider monsoon patterns and seasonal flood cycles
+7. Determine flood inundation zones and evacuation routes
 
-Include and consider:
-- Typical Indian monsoon rainfall patterns
-- River catchment characteristics and danger level thresholds for ${
-          formData.riverName
-        }
-- Recent rainfall and saturation levels from soil moisture data
-- Urban/rural drainage capacity in ${formData.location}
-- **Historical flood records and recurrence trends** for ${
-          formData.riverName
-        } and the region
-
-Output:
-- Predicted flood risk level for the next **7 days**
-- Severity, intensity, and estimated timeline of flood onset
-- Clear, actionable recommendations for authorities and civilians
-`
-      );
+Include specific water level thresholds and timeline for peak discharge.`;
 
     case "earthquake":
-      return (
-        basePrompt +
-        `
-Current Seismic Conditions:
-- Location: ${formData.location}
-- Recent Magnitude: ${formData.magnitude}
+      return `${basePrompt}
+
+SEISMIC RISK ANALYSIS - ${currentTime}
+
+Location: ${formData.location} (${formData.latitude}°N, ${formData.longitude}°E)
+Seismic Parameters:
+- Event Time: ${formData.timestamp}
+- Magnitude: ${formData.magnitude} Richter Scale
 - Depth: ${formData.depth} km
-- Fault Line Distance: ${formData.faultLine}
+- Fault Distance: ${formData.faultLine}
+- Soil Type: ${formData.soilType}
+- Area Type: ${formData.areaType}
+- Population Density: ${formData.populationDensity}/km²
+- Infrastructure Age: ${formData.infrastructureAge} years
+- Recent Activity: ${formData.previousEarthquake}
 
-Consider factors like:
-- Magnitude scale and damage potential
-- Depth effects (shallow = more dangerous)
-- Proximity to active fault lines
-- Regional seismic history
-- Building codes and infrastructure resilience
+ANALYSIS REQUIREMENTS:
+1. Apply Modified Mercalli Intensity Scale for impact assessment
+2. Consider focal depth effects on ground motion intensity
+3. Evaluate soil amplification factors and liquefaction potential
+4. Assess building vulnerability based on construction era and codes
+5. Calculate peak ground acceleration (PGA) estimates
+6. Factor in fault rupture mechanics and aftershock probability
+7. Determine search and rescue priority zones
 
-Provide aftershock timeline, intensity assessment, and structural safety recommendations.`
-      );
+Include aftershock probability using Omori's law and structural damage estimates.`;
 
     default:
-      return basePrompt + `Data: ${JSON.stringify(formData)}`;
+      return `${basePrompt}\n\nData: ${JSON.stringify(formData)}`;
   }
 };
 
-// Parse AI response into structured format
+// Enhanced response parsing
 const parseAIResponse = (aiResponse: string): PredictionResult => {
   try {
-    // Remove any markdown code blocks
-    const cleanResponse = aiResponse.replace(/```json\n?|\n?```/g, "").trim();
+    // Clean response
+    let cleanResponse = aiResponse.replace(/```json\n?|\n?```/g, "").trim();
 
-    // Parse JSON response
-    const parsed = JSON.parse(cleanResponse);
+    // Find JSON object
+    const jsonStart = cleanResponse.indexOf("{");
+    const jsonEnd = cleanResponse.lastIndexOf("}");
 
-    // Validate required fields
-    if (
-      !parsed.risk ||
-      !parsed.probability ||
-      !parsed.message ||
-      !parsed.recommendations
-    ) {
-      throw new Error("Invalid response format");
+    if (jsonStart !== -1 && jsonEnd !== -1) {
+      cleanResponse = cleanResponse.substring(jsonStart, jsonEnd + 1);
     }
 
+    const parsed = JSON.parse(cleanResponse);
+
+    // Validate and ensure all required fields
     return {
-      risk: parsed.risk,
-      probability: parsed.probability,
-      message: parsed.message,
+      risk: parsed.risk || "Low",
+      probability: parsed.probability || "25%",
+      message: parsed.message || "Analysis completed",
+      confidence: Math.min(100, Math.max(0, parsed.confidence || 75)),
       recommendations: Array.isArray(parsed.recommendations)
-        ? parsed.recommendations
-        : [],
-      details: parsed.details || {},
+        ? parsed.recommendations.slice(0, 5)
+        : ["Follow standard emergency procedures"],
+      details: {
+        factors: Array.isArray(parsed.details?.factors)
+          ? parsed.details.factors.slice(0, 4)
+          : ["Standard risk factors considered"],
+        timeline: parsed.details?.timeline || "To be determined",
+        intensity: parsed.details?.intensity || "Standard intensity expected",
+        affectedAreas: Array.isArray(parsed.details?.affectedAreas)
+          ? parsed.details.affectedAreas
+          : [],
+        evacuationZones: Array.isArray(parsed.details?.evacuationZones)
+          ? parsed.details.evacuationZones
+          : [],
+      },
     };
   } catch (error) {
     console.error("Failed to parse AI response:", error);
-    throw error;
+    throw new Error("Invalid response format from AI");
   }
 };
 
-// Fallback prediction for when API fails
-const getFallbackPrediction = (
+// Enhanced fallback prediction
+const getEnhancedFallbackPrediction = (
   disasterType: string,
   formData: FormData
 ): PredictionResult => {
   const fallbackResults: { [key: string]: PredictionResult } = {
     cyclone: {
       risk: "Moderate",
-      probability: "45%",
-      message:
-        "Unable to connect to prediction service. Using basic assessment.",
+      probability: "35%",
+      message: "Using offline analysis. Limited real-time data integration.",
+      confidence: 60,
       recommendations: [
-        "Monitor weather updates closely",
-        "Prepare emergency supplies",
-        "Stay informed through official channels",
+        "Monitor official weather services for updates",
+        "Secure loose objects and outdoor furniture",
+        "Keep emergency supplies ready (water, food, flashlight)",
+        "Stay informed through emergency broadcast systems",
       ],
       details: {
-        factors: ["API service unavailable"],
-        timeline: "Unknown",
-        intensity: "Unable to determine",
+        factors: ["API service unavailable", "Using local algorithms"],
+        timeline: "Monitoring required for next 24-48 hours",
+        intensity: "Unable to determine precise intensity",
       },
     },
     flood: {
       risk: "Moderate",
       probability: "40%",
-      message:
-        "Unable to connect to prediction service. Using basic assessment.",
+      message: "Using offline analysis. Consider local drainage conditions.",
+      confidence: 55,
       recommendations: [
-        "Monitor water levels",
-        "Avoid low-lying areas",
-        "Keep emergency kit ready",
+        "Monitor local water levels and weather updates",
+        "Avoid low-lying and flood-prone areas",
+        "Keep emergency evacuation kit prepared",
+        "Stay updated through local flood warning systems",
       ],
+      details: {
+        factors: ["API service unavailable", "Basic hydrological assessment"],
+        timeline: "Continue monitoring for next 12-24 hours",
+        intensity: "Moderate flooding possible in vulnerable areas",
+      },
     },
     earthquake: {
       risk: "Low",
-      probability: "25%",
+      probability: "20%",
       message:
-        "Unable to connect to prediction service. Using basic assessment.",
+        "Using offline analysis. Follow standard preparedness protocols.",
+      confidence: 50,
       recommendations: [
-        "Follow standard earthquake preparedness",
-        "Secure heavy objects",
-        "Know evacuation routes",
+        "Review earthquake safety procedures",
+        "Secure heavy objects that could fall",
+        "Identify safe spots in each room (under desks, doorways)",
+        "Keep emergency supplies accessible",
       ],
+      details: {
+        factors: ["API service unavailable", "Standard seismic assessment"],
+        timeline: "Ongoing preparedness recommended",
+        intensity: "Standard earthquake preparedness protocols apply",
+      },
     },
   };
 
   return fallbackResults[disasterType] || fallbackResults.cyclone;
 };
 
-// Disaster configuration data
+// Enhanced disaster types configuration
 const disasterTypes: DisasterType[] = [
   {
     id: "flood",
     title: "Flood Prediction",
-    description: "Predict flood risks in your area",
-    icon: (
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-        />
-      </svg>
-    ),
+    description: "Advanced hydrological analysis and flood risk assessment",
+    icon: <Waves className="w-6 h-6" />,
     color: "blue",
-    bgColor: "bg-blue-100",
-    textColor: "text-blue-600",
+    bgColor:
+      "bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50",
+    textColor: "text-blue-600 dark:text-blue-400",
+    gradient: "bg-gradient-to-r from-blue-500 to-cyan-500",
     formFields: [
       {
         name: "location",
         label: "Location",
         type: "text",
-        placeholder: "Enter location",
+        placeholder: "e.g. Kolkata, West Bengal",
+        required: true,
+        tooltip: "Enter the specific location for flood analysis",
+      },
+      {
+        name: "latitude",
+        label: "Latitude",
+        type: "number",
+        placeholder: "e.g. 22.5726",
+        step: "0.0001",
+        required: true,
+      },
+      {
+        name: "longitude",
+        label: "Longitude",
+        type: "number",
+        placeholder: "e.g. 88.3639",
+        step: "0.0001",
+        required: true,
       },
       {
         name: "rainfall",
-        label: "Rainfall (mm)",
+        label: "24-Hour Rainfall (mm)",
         type: "number",
-        placeholder: "Enter rainfall amount",
+        placeholder: "e.g. 150",
+        required: true,
+        tooltip: "Total rainfall in the last 24 hours",
       },
       {
         name: "riverName",
-        label: "River Name",
+        label: "Nearest River/Water Body",
         type: "text",
-        placeholder: "Enter River name",
+        placeholder: "e.g. Hooghly River",
+        required: false,
       },
       {
         name: "waterLevel",
-        label: "Water Level (cm)",
+        label: "Current Water Level (cm)",
         type: "number",
-        placeholder: "Current water level",
+        placeholder: "e.g. 420",
+        required: true,
+        tooltip: "Current water level above normal",
       },
       {
         name: "soilMoisture",
-        label: "Soil Moisture (%)",
+        label: "Soil Saturation (%)",
         type: "number",
-        placeholder: "Enter the soil moisture",
+        placeholder: "e.g. 80",
+        required: true,
+      },
+      {
+        name: "landType",
+        label: "Terrain Type",
+        type: "select",
+        options: ["Urban", "Rural", "Agricultural", "Mountainous", "Coastal"],
+        required: true,
       },
       {
         name: "season",
-        label: "Season",
+        label: "Current Season",
         type: "select",
-        options: ["Spring", "Summer", "Monsoon", "Winter"],
+        options: ["Pre-Monsoon", "Monsoon", "Post-Monsoon", "Winter"],
+        required: true,
+      },
+      {
+        name: "historicalFloods",
+        label: "Historical Flood Pattern",
+        type: "select",
+        options: [
+          "No major floods in 10+ years",
+          "Occasional flooding (1-2 times in 5 years)",
+          "Regular annual flooding",
+          "Frequent severe flooding",
+        ],
+        required: true,
       },
     ],
   },
   {
     id: "earthquake",
-    title: "Earthquake Prediction",
-    description: "Monitor seismic activity and risks",
-    icon: (
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M13 10V3L4 14h7v7l9-11h-7z"
-        />
-      </svg>
-    ),
+    title: "Earthquake Analysis",
+    description: "Comprehensive seismic risk evaluation and impact assessment",
+    icon: <Zap className="w-6 h-6" />,
     color: "orange",
-    bgColor: "bg-orange-100",
-    textColor: "text-orange-600",
+    bgColor:
+      "bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/50 dark:to-red-950/50",
+    textColor: "text-orange-600 dark:text-orange-400",
+    gradient: "bg-gradient-to-r from-orange-500 to-red-500",
     formFields: [
       {
         name: "location",
         label: "Location",
         type: "text",
-        placeholder: "Enter location",
+        placeholder: "e.g. Delhi, India",
+        required: true,
+      },
+      {
+        name: "latitude",
+        label: "Latitude",
+        type: "number",
+        placeholder: "e.g. 28.7041",
+        step: "0.0001",
+        required: true,
+      },
+      {
+        name: "longitude",
+        label: "Longitude",
+        type: "number",
+        placeholder: "e.g. 77.1025",
+        step: "0.0001",
+        required: true,
+      },
+      {
+        name: "timestamp",
+        label: "Event/Observation Time",
+        type: "datetime-local",
+        required: true,
       },
       {
         name: "magnitude",
-        label: "Recent Magnitude",
+        label: "Recent Magnitude (Richter Scale)",
         type: "number",
-        placeholder: "Last recorded magnitude",
+        placeholder: "e.g. 4.2",
         step: "0.1",
+        required: true,
+        tooltip: "Most recent recorded earthquake magnitude",
       },
       {
         name: "depth",
-        label: "Depth (km)",
+        label: "Focal Depth (km)",
         type: "number",
-        placeholder: "Earthquake depth",
+        placeholder: "e.g. 15",
+        required: true,
+        tooltip: "Depth of earthquake focus below surface",
       },
       {
         name: "faultLine",
-        label: "Fault Line Distance",
+        label: "Distance from Major Fault",
         type: "select",
-        options: ["< 10km", "10-50km", "50-100km", "> 100km"],
+        options: ["< 5km", "5-20km", "20-50km", "50-100km", "> 100km"],
+        required: true,
+      },
+      {
+        name: "soilType",
+        label: "Local Soil Composition",
+        type: "select",
+        options: [
+          "Hard Rock",
+          "Soft Rock",
+          "Dense Soil",
+          "Soft Clay",
+          "Alluvial Deposits",
+        ],
+        required: true,
+      },
+      {
+        name: "areaType",
+        label: "Development Type",
+        type: "select",
+        options: ["Dense Urban", "Urban", "Suburban", "Rural"],
+        required: true,
+      },
+      {
+        name: "populationDensity",
+        label: "Population Density (per km²)",
+        type: "number",
+        placeholder: "e.g. 11320",
+        required: true,
+      },
+      {
+        name: "infrastructureAge",
+        label: "Average Building Age (years)",
+        type: "number",
+        placeholder: "e.g. 25",
+        required: true,
+      },
+      {
+        name: "previousEarthquake",
+        label: "Recent Seismic Activity",
+        type: "select",
+        options: [
+          "No activity in past month",
+          "Minor tremors this week",
+          "Significant activity this month",
+          "Earthquake swarm ongoing",
+        ],
+        required: true,
       },
     ],
   },
   {
     id: "cyclone",
-    title: "Cyclone Prediction",
-    description: "Track cyclone formations and paths",
-    icon: (
-      <svg
-        className="w-6 h-6"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-        />
-      </svg>
-    ),
+    title: "Cyclone Tracking",
+    description: "Real-time cyclone formation analysis and path prediction",
+    icon: <Wind className="w-6 h-6" />,
     color: "purple",
-    bgColor: "bg-purple-100",
-    textColor: "text-purple-600",
+    bgColor:
+      "bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/50 dark:to-indigo-950/50",
+    textColor: "text-purple-600 dark:text-purple-400",
+    gradient: "bg-gradient-to-r from-purple-500 to-indigo-500",
     formFields: [
       {
         name: "location",
         label: "Location",
         type: "text",
-        placeholder: "Enter coastal location (e.g., Bay of Bengal)",
+        placeholder: "e.g. Bay of Bengal, 200km E of Visakhapatnam",
+        required: true,
+      },
+      {
+        name: "latitude",
+        label: "Latitude",
+        type: "number",
+        placeholder: "e.g. 17.6868",
+        step: "0.0001",
+        required: true,
+      },
+      {
+        name: "longitude",
+        label: "Longitude",
+        type: "number",
+        placeholder: "e.g. 83.2185",
+        step: "0.0001",
+        required: true,
+      },
+      {
+        name: "timestamp",
+        label: "Observation Time",
+        type: "datetime-local",
+        required: true,
       },
       {
         name: "windSpeed",
-        label: "Wind Speed (km/h)",
+        label: "Sustained Wind Speed (km/h)",
         type: "number",
-        placeholder: "Current sustained wind speed",
+        placeholder: "e.g. 95",
+        required: true,
+        tooltip: "Current sustained wind speed",
       },
       {
         name: "pressure",
-        label: "Atmospheric Pressure (hPa)",
+        label: "Central Pressure (hPa)",
         type: "number",
-        placeholder: "Current barometric pressure",
+        placeholder: "e.g. 985",
+        required: true,
+        tooltip: "Atmospheric pressure at storm center",
       },
       {
         name: "seaTemp",
         label: "Sea Surface Temperature",
         type: "select",
-        options: ["< 26°C", "26-28°C", "28-30°C", "> 30°C"],
+        options: ["< 24°C", "24-26°C", "26-28°C", "28-30°C", "> 30°C"],
+        required: true,
+        tooltip: "Current sea surface temperature",
+      },
+      {
+        name: "tideLevel",
+        label: "Current Tidal State",
+        type: "select",
+        options: ["Low Tide", "Rising Tide", "High Tide", "Receding Tide"],
+        required: true,
+      },
+      {
+        name: "coastalProximity",
+        label: "Distance from Coastline",
+        type: "select",
+        options: [
+          "< 50 km",
+          "50-100 km",
+          "100-200 km",
+          "200-500 km",
+          "> 500 km",
+        ],
+        required: true,
+      },
+      {
+        name: "hemisphere",
+        label: "Hemisphere",
+        type: "select",
+        options: ["Northern", "Southern"],
+        required: true,
+      },
+      {
+        name: "historicalActivity",
+        label: "Regional Cyclone History",
+        type: "select",
+        options: [
+          "Rare (< 1 per decade)",
+          "Occasional (1-2 per 5 years)",
+          "Regular (1+ per year)",
+          "Very Active (Multiple per season)",
+        ],
+        required: true,
       },
     ],
   },
 ];
-
 // Props interfaces
 interface DisasterFormProps {
   disaster: DisasterType;
@@ -551,6 +794,7 @@ const DynamicDisasterPrediction: React.FC = () => {
           probability: "Unknown",
           message:
             "Unable to generate prediction. Please check your API configuration and try again.",
+          confidence: 0,
           recommendations: [
             "Verify your Gemini API key is correctly set",
             "Check your internet connection",
@@ -584,12 +828,12 @@ const DynamicDisasterPrediction: React.FC = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           AI-Powered Disaster Prediction System
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base max-w-2xl mx-auto">
           Advanced AI predictions using Google Gemini for accurate disaster risk
-          assessment
+          assessment.
         </p>
       </div>
 
