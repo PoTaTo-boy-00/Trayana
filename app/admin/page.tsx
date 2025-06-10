@@ -82,38 +82,38 @@ export default function AdminDashboard() {
     fetchPersonnel();
   }, []);
 
-  useEffect(() => {
-    // Simulate AI prediction (replace with actual API call)
-    setPrediction({
-      disasterType: "Flood",
-      probability: 0.75,
-      severity: "High",
-      expectedAreas: ["Jalpaiguri", "Siliguri"],
-      recommendedActions: [
-        "Pre-position emergency response teams",
-        "Alert healthcare facilities",
-        "Prepare evacuation routes",
-      ],
-    });
+  // useEffect(() => {
+  //   // Simulate AI prediction (replace with actual API call)
+  //   setPrediction({
+  //     disasterType: "Flood",
+  //     probability: 0.75,
+  //     severity: "High",
+  //     expectedAreas: ["Jalpaiguri", "Siliguri"],
+  //     recommendedActions: [
+  //       "Pre-position emergency response teams",
+  //       "Alert healthcare facilities",
+  //       "Prepare evacuation routes",
+  //     ],
+  //   });
 
-    // Simulate resource allocation data (replace with actual data)
-    setResourceData([
-      { date: "2025-03-10", allocated: 150 },
-      { date: "2025-03-11", allocated: 280 },
-      { date: "2025-03-12", allocated: 200 },
-      { date: "2025-03-13", allocated: 350 },
-      { date: "2025-03-14", allocated: 320 },
-    ]);
+  //   // Simulate resource allocation data (replace with actual data)
+  //   setResourceData([
+  //     { date: "2025-03-10", allocated: 150 },
+  //     { date: "2025-03-11", allocated: 280 },
+  //     { date: "2025-03-12", allocated: 200 },
+  //     { date: "2025-03-13", allocated: 350 },
+  //     { date: "2025-03-14", allocated: 320 },
+  //   ]);
 
-    setOptimizedAllocation({
-      recommendation: "Based on current trends and AI analysis:",
-      suggestions: [
-        "Increase medical supplies by 20%",
-        "Redistribute food supplies to northern district",
-        "Deploy additional personnel to high-risk areas",
-      ],
-    });
-  }, []);
+  //   setOptimizedAllocation({
+  //     recommendation: "Based on current trends and AI analysis:",
+  //     suggestions: [
+  //       "Increase medical supplies by 20%",
+  //       "Redistribute food supplies to northern district",
+  //       "Deploy additional personnel to high-risk areas",
+  //     ],
+  //   });
+  // }, []);
 
   return (
     <div className="space-y-6">
