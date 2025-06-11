@@ -40,23 +40,41 @@ export const RequestResourceForm = ({ onSubmit }: RequestResourceFormProps) => {
 
   useEffect(() => {
     const fetchOrgData = async () => {
+      // Try getting user from localStorage
+      const storedUser = localStorage.getItem("supabaseUser");
+      const user = storedUser ? JSON.parse(storedUser) : null;
+
+      if (!user) {
+        console.error("User not found in localStorage");
+        return;
+      }
+
+      console.log("Retrieved user from localStorage:", user);
+
+      // console.log(user.id);
+
+      // Fetch organization based on user (assuming user has organization_id or is admin)
       const { data, error } = await supabase
         .from("organizations")
-        .select("id, coverage");
+        .select("id, coverage")
+        .eq("admin_id", user.id) // or change to 'organization_id' if you're matching via metadata
+        .single();
+
+      // console.log(data);
 
       if (error) {
         console.error("Error fetching organization data:", error);
         return;
       }
 
-      if (data && data.length > 0) {
-        setOrganizationId(data[0].id);
-        const center = data[0].coverage?.center;
+      if (data) {
+        setOrganizationId(data.id);
+        const center = data.coverage?.center;
         if (center) {
           setFormData((prev) => ({
             ...prev,
             location: { lat: center.lat, lng: center.lng },
-            organizationId: data[0].id,
+            organizationId: data.id,
           }));
         }
       }

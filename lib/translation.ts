@@ -247,6 +247,43 @@ export const translations: TranslationDictionary = {
       longitude: "Longitude",
       submitButton: "Add Organization",
     },
+    resources: {
+      title: "Resource Management",
+      filter: "Filter",
+
+      btnName: "Add Resource",
+
+      formTitle: "Add New Resource",
+    },
+    resourceForm: {
+      name: "Name",
+      type: "Type",
+      item: {
+        food: "Food",
+        medicine: "Medicine",
+        shelter: "Shelter",
+        equipment: "Equipment",
+      },
+      quantity: "Quantity",
+      unit: "Unit",
+      location: "Location (Auto-detect)",
+      detect_location: "Detect Location",
+      locStatement: "No address detected yet.",
+      expiryDate: "Expiry Date",
+      conditions: "Conditions",
+      cdt_placeholder: "Enter conditions separated by commas",
+      add_Resource: "Add Resource",
+    },
+    ResourcesCard: {
+      type: "Type",
+      quantity: "Quantity",
+      location: "Location",
+      status: "Status",
+      conditions: "Conditions",
+      expiryDate: "Expiry Date",
+      requestedBy: "Requested By",
+      allocateResources: "Allocate Resources",
+    },
   },
   hi: {
     //!alertBadge
@@ -483,5 +520,42 @@ export const translations: TranslationDictionary = {
     },
 
     //!organizationForm
+    resources: {
+      title: "संसाधन प्रबंधन",
+      filter: "फ़िल्टर",
+
+      btnName: "संसाधन जोड़ें",
+
+      formTitle: "नया संसाधन जोड़ें",
+    },
+    resourceForm: {
+      name: "नाम",
+      type: "प्रकार",
+      item: {
+        food: "भोजन",
+        medicine: "दवा",
+        shelter: "आश्रय",
+        equipment: "उपकरण",
+      },
+      quantity: "मात्रा",
+      unit: "इकाई",
+      location: "स्थान (स्वतः पता लगाएं)",
+      detect_location: "स्थान पता करें",
+      locStatement: "अभी तक कोई पता नहीं मिला।",
+      expiryDate: "समाप्ति तिथि",
+      conditions: "शर्तें",
+      cdt_placeholder: "शर्तें कॉमा से अलग करें",
+      add_Resource: "संसाधन जोड़ें",
+    },
+    ResourcesCard: {
+      type: "प्रकार",
+      quantity: "मात्रा",
+      location: "स्थान",
+      status: "स्थिति",
+      conditions: "शर्तें",
+      expiryDate: "समाप्ति तिथि",
+      requestedBy: "अनुरोधकर्ता",
+      allocateResources: "संसाधन आवंटित करें",
+    },
   },
 };

@@ -3,6 +3,8 @@
 
 import { Plus, Cross } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -15,13 +17,15 @@ import { ResourceCard } from "@/components/resource-card";
 
 import { ResourceForm } from "@/components/resource-forms";
 import { RequestResourceForm } from "@/components/request-resource-form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function ResourcesPage() {
   const {
     resources,
     requestedResources,
     orgDetails,
+    userDetails,
     isLoading,
     addResource,
     requestResource,
@@ -30,6 +34,40 @@ export default function ResourcesPage() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isReqDialogOpen, setIsReqDialogOpen] = useState(false);
+  const [currOrgID, setCurrOrgID] = useState<string | null>(null);
+  const fetchCurrentOrgID = async () => {
+    if (!userDetails?.id) return;
+
+    const { data, error } = await supabase
+      .from("organizations")
+      .select("id")
+      .eq("admin_id", userDetails.id)
+      .single(); // ensures only one result
+
+    if (error) {
+      console.error("Error fetching current organization ID:", error);
+    } else {
+      setCurrOrgID(data?.id || null);
+      console.log("Current Org ID:", data?.id);
+    }
+  };
+
+  useEffect(() => {
+    fetchCurrentOrgID();
+  }, [userDetails]);
+
+  // console.log(orgDetails.adminId);
+  // // console.log("Filtering with org:", userDetails?.id);
+  // const userOrgId =
+  //   orgDetails.find((org) => org.admin_id === userDetails?.id)?.id || "";
+  // console.log(resources);
+  // console.log(
+  //   "Requested Resources:",
+  //   requestedResources.map((r) => ({
+  //     requestedBy: r.requestedBy,
+  //     id: r.id,
+  //   }))
+  // );
 
   return (
     <div className="space-y-6">
@@ -76,19 +114,28 @@ export default function ResourcesPage() {
       </div>
 
       <div className="grid gap-4">
-        {resources
-          .filter((res) => !res.is_deleted)
-          .map((resource) => (
-            <ResourceCard key={resource.id} resource={resource} />
-          ))}
+        {isLoading ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
+          </div>
+        ) : (
+          resources
+            .filter((res) => !res.is_deleted)
+            .map((resource) => (
+              <ResourceCard key={resource.id} resource={resource} />
+            ))
+        )}
       </div>
-
       <div className="text-xl font-semibold">Requested Resources</div>
       <div className="grid gap-4">
-        {!isLoading &&
+        {isLoading ? (
+          <div className="flex justify-center py-10">
+            <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
+          </div>
+        ) : (
           orgDetails.length > 0 &&
           requestedResources
-            .filter((resource) => resource.organizationId === orgDetails[0].id)
+            .filter((resource) => resource.organizationId === currOrgID)
             .map((resource) => (
               <ResourceCard
                 key={resource.id}
@@ -96,7 +143,8 @@ export default function ResourcesPage() {
                 isRequest
                 onDelete={deleteRequestedResource}
               />
-            ))}
+            ))
+        )}
       </div>
     </div>
   );

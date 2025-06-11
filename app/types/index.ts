@@ -92,6 +92,7 @@ export interface requestResources {
   location: GeoLocation;
   status: RequestStatus;
   organizationId: string;
+  organizationName?: string;
   lastUpdated: string;
   expiryDate?: string;
   conditions?: string[];

@@ -45,6 +45,16 @@ export default function OrganizationPage() {
         data: { session },
       } = await supabase.auth.getSession();
 
+      console.log(session?.user);
+
+      if (session?.user) {
+        // Save user object in localStorage
+        localStorage.setItem("supabaseUser", JSON.stringify(session?.user));
+        console.log("User saved to localStorage:", session?.user);
+      } else {
+        console.error("No user found in session");
+      }
+
       if (!session?.user) {
         setError("Please log in to view organization data");
         return;
