@@ -165,19 +165,23 @@ export default function OrganizationsPage() {
                     size="sm"
                     onClick={() => handleDeleteOrganization(org.id)}
                   >
-                    Delete
+                    {t("organizations.delete")}
                   </Button>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("organizations.Type")}
+                  </p>
                   <p className="font-medium capitalize">{org.type}</p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-muted-foreground">Capabilities</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("organizations.Capabilities")}
+                  </p>
                   <div className="flex flex-wrap gap-2 mt-1">
                     {org.capabilities.map((capability) => (
                       <span

@@ -1,4 +1,6 @@
-interface TranslationDictionary {
+import { string } from "zod";
+
+export interface TranslationDictionary {
   [language: string]: {
     //!ui
     ui: {
@@ -42,15 +44,32 @@ interface TranslationDictionary {
         organizations: string;
         resources: string;
       };
+      // legend_title: string;
       cardTitle: string;
+      Available_Resources: string;
+      Requested_Resources: string;
+      Map_Style: string;
+      Roadmap: string;
+      Satellite: string;
+      Hybrid: string;
+      Terrain: string;
+      Enable_Clustering: string;
+      Statistics: string;
+      Organizations: string;
+      // Available_Resources: string;
     };
 
     //!messages
     messages: {
       title: string;
       button: string;
+      msgType: {
+        broadcast: string;
+        direct: string;
+        group: string;
+      };
     };
-    //message form
+    //!message form
     messageForm: {
       title: string;
       type: {
@@ -249,7 +268,10 @@ interface TranslationDictionary {
     organizations: {
       title: string;
       button: string;
+      delete: string;
       dialogTitle: string;
+      Type: string;
+      Capabilities: string;
     };
 
     //!organizationForm
@@ -324,15 +346,15 @@ interface TranslationDictionary {
 
     //!Allocate Resource
 
-    // allocateResourceForm: {
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    // };
+    allocateResourceForm: {
+      Allocate_Resource: string;
+      Request_for: string;
+      Allocate_Quantity: string;
+      Available: string;
+      alert: string;
+      Confirm_Allocation: string;
+      // Allocate Resources:string
+    };
 
     //!Requuested Resource
 
@@ -345,6 +367,57 @@ interface TranslationDictionary {
       expiryDate: string;
       requestedBy: string;
       allocateResources: string;
+    };
+
+    //! Analytics Dashboard
+    analytics: {
+      title: string;
+      lastUpadte: string;
+      loading: string;
+      Timeline: string;
+      noPredicitonTimeline: string;
+      prority: string;
+      nullPrority: string;
+      gapAnalysis: {
+        title: string;
+        missingTypes: string;
+        need: string;
+        null: string;
+      };
+      immediate: {
+        title: string;
+        null: string;
+      };
+      surplous: {
+        title: string;
+        extra: string;
+        location: string;
+        null: string;
+      };
+      emergingNeeds: {
+        title: string;
+        predicted: string;
+        confidence: string;
+        null: string;
+      };
+      depletion: {
+        title: string;
+        Resource: string;
+        Name: string;
+        Current: string;
+        Depletion_Time: string;
+        Probability: string;
+        Trend: string;
+        Velocity: string;
+        Confidence: string;
+        null: string;
+      };
+      history: {
+        title: string;
+        total: string;
+        active: string;
+        pending: string;
+      };
     };
   };
 }

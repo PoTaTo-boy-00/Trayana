@@ -133,7 +133,7 @@ export default function AlertsPage() {
     if (alerts.length > 0) {
       translateAlerts();
     }
-  }, [alerts, language]); // Change dependency from locale to language
+  }, [alerts, language]);
 
   return (
     <div className="space-y-6">

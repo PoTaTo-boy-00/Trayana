@@ -5,6 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { supabase } from "@/lib/supabase";
 import { BarChart, PieChart } from "@/app/components/charts";
 import PredictionTimeline from "@/app/components/predictiveTimeline";
+import { useTranslation } from "@/lib/translation-context";
 // import PredictionTimeline from "@/app/components/charts/PredictionTimeline";
 
 interface ResourceHistory {
@@ -465,11 +466,12 @@ ${JSON.stringify({
       clearInterval(interval);
     };
   }, [setupRealTimeSubscriptions, isClient]);
+  const { t } = useTranslation();
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Resource Analytics Dashboard</h1>
+        <h1 className="text-2xl font-bold">{t("analytics.title")}</h1>
         <div className="flex items-center space-x-4">
           <div
             className={`flex items-center space-x-2 ${
@@ -488,7 +490,7 @@ ${JSON.stringify({
             </span>
           </div>
           <div className="text-sm text-gray-600">
-            Last Update:{" "}
+            {t("analytics.lastUpadte")}:{" "}
             {isClient && lastUpdate
               ? lastUpdate.toLocaleTimeString()
               : "Initializing..."}
@@ -505,26 +507,26 @@ ${JSON.stringify({
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2">Performing advanced analytics...</span>
+          <span className="ml-2">{t("analytics.loading")}</span>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {/* 24-Hour Prediction Timeline */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">
-              24-Hour Resource Prediction Timeline
+              {t("analytics.Timeline")}
             </h2>
             {predictionTimeline.length > 0 ? (
               <PredictionTimeline data={predictionTimeline} />
             ) : (
-              <p>No prediction timeline available</p>
+              <p>{t("analytics.noPredicitonTimeline")}</p>
             )}
           </div>
 
           {/* Enhanced Priority Scores */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">
-              Location Priority Scores (Real-time Updated)
+              {t("analytics.prority")}
             </h2>
             {Object.keys(priorityScores).length > 0 ? (
               <BarChart
@@ -536,18 +538,20 @@ ${JSON.stringify({
                 )}
               />
             ) : (
-              <p>No priority data available</p>
+              <p>{t("analytics.nullPrority")}</p>
             )}
           </div>
 
           {/* Enhanced Gap Analysis */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">
-              Advanced Resource Gap Analysis
+              {t("analytics.gapAnalysis.title")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
-                <h3 className="font-medium text-red-600">Missing Types</h3>
+                <h3 className="font-medium text-red-600">
+                  {t("analytics.gapAnalysis.missingTypes")}
+                </h3>
                 {gapAnalysis.missingTypes?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
                     {gapAnalysis.missingTypes.map(
@@ -557,7 +561,10 @@ ${JSON.stringify({
                             {item.name || item.type}
                           </span>
                           <br />
-                          <span>Need: {item.quantityNeeded} units</span>
+                          <span>
+                            {t("analytics.gapAnalysis.need")}:{" "}
+                            {item.quantityNeeded} units
+                          </span>
                           {item.trend && (
                             <span className="text-gray-600">
                               {" "}
@@ -569,12 +576,16 @@ ${JSON.stringify({
                     )}
                   </ul>
                 ) : (
-                  <p className="text-sm text-gray-600">No missing resources</p>
+                  <p className="text-sm text-gray-600">
+                    {t("analytics.gapAnalysis.null")}
+                  </p>
                 )}
               </div>
 
               <div>
-                <h3 className="font-medium text-orange-600">Immediate Needs</h3>
+                <h3 className="font-medium text-orange-600">
+                  {t("analytics.immediate.title")}
+                </h3>
                 {gapAnalysis.immediateNeeds?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
                     {gapAnalysis.immediateNeeds.map(
@@ -591,13 +602,15 @@ ${JSON.stringify({
                     )}
                   </ul>
                 ) : (
-                  <p className="text-sm text-gray-600">No immediate needs</p>
+                  <p className="text-sm text-gray-600">
+                    {t("analytics.immediate.null")}
+                  </p>
                 )}
               </div>
 
               <div>
                 <h3 className="font-medium text-green-600">
-                  Surplus Resources
+                  {t("analytics.surplous.title")}
                 </h3>
                 {gapAnalysis.surplusResources?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
@@ -606,38 +619,11 @@ ${JSON.stringify({
                         <li key={`surplus-${index}`} className="text-sm">
                           <span className="font-medium">{item.name}</span>
                           <br />
-                          Extra: {item.quantity}
+                          {t("analytics.surplous.extra")}: {item.quantity}
                           {item.location && (
                             <span className="block text-xs text-gray-500">
-                              Location: {item.location}
-                            </span>
-                          )}
-                        </li>
-                      )
-                    )}
-                  </ul>
-                ) : (
-                  <p className="text-sm text-gray-600">No surplus resources</p>
-                )}
-              </div>
-
-              <div>
-                <h3 className="font-medium text-blue-600">Emerging Needs</h3>
-                {gapAnalysis.emergingNeeds?.length > 0 ? (
-                  <ul className="list-disc pl-5 space-y-1">
-                    {gapAnalysis.emergingNeeds.map(
-                      (item: any, index: number) => (
-                        <li key={`emerging-${index}`} className="text-sm">
-                          <span className="font-medium">{item.name}</span>
-                          <br />
-                          <span>Predicted: {item.predictedNeed} units</span>
-                          <br />
-                          <span className="text-gray-600">
-                            in {item.timeframe}
-                          </span>
-                          {item.confidence && (
-                            <span className="block text-xs text-gray-500">
-                              Confidence: {item.confidence * 100}%
+                              {t("analytics.surplous.location")}:{" "}
+                              {item.location}
                             </span>
                           )}
                         </li>
@@ -646,7 +632,43 @@ ${JSON.stringify({
                   </ul>
                 ) : (
                   <p className="text-sm text-gray-600">
-                    No emerging needs predicted
+                    {t("analytics.surplous.null")}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <h3 className="font-medium text-blue-600">
+                  {"analytics.emergingNeeds.title"}
+                </h3>
+                {gapAnalysis.emergingNeeds?.length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-1">
+                    {gapAnalysis.emergingNeeds.map(
+                      (item: any, index: number) => (
+                        <li key={`emerging-${index}`} className="text-sm">
+                          <span className="font-medium">{item.name}</span>
+                          <br />
+                          <span>
+                            {t("analytics.emergingNeeds.predicted")}:{" "}
+                            {item.predictedNeed} units
+                          </span>
+                          <br />
+                          <span className="text-gray-600">
+                            in {item.timeframe}
+                          </span>
+                          {item.confidence && (
+                            <span className="block text-xs text-gray-500">
+                              {t("analytics.emergingNeeds.confidence")}:{" "}
+                              {item.confidence * 100}%
+                            </span>
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-gray-600">
+                    {t("analytics.emergingNeeds.null")}
                   </p>
                 )}
               </div>
@@ -656,7 +678,7 @@ ${JSON.stringify({
           {/* Enhanced Depletion Predictions */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">
-              Advanced Depletion Predictions
+              {t("analytics.depletion.title")}
             </h2>
             {depletionPredictions.length > 0 ? (
               <>
@@ -672,14 +694,28 @@ ${JSON.stringify({
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="text-left border-b bg-gray-50 dark:bg-gray-700">
-                        <th className="p-3">Resource</th>
-                        <th className="p-3">Name</th>
-                        <th className="p-3">Current</th>
-                        <th className="p-3">Depletion Time</th>
-                        <th className="p-3">Probability</th>
-                        <th className="p-3">Trend</th>
-                        <th className="p-3">Velocity</th>
-                        <th className="p-3">Confidence</th>
+                        <th className="p-3">
+                          {t("analytics.depletion.Resource")}
+                        </th>
+                        <th className="p-3">{t("analytics.depletion.Name")}</th>
+                        <th className="p-3">
+                          {t("analytics.depletion.Current")}
+                        </th>
+                        <th className="p-3">
+                          {t("analytics.depletion.Depletion_Time")}
+                        </th>
+                        <th className="p-3">
+                          {t("analytics.depletion.Probability")}
+                        </th>
+                        <th className="p-3">
+                          {t("analytics.depletion.Trend")}
+                        </th>
+                        <th className="p-3">
+                          {t("analytics.depletion.Velocity")}
+                        </th>
+                        <th className="p-3">
+                          {t("analytics.depletion.Confidence")}
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -745,14 +781,14 @@ ${JSON.stringify({
                 </div>
               </>
             ) : (
-              <p>No depletion predictions available</p>
+              <p>{"analytics.depletion.null"}</p>
             )}
           </div>
 
           {/* Resource History Summary */}
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
             <h2 className="text-xl font-semibold mb-4">
-              Resource History Overview
+              {t("analytics.history.title")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="text-center">
@@ -760,20 +796,24 @@ ${JSON.stringify({
                   {resourceHistory.length}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Total History Records
+                  {t("analytics.history.total")}
                 </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
                   {availableResources.length}
                 </div>
-                <div className="text-sm text-gray-600">Active Resources</div>
+                <div className="text-sm text-gray-600">
+                  {t("analytics.history.active")}
+                </div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600">
                   {requestedResources.length}
                 </div>
-                <div className="text-sm text-gray-600">Pending Requests</div>
+                <div className="text-sm text-gray-600">
+                  {t("analytics.history.pending")}
+                </div>
               </div>
             </div>
           </div>
