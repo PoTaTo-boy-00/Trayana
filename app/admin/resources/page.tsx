@@ -25,6 +25,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { set } from "date-fns";
 import { getReadableAddress } from "@/data/geoLocation";
+import { useTranslation } from "@/lib/translation-context";
+import { useResources } from "@/hooks/use-resources";
 
 export default function ResourcesPage() {
   const [selectedRequest, setSelectedRequest] =
@@ -38,6 +40,10 @@ export default function ResourcesPage() {
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const { orgDetails } = useResources();
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -201,7 +207,7 @@ export default function ResourcesPage() {
             quantity: 0,
             status_after_event: "deleted",
             location: `${resourceData.location.lat}, ${resourceData.location.lng}`,
-            performed_by: "admin", 
+            performed_by: "admin",
             remarks: `Resource ${resourceData.name} was deleted.`,
             resource_id: resourceData.id,
           },
@@ -223,21 +229,21 @@ export default function ResourcesPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Resource Management</h1>
+        <h1 className="text-3xl font-bold">{t("resources.title")}</h1>
         <div className="flex gap-2">
           <Button variant="outline">
-            <Filter className="mr-2 h-4 w-4" /> Filter
+            <Filter className="mr-2 h-4 w-4" /> {t("resources.filter")}
           </Button>
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add Resource
+                <Plus className="mr-2 h-4 w-4" /> {t("resources.btnName")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Resource</DialogTitle>
+                <DialogTitle>{t("resource.formTitle")}</DialogTitle>
               </DialogHeader>
 
               <ResourceForm onSubmit={handleAddResource} />
@@ -279,17 +285,23 @@ export default function ResourcesPage() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">Type</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("ResourcesCard.type")}
+                    </p>
                     <p className="font-medium">{resource.type}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Quantity</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("ResourcesCard.quantity")}
+                    </p>
                     <p className="font-medium">
                       {resource.quantity} {resource.unit}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("ResourcesCard.location")}
+                    </p>
                     <p className="font-medium">
                       {resource.location.lat}, {resource.location.lng}
                     </p>
@@ -298,7 +310,7 @@ export default function ResourcesPage() {
                   {resource.conditions && (
                     <div className="col-span-2">
                       <p className="text-sm text-muted-foreground">
-                        Conditions
+                        {t("ResourcesCard.conditions")}
                       </p>
                       <div className="flex gap-2 mt-1">
                         {resource.conditions.map((condition) => (
@@ -315,7 +327,7 @@ export default function ResourcesPage() {
                   {resource.expiryDate && (
                     <div className="col-span-2">
                       <p className="text-sm text-muted-foreground">
-                        Expiry Date
+                        {t("ResourcesCard.expiryDate")}
                       </p>
                       <p className="font-medium">{resource.expiryDate}</p>
                     </div>
@@ -350,28 +362,38 @@ export default function ResourcesPage() {
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("ResourcesCard.type")}
+                  </p>
                   <p className="font-medium">{resource.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Quantity</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("ResourcesCard.quantity")}
+                  </p>
                   <p className="font-medium">
                     {resource.quantity} {resource.unit}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Location</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("ResourcesCard.location")}
+                  </p>
                   <p className="font-medium">
                     {resource.location.lat}, {resource.location.lng}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("ResourcesCard.status")}
+                  </p>
                   <p className="font-medium">{resource.status}</p>
                 </div>
                 {resource.conditions && (
                   <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Conditions</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("ResourcesCard.conditions")}
+                    </p>
                     <div className="flex gap-2 mt-1">
                       {resource.conditions.map((condition) => (
                         <span
@@ -386,14 +408,20 @@ export default function ResourcesPage() {
                 )}
                 {resource.expiryDate && (
                   <div className="col-span-2">
-                    <p className="text-sm text-muted-foreground">Expiry Date</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("ResourcesCard.expiryDate")}
+                    </p>
                     <p className="font-medium">{resource.expiryDate}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-muted-foreground">Requested By</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("ResourcesCard.requestedBy")}
+                  </p>
                   <p className="font-medium">
-                    {resource.name || "Unknown Organization"}
+                    {orgDetails.find(
+                      (org) => org.id === resource.organizationId
+                    )?.name || "Unknown Organization"}
                   </p>
                 </div>
               </div>
@@ -410,18 +438,18 @@ export default function ResourcesPage() {
                   }}
                   disabled={resource.status === "allocated"}
                 >
-                  Allocate Resources
+                  {t("ResourcesCard.allocateResources")}
                 </Button>
               ) : (
                 <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                   <DialogTrigger asChild>
                     <Button>
-                      <Plus className="mr-2 h-4 w-4" /> Add Resource
+                      <Plus className="mr-2 h-4 w-4" /> {t("resources.btnName")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add New Resource</DialogTitle>
+                      <DialogTitle>{t("resources.formTitle")}</DialogTitle>
                     </DialogHeader>
 
                     <ResourceForm onSubmit={handleAddResource} />
@@ -576,6 +604,7 @@ interface ResourceFormProps {
 }
 
 function ResourceForm({ onSubmit }: ResourceFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<
     Omit<Resource, "id" | "lastUpdated">
   >({
@@ -647,7 +676,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Name</Label>
+        <Label>{t("resourceForm.name")}</Label>
         <Input
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -656,7 +685,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       </div>
 
       <div>
-        <Label>Type</Label>
+        <Label>{t("resourceForm.type")}</Label>
         <Select
           value={formData.type}
           onValueChange={(value) =>
@@ -664,19 +693,25 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select type" />
+            <SelectValue placeholder={t("resourceForm.type")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="food">Food</SelectItem>
-            <SelectItem value="medicine">Medicine</SelectItem>
-            <SelectItem value="shelter">Shelter</SelectItem>
-            <SelectItem value="equipment">Equipment</SelectItem>
+            <SelectItem value="food">{t("resourceForm.item.food")}</SelectItem>
+            <SelectItem value="medicine">
+              {t("resourceForm.item.medicine")}
+            </SelectItem>
+            <SelectItem value="shelter">
+              {t("resourceForm.item.shelter")}
+            </SelectItem>
+            <SelectItem value="equipment">
+              {t("resourceForm.item.equipment")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Quantity</Label>
+        <Label>{t("resourceForm.quantity")}</Label>
         <Input
           type="number"
           value={formData.quantity}
@@ -688,27 +723,28 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       </div>
 
       <div>
-        <Label>Unit</Label>
+        <Label>{t("resourceForm.unit")}</Label>
         <Input
           value={formData.unit}
           onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
           required
         />
       </div>
+
       <div>
-        <Label>Location (Auto-detect)</Label>
+        <Label>{t("resourceForm.location")}</Label>
         <div className="flex gap-2">
           <Button type="button" onClick={detectLocation}>
-            Detect Location
+            {t("resourceForm.detect_location")}
           </Button>
           <p className="text-sm text-muted-foreground">
-            {address || "No address detected yet."}
+            {address || t("resourceForm.locStatement")}
           </p>
         </div>
       </div>
 
       <div>
-        <Label>Expiry Date</Label>
+        <Label>{t("resourceForm.expiryDate")}</Label>
         <Input
           type="date"
           value={formData.expiryDate}
@@ -719,7 +755,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       </div>
 
       <div>
-        <Label>Conditions</Label>
+        <Label>{t("resourceForm.conditions")}</Label>
         <Input
           value={formData.conditions?.join(", ")}
           onChange={(e) =>
@@ -728,11 +764,11 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
               conditions: e.target.value.split(", "),
             })
           }
-          placeholder="Enter conditions separated by commas"
+          placeholder={t("resourceForm.cdt_placeholder")}
         />
       </div>
 
-      <Button type="submit">Add Resource</Button>
+      <Button type="submit">{t("resourceForm.add_Resource")}</Button>
     </form>
   );
 }
