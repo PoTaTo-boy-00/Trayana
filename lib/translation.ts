@@ -1,3 +1,4 @@
+import { add, daysToWeeks } from "date-fns";
 import { Card } from "../components/ui/card";
 // import { DashboardTranslation } from '../app/types/translationTypes';
 
@@ -279,6 +280,103 @@ export const translations: TranslationDictionary = {
       longitude: "Longitude",
       submitButton: "Add Organization",
     },
+
+    partnerPage:{
+      components:{
+        dashboard:{
+          title: "Partner Dashboard",
+          description: "Welcome to the Partner Dashboard",
+          resourceCount: "Available Resources",
+          personnelCount: "Active Personnel",
+          organizationStatus: "Organization Status",
+          allSystemsOperational: "All systems operational",
+        },
+        alerts:{
+          title: "Active Alerts",
+        },
+        resources: {
+          title: "Resource Management",
+          addButton: "Add Resource",
+          requestButton: "Request Resource",
+          requestedResources: "Requested Resources",
+          requestResourceForm: {
+            title: "Request Resource",
+            name: "Name",
+            quantity: "Quantity",
+            unit: "Unit",
+            expiryDate: "Expiry Date",
+            resourceType: {
+              title: "Resource Type",
+              options: {
+                food: "Food",
+                medicine: "Medicine",
+                shelter: "Shelter",
+                equipment: "Equipment",
+              },
+            },
+            status: {
+              title: "Status",
+              options: {
+                requested: "Requested",
+                allocated: "Allocated",
+                depleted: "Depleted",
+              },
+            },
+            submitButton: "Request Resource",
+            conditions: {
+              title: "Conditions",
+              placeholder: "Enter conditions separated by commas",
+            },
+            urgency: {
+              title: "Urgency",
+              options: {
+                low: "Low",
+                medium: "Medium",
+                high: "High",
+              },
+            },
+            disasterType: {
+              title: "Disaster Type",
+              options: {
+                flood: "Flood",
+                earthquake: "Earthquake",
+                fire: "Fire",
+                other: "Other",
+              },
+            },
+          },
+          addResourceForm: {
+            title: "Add New Resource",
+            name: "Name",
+            type: {
+              title: "Type",
+              options: {
+                food: "Food",
+                medicine: "Medicine",
+                shelter: "Shelter",
+                equipment: "Equipment",
+              },
+            },
+            quantity: "Quantity",
+            unit: "Unit",
+            expiryDate: "Expiry Date",
+            status: {
+              title: "Status",
+              options: {
+                available: "Available",
+                allocated: "Allocated",
+                depleted: "Depleted",
+              },
+            },
+            conditions: {
+              title: "Conditions",
+              placeholder: "Enter conditions separated by commas",
+            },
+            submitButton: "Add Resource",
+          },
+        },
+      },
+    }
   },
   hi: {
 
@@ -547,6 +645,102 @@ export const translations: TranslationDictionary = {
       optimizedRecommendation: "अनुकूलित संसाधन सिफारिश",
     },
 
-    //!organizationForm
+    partnerPage: {
+      components: {
+        dashboard: {
+          title: "साझेदार डैशबोर्ड",
+          description: "साझेदार डैशबोर्ड में आपका स्वागत है",
+          resourceCount: "उपलब्ध संसाधन",
+          personnelCount: "सक्रिय कर्मचारी",
+          organizationStatus: "संगठन की स्थिति",
+          allSystemsOperational: "सभी सिस्टम संचालित हैं",
+        },
+        alerts: {
+          title: "सक्रिय अलर्ट",
+        },
+        resources: {
+          title: "संसाधन प्रबंधन",
+          addButton: "संसाधन जोड़ें",
+          requestButton: "संसाधन अनुरोध करें",
+          requestedResources: "अनुरोधित संसाधन",
+          requestResourceForm: {
+            title: "संसाधन अनुरोध करें",
+            name: "नाम",
+            quantity: "मात्रा",
+            unit: "इकाई",
+            expiryDate: "समाप्ति तिथि",
+            resourceType: {
+              title: "संसाधन प्रकार",
+              options: {
+                food: "भोजन",
+                medicine: "दवा",
+                shelter: "आश्रय",
+                equipment: "उपकरण",
+              },
+            },
+            status: {
+              title: "स्थिति",
+              options: {
+                requested: "अनुरोधित",
+                allocated: "आवंटित",
+                depleted: "खत्म हो गया",
+              },
+            },
+            submitButton: "संसाधन अनुरोध करें",
+            conditions: {
+              title: "शर्तें",
+              placeholder: "अल्पविराम से अलग करके शर्तें दर्ज करें",
+            },
+            urgency: {
+              title: "तत्कालता",
+              options: {
+                low: "कम",
+                medium: "मध्यम",
+                high: "उच्च",
+              },
+            },
+            disasterType: {
+              title: "आपदा प्रकार",
+              options: {
+                flood: "बाढ़",
+                earthquake: "भूकंप",
+                fire: "आग",
+                other: "अन्य",
+              },
+            },
+          },
+          addResourceForm: {
+            title: "नया संसाधन जोड़ें",
+            name: "नाम",
+            type: {
+              title: "प्रकार",
+              options: {
+                food: "भोजन",
+                medicine: "दवा",
+                shelter: "आश्रय",
+                equipment: "उपकरण",
+              },
+            },
+            quantity: "मात्रा",
+            unit: "इकाई",
+            expiryDate: "समाप्ति तिथि",
+            status: {
+              title: "स्थिति",
+              options: {
+                available: "उपलब्ध",
+                allocated: "आवंटित",
+                depleted: "खत्म हो गया",
+              },
+            },
+            conditions: {
+              title: "शर्तें",
+              placeholder: "अल्पविराम से अलग करके शर्तें दर्ज करें",
+            },
+            submitButton: "संसाधन जोड़ें",
+          },
+        },
+      },
+    },
+
   },
 };

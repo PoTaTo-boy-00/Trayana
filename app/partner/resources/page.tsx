@@ -16,7 +16,7 @@ import { ResourceCard } from "@/components/resource-card";
 import { ResourceForm } from "@/components/resource-forms";
 import { RequestResourceForm } from "@/components/request-resource-form";
 import { useState } from "react";
-
+import { useTranslation } from "@/lib/translation-context";
 export default function ResourcesPage() {
   const {
     resources,
@@ -30,21 +30,22 @@ export default function ResourcesPage() {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isReqDialogOpen, setIsReqDialogOpen] = useState(false);
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Resource Management</h1>
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.resources.title")}</h1>
         <div className="flex gap-2">
           <Dialog open={isReqDialogOpen} onOpenChange={setIsReqDialogOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Cross className="mr-2 h-4 w-4" /> Request Resource
+                <Cross className="mr-2 h-4 w-4" /> {t("partnerPage.components.resources.requestButton")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Request Resource</DialogTitle>
+                <DialogTitle>{t("partnerPage.components.resources.requestResourceForm.title")}</DialogTitle>
               </DialogHeader>
               <RequestResourceForm
                 onSubmit={async (resource) => {
@@ -57,12 +58,12 @@ export default function ResourcesPage() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add Resource
+                <Plus className="mr-2 h-4 w-4" /> {t("partnerPage.components.resources.addButton")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Resource</DialogTitle>
+                <DialogTitle>{t("partnerPage.components.resources.addResourceForm.title")}</DialogTitle>
               </DialogHeader>
               <ResourceForm
                 onSubmit={async (resource) => {
@@ -83,7 +84,7 @@ export default function ResourcesPage() {
           ))}
       </div>
 
-      <div className="text-xl font-semibold">Requested Resources</div>
+      <div className="text-xl font-semibold">{t("partnerPage.components.resources.requestedResources")}</div>
       <div className="grid gap-4">
         {!isLoading &&
           orgDetails.length > 0 &&

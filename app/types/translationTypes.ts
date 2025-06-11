@@ -1,5 +1,8 @@
 interface TranslationDictionary {
-  [language: string]: {
+  [language: string]: TranslationLanguage;
+}
+
+interface TranslationLanguage {
     //!ui
     ui: {
       admin:{
@@ -288,5 +291,102 @@ interface TranslationDictionary {
       latitude: string;
       submitButton: string;
     };
-  };
+
+    partnerPage: {
+      components: {
+        dashboard: {
+          title: string;
+          description: string;
+          resourceCount: string;
+          personnelCount: string;
+          organizationStatus: string;
+          allSystemsOperational: string;
+        };
+        alerts:{
+          title: string;
+        }
+        resources: {
+          title: string;
+          requestedResources: string;
+          requestButton: string;
+          addButton: string;
+          //requestResourceForm
+          requestResourceForm: {
+            title: string;
+            name: string;
+            quantity: string;
+            unit: string;
+            expiryDate: string;
+            resourceType: {
+              title: string;
+              options: {
+                food: string;
+                medicine: string;
+                shelter: string;
+                equipment: string;
+              };
+            };
+            status:{
+              title: string;
+              options: {
+                requested: string;
+                allocated: string;
+                depleted: string;
+              };
+            };
+            disasterType: {
+              title: string;
+              options: {
+                flood: string;
+                earthquake: string;
+                fire: string;
+                other: string;
+              };
+            };
+            conditions: {
+              title: string;
+              placeholder: string;
+            };
+            urgency:{
+              title: string;
+              options: {
+                low: string;
+                medium: string;
+                high: string;
+              };
+            };
+            submitButton: string;
+          };
+          addResourceForm: {
+            title: string;
+            name: string;
+            type: {
+              title: string;
+              options: {
+                food: string;
+                medicine: string;
+                shelter: string;
+                equipment: string;
+              };
+            };
+            quantity: string;
+            unit: string;
+            expiryDate: string;
+            status: {
+              title: string;
+              options: {
+                available: string;
+                allocated: string;
+                depleted: string;
+              };
+            };
+            conditions: {
+              title: string;
+              placeholder: string;
+            };
+            submitButton: string;
+          };
+        };
+      };
+    };
 }
