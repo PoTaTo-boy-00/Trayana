@@ -166,7 +166,7 @@ export default function ResourcesPage() {
     setIsLoading(true);
 
     try {
-      // 1. Fetch current resource details
+      // Fetch current resource details
       const { data: resourceData, error: fetchError } = await supabase
         .from("resources")
         .select("*")
@@ -178,7 +178,7 @@ export default function ResourcesPage() {
         return;
       }
 
-      // 2. Soft-delete the resource
+      //  Soft-delete the resource
       const { error: deleteError } = await supabase
         .from("resources")
         .update({ is_deleted: true })
@@ -201,7 +201,7 @@ export default function ResourcesPage() {
             quantity: 0,
             status_after_event: "deleted",
             location: `${resourceData.location.lat}, ${resourceData.location.lng}`,
-            performed_by: "admin", // Ensure `user` is in scope
+            performed_by: "admin", 
             remarks: `Resource ${resourceData.name} was deleted.`,
             resource_id: resourceData.id,
           },
