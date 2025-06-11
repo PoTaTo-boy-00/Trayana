@@ -48,7 +48,7 @@ interface TranslationDictionary {
     //!messages
     messages: {
       title: string;
-      button: string
+      button: string;
     };
     //message form
     messageForm: {
@@ -63,7 +63,7 @@ interface TranslationDictionary {
           sms: string;
           ussd: string;
         };
-      }
+      };
       recipientId: {
         title: string;
         placeholder: string;
@@ -76,7 +76,7 @@ interface TranslationDictionary {
           urgent: string;
           emergency: string;
         };
-      }
+      };
       deliveryMethod: {
         title: string;
         placeholder: string;
@@ -287,6 +287,64 @@ interface TranslationDictionary {
       longitude: string;
       latitude: string;
       submitButton: string;
+    };
+
+    //!Resource
+
+    resources: {
+      title: string;
+      filter: string;
+
+      btnName: string;
+
+      formTitle: string;
+    };
+
+    //!Resource Form
+
+    resourceForm: {
+      name: string;
+      type: string;
+      item: {
+        food: string;
+        medicine: string;
+        shelter: string;
+        equipment: string;
+      };
+      quantity: string;
+      unit: string;
+      location: string;
+      detect_location: string;
+      locStatement: string;
+      expiryDate: string;
+      conditions: string;
+      cdt_placeholder: string;
+      add_Resource: string;
+    };
+
+    //!Allocate Resource
+
+    // allocateResourceForm: {
+    //   Allocate Resources:string
+    //   Allocate Resources:string
+    //   Allocate Resources:string
+    //   Allocate Resources:string
+    //   Allocate Resources:string
+    //   Allocate Resources:string
+    //   Allocate Resources:string
+    // };
+
+    //!Requuested Resource
+
+    ResourcesCard: {
+      type: string;
+      quantity: string;
+      location: string;
+      status: string;
+      conditions: string;
+      expiryDate: string;
+      requestedBy: string;
+      allocateResources: string;
     };
   };
 }
