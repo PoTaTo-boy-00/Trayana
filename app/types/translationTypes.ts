@@ -1,5 +1,8 @@
 interface TranslationDictionary {
-  [language: string]: {
+  [language: string]: TranslationLanguage;
+}
+
+interface TranslationLanguage {
     //!ui
     ui: {
       admin:{
@@ -289,62 +292,101 @@ interface TranslationDictionary {
       submitButton: string;
     };
 
-    //!Resource
-
-    resources: {
-      title: string;
-      filter: string;
-
-      btnName: string;
-
-      formTitle: string;
-    };
-
-    //!Resource Form
-
-    resourceForm: {
-      name: string;
-      type: string;
-      item: {
-        food: string;
-        medicine: string;
-        shelter: string;
-        equipment: string;
+    partnerPage: {
+      components: {
+        dashboard: {
+          title: string;
+          description: string;
+          resourceCount: string;
+          personnelCount: string;
+          organizationStatus: string;
+          allSystemsOperational: string;
+        };
+        alerts:{
+          title: string;
+        }
+        resources: {
+          title: string;
+          requestedResources: string;
+          requestButton: string;
+          addButton: string;
+          //requestResourceForm
+          requestResourceForm: {
+            title: string;
+            name: string;
+            quantity: string;
+            unit: string;
+            expiryDate: string;
+            resourceType: {
+              title: string;
+              options: {
+                food: string;
+                medicine: string;
+                shelter: string;
+                equipment: string;
+              };
+            };
+            status:{
+              title: string;
+              options: {
+                requested: string;
+                allocated: string;
+                depleted: string;
+              };
+            };
+            disasterType: {
+              title: string;
+              options: {
+                flood: string;
+                earthquake: string;
+                fire: string;
+                other: string;
+              };
+            };
+            conditions: {
+              title: string;
+              placeholder: string;
+            };
+            urgency:{
+              title: string;
+              options: {
+                low: string;
+                medium: string;
+                high: string;
+              };
+            };
+            submitButton: string;
+          };
+          addResourceForm: {
+            title: string;
+            name: string;
+            type: {
+              title: string;
+              options: {
+                food: string;
+                medicine: string;
+                shelter: string;
+                equipment: string;
+              };
+            };
+            quantity: string;
+            unit: string;
+            expiryDate: string;
+            status: {
+              title: string;
+              options: {
+                available: string;
+                allocated: string;
+                depleted: string;
+              };
+            };
+            conditions: {
+              title: string;
+              placeholder: string;
+            };
+            submitButton: string;
+          };
+        };
       };
-      quantity: string;
-      unit: string;
-      location: string;
-      detect_location: string;
-      locStatement: string;
-      expiryDate: string;
-      conditions: string;
-      cdt_placeholder: string;
-      add_Resource: string;
     };
-
-    //!Allocate Resource
-
-    // allocateResourceForm: {
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    //   Allocate Resources:string
-    // };
-
-    //!Requuested Resource
-
-    ResourcesCard: {
-      type: string;
-      quantity: string;
-      location: string;
-      status: string;
-      conditions: string;
-      expiryDate: string;
-      requestedBy: string;
-      allocateResources: string;
-    };
-  };
 }

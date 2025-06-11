@@ -29,6 +29,7 @@ import {
   SOSWithCoords,
   sosReport as staticSOS,
 } from "@/data/sos";
+import { useTranslation } from "@/lib/translation-context";
 
 //Easter Egg
 
@@ -37,6 +38,7 @@ export default function PartnerDashboard() {
   const [resourceCount, setResourceCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
   const [organizationId, setOrganizationId] = useState<string | "">("");
+  const { t } = useTranslation();
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [SOSdata, setSOSData] = useState<SOSWithCoords[]>([]);
@@ -136,7 +138,7 @@ export default function PartnerDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Partner Dashboard</h1>
+      <h1 className="text-3xl font-bold">{t("partnerPage.components.dashboard.title")}</h1>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

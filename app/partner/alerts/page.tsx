@@ -5,10 +5,12 @@ import { AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertBadge } from "../../components/alert-badge";
 import { Alert } from "@/app/types";
+import { useTranslation } from "@/lib/translation-context";
 
 import { supabase } from "@/lib/supabase";
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -43,7 +45,7 @@ export default function AlertsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Active Alerts</h1>
+      <h1 className="text-3xl font-bold">{t("partnerPage.components.alerts.title")}</h1>
 
       <div className="grid gap-4">
         {alerts.map((alert) => (
