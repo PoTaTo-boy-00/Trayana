@@ -40,8 +40,8 @@ export async function POST(request: Request) {
       targetLanguageCode: targetLang,
     });
 
-    console.log("Received:", { text, targetLang });
-    console.log("Translation response:", response);
+    // console.log("Received:", { text, targetLang });
+    // console.log("Translation response:", response);
 
     return NextResponse.json({
       translatedText: response.translations?.[0]?.translatedText || "",

@@ -1,3 +1,4 @@
+import { TranslationDictionary } from "@/app/types/translationTypes";
 import { Card } from "../components/ui/card";
 // import { DashboardTranslation } from '../app/types/translationTypes';
 
@@ -106,6 +107,11 @@ export const translations: TranslationDictionary = {
     messages: {
       title: "Messages",
       button: "Send Message",
+      msgType: {
+        broadcast: "Broadcast Message",
+        direct: "Direct Message",
+        group: "Group Message",
+      },
     },
 
     //!messageForm
@@ -161,7 +167,18 @@ export const translations: TranslationDictionary = {
         organizations: "Organizations",
         resources: "Resources",
       },
-      cardTitle: "Legend",
+      // title:"LEGEND",
+      cardTitle: "LEGEND",
+      Available_Resources: "Available Resources",
+      Requested_Resources: "Requested Resources",
+      Map_Style: "Map Style",
+      Roadmap: "Roadmap",
+      Satellite: "Satellite",
+      Hybrid: "Hybrid",
+      Terrain: "Terrain",
+      Enable_Clustering: "Enable Clustering",
+      Statistics: "Statistics",
+      Organizations: "Organizations",
     },
     // !settings
     settings: {
@@ -208,7 +225,10 @@ export const translations: TranslationDictionary = {
     organizations: {
       title: " Organizations",
       button: "Add Organization",
+      delete: "Delete",
       dialogTitle: "Add New Organization",
+      Type: "Type", // "Prakaar"
+      Capabilities: "Capabilities", // "Kshamataayen"
     },
 
     //!organizationForm
@@ -283,6 +303,64 @@ export const translations: TranslationDictionary = {
       expiryDate: "Expiry Date",
       requestedBy: "Requested By",
       allocateResources: "Allocate Resources",
+    },
+    allocateResourceForm: {
+      Allocate_Resource: "AllocateResource",
+      Request_for: "Request for",
+      Allocate_Quantity: "Allocate Quantity",
+      Available: "Available",
+      alert: "Invalid allocation amount.",
+      Confirm_Allocation: "Confirm Allocation",
+    },
+
+    analytics: {
+      title: "Resource Analytics Dashboard",
+      lastUpadte: "  Last Update",
+      loading: "Performing advanced analytics...",
+      Timeline: "24-Hour Resource Prediction Timeline",
+      noPredicitonTimeline: "No prediction timeline available",
+      prority: " Location Priority Scores (Real-time Updated)",
+      nullPrority: "No priority data available",
+      gapAnalysis: {
+        title: " Advanced Resource Gap Analysis",
+        missingTypes: "Missing Types",
+        need: "Need",
+        null: "No missing resources",
+      },
+      immediate: {
+        title: "Immediate Needs",
+        null: "No immediate needs",
+      },
+      surplous: {
+        title: "Surplus Resources",
+        extra: "Extra",
+        location: "Location",
+        null: "No surplus resources",
+      },
+      emergingNeeds: {
+        title: "Emerging Needs",
+        predicted: "Predicted",
+        confidence: "Confidence",
+        null: "No emerging needs predicted",
+      },
+      depletion: {
+        title: "Advanced Depletion Predictions",
+        Resource: "Resource",
+        Name: "Name",
+        Current: "Current",
+        Depletion_Time: "Depletion Time",
+        Probability: "Probability",
+        Trend: "Trend",
+        Velocity: "Velocity",
+        Confidence: "Confidence",
+        null: "No depletion predictions available",
+      },
+      history: {
+        title: "Resource History Overview",
+        total: " Total History Records",
+        active: "Active Resources",
+        pending: "Pending Requests",
+      },
     },
   },
   hi: {
@@ -364,7 +442,10 @@ export const translations: TranslationDictionary = {
     organizations: {
       title: "संगठन",
       button: "संगठन जोड़ें",
+      delete: "हटाएं",
       dialogTitle: "नया संगठन जोड़ें",
+      Type: "प्रकार",
+      Capabilities: "क्षमताएँ", // "Kshamataayen"
     },
 
     organizationForm: {
@@ -406,6 +487,11 @@ export const translations: TranslationDictionary = {
     messages: {
       title: "संदेश",
       button: "संदेश भेजें",
+      msgType: {
+        broadcast: "प्रसारण संदेश",
+        direct: "प्रत्यक्ष संदेश",
+        group: "समूह संदेश",
+      },
     },
 
     messageForm: {
@@ -459,7 +545,18 @@ export const translations: TranslationDictionary = {
         organizations: "संगठन",
         resources: "संसाधन",
       },
-      cardTitle: "विधि",
+      // cardTitle: "विधि",
+      cardTitle: "प्रतीक चिन्ह",
+      Available_Resources: "उपलब्ध संसाधन",
+      Requested_Resources: "अनुरोधित संसाधन",
+      Map_Style: "नक्शे की शैली",
+      Roadmap: "सड़क नक्शा",
+      Satellite: "उपग्रह दृश्य",
+      Hybrid: "संयोजन दृश्य",
+      Terrain: "भौगोलिक नक्शा",
+      Enable_Clustering: "समूह सक्षम करें",
+      Statistics: "आँकड़े",
+      Organizations: "संगठन",
     },
     settings: {
       title: "सेटिंग्स",
@@ -556,6 +653,69 @@ export const translations: TranslationDictionary = {
       expiryDate: "समाप्ति तिथि",
       requestedBy: "अनुरोधकर्ता",
       allocateResources: "संसाधन आवंटित करें",
+    },
+    allocateResourceForm: {
+      Allocate_Resource: "संसाधन आवंटित करें",
+      Request_for: "अनुरोध करें",
+      Allocate_Quantity: "आवंटित मात्रा",
+      Available: "उपलब्ध",
+      alert: "अमान्य आवंटन राशि।",
+      Confirm_Allocation: "आवंटन की पुष्टि करें",
+    },
+    analytics: {
+      title: "संसाधन विश्लेषण डैशबोर्ड",
+      lastUpadte: "अंतिम अपडेट",
+      loading: "उन्नत विश्लेषण किया जा रहा है...",
+      Timeline: "24-घंटे की संसाधन पूर्वानुमान समयरेखा",
+      noPredicitonTimeline: "कोई पूर्वानुमान समयरेखा उपलब्ध नहीं",
+      prority: "स्थान प्राथमिकता स्कोर (रीयल-टाइम में अपडेटेड)",
+      nullPrority: "कोई प्राथमिकता डेटा उपलब्ध नहीं",
+
+      gapAnalysis: {
+        title: "उन्नत संसाधन अंतर विश्लेषण",
+        missingTypes: "अनुपलब्ध प्रकार",
+        need: "आवश्यकता",
+        null: "कोई संसाधन कमी नहीं",
+      },
+
+      immediate: {
+        title: "तत्काल आवश्यकताएँ",
+        null: "कोई तत्काल आवश्यकता नहीं",
+      },
+
+      surplous: {
+        title: "अतिरिक्त संसाधन",
+        extra: "अतिरिक्त",
+        location: "स्थान",
+        null: "कोई अतिरिक्त संसाधन नहीं",
+      },
+
+      emergingNeeds: {
+        title: "उभरती आवश्यकताएँ",
+        predicted: "पूर्वानुमानित",
+        confidence: "विश्वसनीयता",
+        null: "कोई उभरती आवश्यकताएँ पूर्वानुमानित नहीं",
+      },
+
+      depletion: {
+        title: "उन्नत संसाधन समाप्ति पूर्वानुमान",
+        Resource: "संसाधन",
+        Name: "नाम",
+        Current: "वर्तमान",
+        Depletion_Time: "समाप्ति समय",
+        Probability: "संभावना",
+        Trend: "प्रवृत्ति",
+        Velocity: "गति",
+        Confidence: "विश्वसनीयता",
+        null: "कोई समाप्ति पूर्वानुमान उपलब्ध नहीं",
+      },
+
+      history: {
+        title: "संसाधन इतिहास का अवलोकन",
+        total: "कुल इतिहास रिकॉर्ड",
+        active: "सक्रिय संसाधन",
+        pending: "लंबित अनुरोध",
+      },
     },
   },
 };

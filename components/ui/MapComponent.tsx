@@ -290,7 +290,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
 
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    libraries: GOOGLE_MAPS_LIBRARIES, // Add libraries for enhanced features
+    libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
   // Get user's current location
@@ -346,7 +346,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
   const Legend = () => {
     return (
       <div className="absolute bottom-5 left-5 bg-white dark: text-black p-4 rounded-lg shadow-lg z-10 max-w-xs">
-        <h3 className="font-bold mb-3 text-sm">LEGEND</h3>
+        <h3 className="font-bold mb-3 text-sm">{t("maps.cardTitle")}</h3>
 
         {/* Filter Controls */}
         <div className="space-y-2 mb-4">
@@ -376,7 +376,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
               className="mr-2"
             />
             <div className="w-4 h-4 bg-green-500 rounded-full mr-2" />
-            Available Resources
+            {t("maps.Available_Resources")}
           </label>
 
           <label className="flex items-center text-sm">
@@ -389,22 +389,24 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
               className="mr-2"
             />
             <div className="w-4 h-4 bg-red-500 rounded-full mr-2" />
-            Requested Resources
+            {t("maps.Requested_Resources")}
           </label>
         </div>
 
         {/* Map Style Selector */}
         <div className="mb-3">
-          <label className="block text-sm font-medium mb-1">Map Style:</label>
+          <label className="block text-sm font-medium mb-1">
+            {t("maps.Map_Style")}:
+          </label>
           <select
             value={mapStyle}
             onChange={(e) => setMapStyle(e.target.value)}
             className="w-full text-xs p-1 border rounded"
           >
-            <option value="roadmap">Roadmap</option>
-            <option value="satellite">Satellite</option>
-            <option value="hybrid">Hybrid</option>
-            <option value="terrain">Terrain</option>
+            <option value="roadmap">{t("maps.Roadmap")}</option>
+            <option value="satellite">{t("maps.Satellite")}</option>
+            <option value="hybrid">{t("maps.Hybrid")}</option>
+            <option value="terrain">{t("maps.Terrain")}</option>
           </select>
         </div>
 
@@ -416,7 +418,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
             onChange={(e) => setShowClusters(e.target.checked)}
             className="mr-2"
           />
-          Enable Clustering
+          {t("maps.Enable_Clustering")}
         </label>
       </div>
     );
@@ -492,11 +494,17 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
 
     return (
       <div className="absolute top-5 right-5 bg-white dark: text-black p-3 rounded-lg shadow-lg z-10">
-        <h3 className="font-bold text-sm mb-2">Statistics</h3>
+        <h3 className="font-bold text-sm mb-2">{t("maps.Statistics")}</h3>
         <div className="text-xs space-y-1">
-          <div>Organizations: {stats.totalOrgs}</div>
-          <div>Available Resources: {stats.totalResources}</div>
-          <div>Resource Requests: {stats.totalRequests}</div>
+          <div>
+            {t("maps.Organizations")}: {stats.totalOrgs}
+          </div>
+          <div>
+            {t("maps.Available_Resources")}: {stats.totalResources}
+          </div>
+          <div>
+            {t("maps.Resource_Requests")}: {stats.totalRequests}
+          </div>
         </div>
       </div>
     );

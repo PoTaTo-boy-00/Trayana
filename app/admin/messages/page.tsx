@@ -3,6 +3,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { useState, useEffect } from "react";
 import { Send, MessageSquare, Plus } from "lucide-react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +30,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { t, language, setLanguage } = useTranslation();
+  const [translatedMessage, setTranslatedMessage] = useState<Message[]>([]);
 
   useEffect(() => {
     const testSupabaseConnection = async () => {
@@ -89,6 +91,44 @@ export default function MessagesPage() {
     }
   };
 
+  useEffect(() => {
+    const translateMessage = async () => {
+      const translated = await Promise.all(
+        messages.map(async (message) => {
+          if (language === "en") return message; // No need to translate if English
+
+          try {
+            const [titleRes, descRes] = await Promise.all([
+              axios.post("/api/translate", {
+                text: message.priority,
+                targetLang: language,
+              }),
+
+              axios.post("/api/translate", {
+                text: message.content,
+                targetLang: language,
+              }),
+            ]);
+
+            return {
+              ...message,
+              priority: titleRes.data.translatedText || message.priority,
+              content: descRes.data.translatedText || message.content,
+            };
+          } catch (error) {
+            console.error("Translation error:", error);
+            return message; // Return original alert if translation fails
+          }
+        })
+      );
+      setTranslatedMessage(translated);
+    };
+
+    if (messages.length > 0) {
+      translateMessage();
+    }
+  }, [messages, language]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -109,16 +149,16 @@ export default function MessagesPage() {
       </div>
 
       <div className="space-y-4">
-        {messages.map((message) => (
+        {translatedMessage.map((message) => (
           <Card key={message.id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
                 {message.type === "broadcast"
-                  ? "Broadcast Message"
+                  ? t("messages.msgType.broadcast")
                   : message.type === "direct"
-                  ? "Direct Message"
-                  : "Group Message"}
+                  ? t("messages.msgType.direct")
+                  : t("messages.msgType.group")}
               </CardTitle>
               <span
                 className={`px-2 py-1 rounded-full text-xs ${
@@ -189,11 +229,21 @@ function MessageForm({ onSubmit }: MessageFormProps) {
             <SelectValue placeholder={t("messageForm.type.placeholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="direct">{t("messageForm.type.options.direct")}</SelectItem>
-            <SelectItem value="group">{t("messageForm.type.options.group")}</SelectItem>
-            <SelectItem value="broadcast">{t("messageForm.type.options.broadcast")}</SelectItem>
-            <SelectItem value="sms">{t("messageForm.type.options.sms")}</SelectItem>
-            <SelectItem value="ussd">{t("messageForm.type.options.ussd")}</SelectItem>
+            <SelectItem value="direct">
+              {t("messageForm.type.options.direct")}
+            </SelectItem>
+            <SelectItem value="group">
+              {t("messageForm.type.options.group")}
+            </SelectItem>
+            <SelectItem value="broadcast">
+              {t("messageForm.type.options.broadcast")}
+            </SelectItem>
+            <SelectItem value="sms">
+              {t("messageForm.type.options.sms")}
+            </SelectItem>
+            <SelectItem value="ussd">
+              {t("messageForm.type.options.ussd")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -221,9 +271,15 @@ function MessageForm({ onSubmit }: MessageFormProps) {
             <SelectValue placeholder={t("messageForm.priority.placeholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="normal">{t("messageForm.priority.options.normal")}</SelectItem>
-            <SelectItem value="urgent">{t("messageForm.priority.options.urgent")}</SelectItem>
-            <SelectItem value="emergency">{t("messageForm.priority.options.emergency")}</SelectItem>
+            <SelectItem value="normal">
+              {t("messageForm.priority.options.normal")}
+            </SelectItem>
+            <SelectItem value="urgent">
+              {t("messageForm.priority.options.urgent")}
+            </SelectItem>
+            <SelectItem value="emergency">
+              {t("messageForm.priority.options.emergency")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -240,12 +296,20 @@ function MessageForm({ onSubmit }: MessageFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder={t("messageForm.deliveryMethod.placeholder")} />
+            <SelectValue
+              placeholder={t("messageForm.deliveryMethod.placeholder")}
+            />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="internet">{t("messageForm.deliveryMethod.options.internet")}</SelectItem>
-            <SelectItem value="sms">{t("messageForm.deliveryMethod.options.sms")}</SelectItem>
-            <SelectItem value="ussd">{t("messageForm.deliveryMethod.options.ussd")}</SelectItem>
+            <SelectItem value="internet">
+              {t("messageForm.deliveryMethod.options.internet")}
+            </SelectItem>
+            <SelectItem value="sms">
+              {t("messageForm.deliveryMethod.options.sms")}
+            </SelectItem>
+            <SelectItem value="ussd">
+              {t("messageForm.deliveryMethod.options.ussd")}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>

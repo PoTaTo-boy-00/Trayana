@@ -463,17 +463,22 @@ export default function ResourcesPage() {
               >
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Allocate Resource</DialogTitle>
+                    <DialogTitle>
+                      {t("allocateResourceForm.Allocate_Resource")}
+                    </DialogTitle>
                   </DialogHeader>
                   {selectedRequest && (
                     <div className="space-y-4">
                       <p>
-                        Request for <strong>{selectedRequest.name}</strong> (
+                        {t("allocateResourceForm.Request_for")}{" "}
+                        <strong>{selectedRequest.name}</strong> (
                         {selectedRequest.quantity} {selectedRequest.unit})
                       </p>
 
                       <div>
-                        <Label>Allocate Quantity</Label>
+                        <Label>
+                          {t("allocateResourceForm.Allocate_Quantity")}
+                        </Label>
                         <Input
                           type="number"
                           min={1}
@@ -488,7 +493,7 @@ export default function ResourcesPage() {
                           }
                         />
                         <p className="text-sm text-muted-foreground mt-1">
-                          Available:{" "}
+                          {t("allocateResourceForm.Available")}:{" "}
                           {resources.find(
                             (res) => res.type === selectedRequest.type
                           )?.quantity || 0}{" "}
@@ -507,7 +512,7 @@ export default function ResourcesPage() {
                             allocateQuantity <= 0 ||
                             allocateQuantity > matchingResource.quantity
                           ) {
-                            alert("Invalid allocation amount.");
+                            alert(t("allocateResourceForm.alert"));
                             return;
                           }
 
@@ -584,7 +589,7 @@ export default function ResourcesPage() {
                           }
                         }}
                       >
-                        Confirm Allocation
+                        {t("allocateResourceForm.Confirm_Allocation")}
                       </Button>
                     </div>
                   )}
