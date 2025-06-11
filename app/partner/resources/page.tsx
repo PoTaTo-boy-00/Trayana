@@ -3,8 +3,6 @@
 
 import { Plus, Cross } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-
 import {
   Dialog,
   DialogContent,
@@ -24,7 +22,6 @@ export default function ResourcesPage() {
     resources,
     requestedResources,
     orgDetails,
-    userDetails,
     isLoading,
     addResource,
     requestResource,
@@ -35,22 +32,22 @@ export default function ResourcesPage() {
   const [isReqDialogOpen, setIsReqDialogOpen] = useState(false);
   const { t } = useTranslation();
 
-  // Get the current organization ID, assuming orgDetails[0] is the current org
-  const currOrgID = orgDetails && orgDetails.length > 0 ? orgDetails[0].id : undefined;
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.resources.title")}</h1>
         <h1 className="text-3xl font-bold">{t("partnerPage.components.resources.title")}</h1>
         <div className="flex gap-2">
           <Dialog open={isReqDialogOpen} onOpenChange={setIsReqDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Cross className="mr-2 h-4 w-4" /> {t("partnerPage.components.resources.requestButton")}
+                <Cross className="mr-2 h-4 w-4" /> {t("partnerPage.components.resources.requestButton")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
+                <DialogTitle>{t("partnerPage.components.resources.requestResourceForm.title")}</DialogTitle>
                 <DialogTitle>{t("partnerPage.components.resources.requestResourceForm.title")}</DialogTitle>
               </DialogHeader>
               <RequestResourceForm
@@ -65,10 +62,12 @@ export default function ResourcesPage() {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" /> {t("partnerPage.components.resources.addButton")}
+                <Plus className="mr-2 h-4 w-4" /> {t("partnerPage.components.resources.addButton")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
+                <DialogTitle>{t("partnerPage.components.resources.addResourceForm.title")}</DialogTitle>
                 <DialogTitle>{t("partnerPage.components.resources.addResourceForm.title")}</DialogTitle>
               </DialogHeader>
               <ResourceForm
@@ -83,29 +82,21 @@ export default function ResourcesPage() {
       </div>
 
       <div className="grid gap-4">
-        {isLoading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
-          </div>
-        ) : (
-          resources
-            .filter((res) => !res.is_deleted)
-            .map((resource) => (
-              <ResourceCard key={resource.id} resource={resource} />
-            ))
-        )}
+        {resources
+          .filter((res) => !res.is_deleted)
+          .map((resource) => (
+            <ResourceCard key={resource.id} resource={resource} />
+          ))}
       </div>
 
       <div className="text-xl font-semibold">{t("partnerPage.components.resources.requestedResources")}</div>
+
+      <div className="text-xl font-semibold">{t("partnerPage.components.resources.requestedResources")}</div>
       <div className="grid gap-4">
-        {isLoading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="animate-spin w-6 h-6 text-gray-500" />
-          </div>
-        ) : (
+        {!isLoading &&
           orgDetails.length > 0 &&
           requestedResources
-            .filter((resource) => resource.organizationId === currOrgID)
+            .filter((resource) => resource.organizationId === orgDetails[0].id)
             .map((resource) => (
               <ResourceCard
                 key={resource.id}
@@ -113,8 +104,7 @@ export default function ResourcesPage() {
                 isRequest
                 onDelete={deleteRequestedResource}
               />
-            ))
-        )}
+            ))}
       </div>
     </div>
   );

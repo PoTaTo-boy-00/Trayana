@@ -51,7 +51,7 @@ interface TranslationLanguage {
     //!messages
     messages: {
       title: string;
-      button: string;
+      button: string
     };
     //message form
     messageForm: {
@@ -66,7 +66,7 @@ interface TranslationLanguage {
           sms: string;
           ussd: string;
         };
-      };
+      }
       recipientId: {
         title: string;
         placeholder: string;
@@ -79,7 +79,7 @@ interface TranslationLanguage {
           urgent: string;
           emergency: string;
         };
-      };
+      }
       deliveryMethod: {
         title: string;
         placeholder: string;
