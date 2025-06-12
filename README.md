@@ -9,11 +9,11 @@ This project is a **real-time disaster response and resource management system**
 |-------------------|----------------|
 | **Frontend**      | React Native (Mobile), Next.js (Web), TailwindCSS |
 | **Backend**       | Node.js, Express.js, Supabase (PostgreSQL, Realtime DB) |
-| **AI & ML**       | Google Gemini AI, Vertex AI Forecasting, Google NLP API, BigQuery |
+| **AI & ML**       | Google Gemini AI, Vertex AI Forecasting,  BigQuery |
 | **Communication** | Supabse Push, Twilio SMS, Supabase Realtime, Websocket |
 | **Geolocation**   | Google Maps API, GPS Tracking |
 | **Database**      | Supabase, BigQuery |
-| **APIs**          | IMD, USGS Earthquake, Google Maps, Google Translate, Google Sheets, Google Flood Forecasting, Google Earth, Google Earth Engine |
+| **APIs**          | IMD, USGS Earthquake, Google Maps, Google Cloud Translation, Google Sheets, Google Flood Forecasting, Google Earth, Google Earth Engine, Compute Engine API |
 | **Code Editor**   | IDX, VS Code | 
 
 
