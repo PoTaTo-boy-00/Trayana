@@ -16,6 +16,7 @@ export interface TranslationDictionary {
         organizations: string;
         resources: string;
       };
+       
       // legend_title: string;
       cardTitle: string;
       Available_Resources: string;
