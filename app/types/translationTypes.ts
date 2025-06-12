@@ -471,6 +471,28 @@ interface TranslationLanguage {
             submitButton: string;
           };
         };
+        personnel: {
+          title: string;
+          addButton: string;
+          loading: string;
+        };
+        messages: {
+          title: string;
+          newButton: string;
+        };
+        organization: {
+          title: string;
+          button: string;
+          loading: string;
+        };
+        sos:{
+          title: string;
+          header: string;
+          location: string;
+          help: string;
+          coordinates: string;
+          time: string;
+        }
       };
     };
 }

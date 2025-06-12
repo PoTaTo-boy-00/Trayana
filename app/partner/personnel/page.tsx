@@ -6,6 +6,7 @@ import { Users, Plus, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Personnel } from "@/app/types";
+import { useTranslation } from "@/lib/translation-context";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ export default function PersonnelPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const [organizationId, setOrganizationId] = useState<string | null>(null);
 
@@ -152,17 +154,17 @@ export default function PersonnelPage() {
     }
   };
 
-  if (loading) return <div>Loading personnel...</div>;
+  if (loading) return <div>{t("partnerPage.components.personnel.loading")}</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Personnel Management</h1>
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.personnel.title")}</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> Add Personnel
+              <Plus className="mr-2 h-4 w-4" /> {t("partnerPage.components.personnel.addButton")}
             </Button>
           </DialogTrigger>
           <DialogContent>

@@ -396,6 +396,28 @@ export const translations: TranslationDictionary = {
             submitButton: "Add Resource",
           },
         },
+        personnel: {
+          title: "Personnel Management",
+          addButton: "Add Personnel",
+          loading: "Loading personnel data...",
+        },
+        messages: {
+          title: "Messages",
+          newButton: "New Message",
+        },
+        organization:{
+          title: "Organization Profile",
+          button: "Edit Profile",
+          loading: "Loading organization data...",
+        },
+        sos: {
+          title: "SOS Reports",
+          header: "SOS Report",
+          location: "Location",
+          help: "Dispatch Help",
+          coordinates: "Coordinates",
+          time: "Reported at",
+        },
       },
     },
     allocateResourceForm: {
@@ -838,6 +860,28 @@ export const translations: TranslationDictionary = {
             },
             submitButton: "संसाधन जोड़ें",
           },
+        },
+        personnel: {
+          title: "कर्मचारी प्रबंधन",
+          addButton: "कर्मचारी जोड़ें",
+          loading: "कर्मचारी डेटा लोड हो रहा है...",
+        },
+        messages: {
+          title: "संदेश",
+          newButton: "नया संदेश",
+        },
+        organization: {
+          title: "संगठन प्रोफ़ाइल",
+          button: "प्रोफ़ाइल संपादित करें",
+          loading: "संगठन डेटा लोड हो रहा है...",
+        },
+        sos: {
+          title: "एसओएस रिपोर्ट",
+          header: "एसओएस रिपोर्ट",
+          location: "स्थान",
+          help: "मदद भेजें",
+          coordinates: "निर्देशांक",
+          time: "रिपोर्ट किया गया समय",
         },
       },
     },

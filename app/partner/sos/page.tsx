@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useTranslation } from "@/lib/translation-context";
 import { getCloneableBody } from "next/dist/server/body-streams";
 
 type SOSReport = {
@@ -34,6 +35,7 @@ export default function SOSPage() {
   const [reports, setReports] = useState<SOSReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [selectedReport, setSelectedReport] = useState<SOSReport | null>(null);
@@ -241,7 +243,7 @@ export default function SOSPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">SOS Reports</h1>
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.sos.title")}</h1>
         <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <p>Error: {error}</p>
           <Button
@@ -258,7 +260,7 @@ export default function SOSPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">SOS Reports</h1>
+      <h1 className="text-3xl font-bold">{t("partnerPage.components.sos.title")}</h1>
 
       {showModal && selectedReport && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
@@ -318,7 +320,7 @@ export default function SOSPage() {
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-xl font-semibold flex items-center gap-2">
                   <AlertTriangle className="text-red-500" />
-                  SOS Report
+                  {t("partnerPage.components.sos.header")}
                 </CardTitle>
                 {getStatusBadge(report.status || "pending")}
               </CardHeader>
@@ -327,9 +329,9 @@ export default function SOSPage() {
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 mt-0.5 text-muted-foreground" />
                   <div>
-                    <p className="font-medium">Location</p>
+                    <p className="font-medium">{t("partnerPage.components.sos.location")}</p>
                     <p className="text-sm text-muted-foreground">
-                      Coordinates: {report.latitude.toFixed(4)},{" "}
+                      {t("partnerPage.components.sos.coordinates")}: {report.latitude.toFixed(4)},{" "}
                       {report.longitude.toFixed(4)}
                     </p>
                   </div>
@@ -339,7 +341,7 @@ export default function SOSPage() {
 
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">
-                    Reported at: {new Date(report.created_at).toLocaleString()}
+                    {t("partnerPage.components.sos.time")}: {new Date(report.created_at).toLocaleString()}
                   </span>
                   <span className="font-mono text-xs">ID: {report.id}</span>
                 </div>
@@ -354,7 +356,7 @@ export default function SOSPage() {
                       setShowModal(true);
                     }}
                   >
-                    Dispatch Help
+                    {t("partnerPage.components.sos.help")}
                   </Button>
                 )}
 
