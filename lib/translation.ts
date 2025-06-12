@@ -4,45 +4,10 @@ import { Card } from "../components/ui/card";
 
 export const translations: TranslationDictionary = {
   en: {
-<<<<<<< HEAD
     disaster: {
       title: "AI-Powered Disaster Prediction System",
       desc: "Advanced AI predictions using Google Gemini for accurate disaster risk assessment.",
     },
-=======
-
-    //!ui
-    ui: {
-      admin: {
-        title: "Admin Dashboard",
-        components: {
-          alerts: "Alerts",
-          organizations: "Organizations",
-          messages: "Messages",
-          maps: "Map",
-          settings: "Settings",
-          dashboard: "Dashboard",
-          resources: "Resources",
-          analytics: "Analytics",
-        },
-      },
-      partner: {
-        title: "Partner Dashboard",
-        components: {
-          dashboard: "Dashboard",
-          alerts: "Alerts",
-          resources: "Resources",
-          personnel: "Personnel",
-          map: "Map",
-          messages: "Messages",
-          organization: "Organization",
-          sos: "SOS",
-          settings: "Settings",
-        },
-      },
-    },
-
->>>>>>> upstream/main
     //!alert
 
     alert: {
@@ -403,47 +368,11 @@ export const translations: TranslationDictionary = {
     },
   },
   hi: {
-<<<<<<< HEAD
     disaster: {
       title: "एआई-सक्षम आपदा पूर्वानुमान प्रणाली",
       desc: "सटीक आपदा जोखिम मूल्यांकन के लिए Google Gemini का उपयोग करके उन्नत एआई पूर्वानुमान।",
     },
 
-=======
-
-    //!ui
-    ui: {
-      admin: {
-        title: "व्यवस्थापक डैशबोर्ड",
-        components: {
-          alerts: "अलर्ट",
-          organizations: "संगठन",
-          messages: "संदेश",
-          maps: "मानचित्र",
-          settings: "सेटिंग्स",
-          dashboard: "डैशबोर्ड",
-          resources: "संसाधन",
-          analytics: "विश्लेषण",
-        },
-      },
-      partner: {
-        title: "साझेदार डैशबोर्ड",
-        components: {
-          dashboard: "डैशबोर्ड",
-          alerts: "अलर्ट",
-          resources: "संसाधन",
-          personnel: "कर्मचारी",
-          map: "मानचित्र",
-          messages: "संदेश",
-          organization: "संगठन",
-          sos: "एसओएस",
-          settings: "सेटिंग्स",
-        },
-      },
-    },
-
-
->>>>>>> upstream/main
     //!alertBadge
     alertBadge: {
       red: {
