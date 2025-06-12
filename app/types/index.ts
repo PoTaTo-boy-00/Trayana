@@ -8,12 +8,7 @@ export type UrgencyLevel = "immediate" | "urgent" | "normal";
 export type Role = "admin" | "partner";
 export type EventType = "insert" | "update" | "delete" | "requested";
 
-export type Status =
-  | "active"
-  | "inactive"
-  | "approved"
-  | "pending"
-  | "unapproved";
+export type Status = "active" | "inactive" | "pending" | "unapproved";
 
 export interface User {
   id: string;

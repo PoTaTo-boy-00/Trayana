@@ -1,7 +1,33 @@
-import { string } from "zod";
-
 export interface TranslationDictionary {
   [language: string]: {
+    DisasterI18n: {
+      title: string;
+      description: string;
+      fields: Record<
+        string,
+        {
+          label: string;
+          placeholder?: string;
+          tooltip?: string;
+          options?: string[];
+        }
+      >;
+    };
+
+    DisasterFormField: {
+      name: string;
+      label: string;
+      placeholder?: string;
+      tooltip?: string;
+      options?: string[];
+    };
+
+    //! predcition
+    disaster: {
+      title: string;
+      desc: string;
+    };
+
     //!maps
     maps: {
       title: string;

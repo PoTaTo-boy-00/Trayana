@@ -36,9 +36,6 @@ export default function MapPage() {
   const [resourceData, setResourceData] = useState(staticRes);
   const [reqResourceData, setReqResourceData] = useState(staticReq);
 
-  // console.log(personnelData);
-  // console.log(reqResourceData);
-
   const supabase = createClientComponentClient();
 
   // console.log(organizations);

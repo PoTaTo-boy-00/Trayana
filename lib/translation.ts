@@ -4,6 +4,10 @@ import { Card } from "../components/ui/card";
 
 export const translations: TranslationDictionary = {
   en: {
+    disaster: {
+      title: "AI-Powered Disaster Prediction System",
+      desc: "Advanced AI predictions using Google Gemini for accurate disaster risk assessment.",
+    },
     //!alert
 
     alert: {
@@ -364,6 +368,11 @@ export const translations: TranslationDictionary = {
     },
   },
   hi: {
+    disaster: {
+      title: "एआई-सक्षम आपदा पूर्वानुमान प्रणाली",
+      desc: "सटीक आपदा जोखिम मूल्यांकन के लिए Google Gemini का उपयोग करके उन्नत एआई पूर्वानुमान।",
+    },
+
     //!alertBadge
     alertBadge: {
       red: {
