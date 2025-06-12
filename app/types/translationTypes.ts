@@ -1,5 +1,8 @@
 export interface TranslationDictionary {
-  [language: string]: {
+  [language: string]: TranslationLanguage;
+}
+
+interface TranslationLanguage {
     //! predcition
     disaster: {
       title: string;
@@ -16,6 +19,7 @@ export interface TranslationDictionary {
         organizations: string;
         resources: string;
       };
+       
       // legend_title: string;
       cardTitle: string;
       Available_Resources: string;
@@ -54,7 +58,7 @@ export interface TranslationDictionary {
           sms: string;
           ussd: string;
         };
-      };
+      }
       recipientId: {
         title: string;
         placeholder: string;
@@ -67,7 +71,7 @@ export interface TranslationDictionary {
           urgent: string;
           emergency: string;
         };
-      };
+      }
       deliveryMethod: {
         title: string;
         placeholder: string;
@@ -267,112 +271,14 @@ export interface TranslationDictionary {
       };
     };
 
-    //!organizations
-    organizations: {
-      title: string;
-      button: string;
-      delete: string;
-      dialogTitle: string;
-      Type: string;
-      Capabilities: string;
-    };
-
-    //!organizationForm
-    organizationForm: {
-      orgName: string;
-      orgTypes: {
-        title: string;
-        placeholder: string;
-        options: {
-          healthcare: string;
-          ngo: string;
-          essentials: string;
-          infrastructure: string;
-          community: string;
-          private: string;
-          specialized: string;
-        };
-      };
-      orgCapabilities: {
-        title: string;
-        placeholder: string;
-      };
-      contactEmail: {
-        title: string;
-        // placeholder:string;
-      };
-      contactPhone: {
-        title: string;
-        // placeholder:string;
-      };
-      address: {
-        title: string;
-        // placeholder:string;
-      };
-      longitude: string;
-      latitude: string;
-      submitButton: string;
-    };
-
-    //!Resource
-
-    resources: {
-      title: string;
-      filter: string;
-
-      btnName: string;
-
-      formTitle: string;
-    };
-
-    //!Resource Form
-
-    resourceForm: {
-      name: string;
-      type: string;
-      item: {
-        food: string;
-        medicine: string;
-        shelter: string;
-        equipment: string;
-      };
-      quantity: string;
-      unit: string;
-      location: string;
-      detect_location: string;
-      locStatement: string;
-      expiryDate: string;
-      conditions: string;
-      cdt_placeholder: string;
-      add_Resource: string;
-    };
-
-    //!Allocate Resource
-
     allocateResourceForm: {
       Allocate_Resource: string;
       Request_for: string;
       Allocate_Quantity: string;
       Available: string;
       alert: string;
-      Confirm_Allocation: string;
-      // Allocate Resources:string
-    };
-
-    //!Requuested Resource
-
-    ResourcesCard: {
-      type: string;
-      quantity: string;
-      location: string;
-      status: string;
-      conditions: string;
-      expiryDate: string;
-      requestedBy: string;
-      allocateResources: string;
-    };
-
-    //! Analytics Dashboard
+      Confirm_Allocation: string,
+    }
     analytics: {
       title: string;
       lastUpadte: string;
@@ -421,6 +327,172 @@ export interface TranslationDictionary {
         active: string;
         pending: string;
       };
+    }
+
+    //!organizations
+    organizations: {
+      title: string;
+      button: string;
+      delete: string;
+      dialogTitle: string;
+      Type: string;
+      Capabilities: string;
     };
-  };
+
+    //!organizationForm
+    organizationForm: {
+      orgName: string;
+      orgTypes: {
+        title: string;
+        placeholder: string;
+        options: {
+          healthcare: string;
+          ngo: string;
+          essentials: string;
+          infrastructure: string;
+          community: string;
+          private: string;
+          specialized: string;
+        };
+      };
+      orgCapabilities: {
+        title: string;
+        placeholder: string;
+      };
+      contactEmail: {
+        title: string;
+        // placeholder:string;
+      };
+      contactPhone: {
+        title: string;
+        // placeholder:string;
+      };
+      address: {
+        title: string;
+        // placeholder:string;
+      };
+      longitude: string;
+      latitude: string;
+      submitButton: string;
+    };
+
+    partnerPage: {
+      components: {
+        dashboard: {
+          title: string;
+          description: string;
+          resourceCount: string;
+          personnelCount: string;
+          organizationStatus: string;
+          allSystemsOperational: string;
+        };
+        alerts:{
+          title: string;
+        }
+        resources: {
+          title: string;
+          requestedResources: string;
+          requestButton: string;
+          addButton: string;
+          //requestResourceForm
+          requestResourceForm: {
+            title: string;
+            name: string;
+            quantity: string;
+            unit: string;
+            expiryDate: string;
+            resourceType: {
+              title: string;
+              options: {
+                food: string;
+                medicine: string;
+                shelter: string;
+                equipment: string;
+              };
+            };
+            status:{
+              title: string;
+              options: {
+                requested: string;
+                allocated: string;
+                depleted: string;
+              };
+            };
+            disasterType: {
+              title: string;
+              options: {
+                flood: string;
+                earthquake: string;
+                fire: string;
+                other: string;
+              };
+            };
+            conditions: {
+              title: string;
+              placeholder: string;
+            };
+            urgency:{
+              title: string;
+              options: {
+                low: string;
+                medium: string;
+                high: string;
+              };
+            };
+            submitButton: string;
+          };
+          addResourceForm: {
+            title: string;
+            name: string;
+            type: {
+              title: string;
+              options: {
+                food: string;
+                medicine: string;
+                shelter: string;
+                equipment: string;
+              };
+            };
+            quantity: string;
+            unit: string;
+            expiryDate: string;
+            status: {
+              title: string;
+              options: {
+                available: string;
+                allocated: string;
+                depleted: string;
+              };
+            };
+            conditions: {
+              title: string;
+              placeholder: string;
+            };
+            submitButton: string;
+          };
+        };
+        personnel: {
+          title: string;
+          addButton: string;
+          loading: string;
+        };
+        messages: {
+          title: string;
+          newButton: string;
+        };
+        organization: {
+          title: string;
+          button: string;
+          loading: string;
+        };
+        sos:{
+          title: string;
+          header: string;
+          location: string;
+          help: string;
+          coordinates: string;
+          time: string;
+        }
+      };
+    };
 }
