@@ -37,11 +37,7 @@ export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
-<<<<<<< HEAD
-=======
-  const [organizationId, setOrganizationId] = useState<string | "">("");
   const { t } = useTranslation();
->>>>>>> deletebutton
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [SOSdata, setSOSData] = useState<SOSWithCoords[]>([]);
