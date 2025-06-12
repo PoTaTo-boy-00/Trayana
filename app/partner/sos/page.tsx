@@ -105,6 +105,16 @@ export default function SOSPage() {
   };
 
   useEffect(() => {
+    const fetchUserDeatils = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      console.log(user);
+    };
+    fetchUserDeatils();
+  }, []);
+
+  useEffect(() => {
     const fetchReports = async () => {
       try {
         setLoading(true);

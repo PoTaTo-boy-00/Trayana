@@ -20,15 +20,60 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Organization, Role, Status } from "../types";
 
 const navigation = [
-  { name: "ui.partner.components.dashboard", key: "Dashboard", href: "/partner", icon: LayoutDashboard },
-  { name: "ui.partner.components.alerts", key: "Alerts", href: "/partner/alerts", icon: AlertTriangle },
-  { name: "ui.partner.components.resources", key: "Resources", href: "/partner/resources", icon: Box },
-  { name: "ui.partner.components.personnel", key: "Personnel", href: "/partner/personnel", icon: Users },
-  { name: "ui.partner.components.map", key: "Map", href: "/partner/map", icon: Map },
-  { name: "ui.partner.components.messages", key: "Messages", href: "/partner/messages", icon: MessageSquare },
-  { name: "ui.partner.components.organization", key: "Organization", href: "/partner/organization", icon: Building2 },
-  { name: "ui.partner.components.sos", key: "SOS", href: "/partner/sos", icon: AlertTriangle },
-  { name: "ui.partner.components.settings", key: "Settings", href: "/partner/settings", icon: Settings },
+  {
+    name: "ui.partner.components.dashboard",
+    key: "Dashboard",
+    href: "/partner",
+    icon: LayoutDashboard,
+  },
+  {
+    name: "ui.partner.components.alerts",
+    key: "Alerts",
+    href: "/partner/alerts",
+    icon: AlertTriangle,
+  },
+  {
+    name: "ui.partner.components.resources",
+    key: "Resources",
+    href: "/partner/resources",
+    icon: Box,
+  },
+  {
+    name: "ui.partner.components.personnel",
+    key: "Personnel",
+    href: "/partner/personnel",
+    icon: Users,
+  },
+  {
+    name: "ui.partner.components.map",
+    key: "Map",
+    href: "/partner/map",
+    icon: Map,
+  },
+  {
+    name: "ui.partner.components.messages",
+    key: "Messages",
+    href: "/partner/messages",
+    icon: MessageSquare,
+  },
+  {
+    name: "ui.partner.components.organization",
+    key: "Organization",
+    href: "/partner/organization",
+    icon: Building2,
+  },
+  {
+    name: "ui.partner.components.sos",
+    key: "SOS",
+    href: "/partner/sos",
+    icon: AlertTriangle,
+  },
+  {
+    name: "ui.partner.components.settings",
+    key: "Settings",
+    href: "/partner/settings",
+    icon: Settings,
+  },
 ];
 
 interface SidebarProps {
@@ -86,7 +131,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const filteredNavigation = useMemo(() => {
     if (status === "unapproved" || status === "pending") {
       return navigation.filter((item) =>
-        ["Organization", "Settings"].includes(item.name)
+        ["Organization", "Settings"].includes(item.key)
       );
     }
     return navigation;
