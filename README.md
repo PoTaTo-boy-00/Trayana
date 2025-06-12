@@ -52,7 +52,7 @@ For testing purposes, use the following credentials:
 - Password: admin2005
 
 ### Partner Login
-- Email: jsh@gmail.com
+- Email: abcde@gmail.com
 
 - Password: 123456
 
