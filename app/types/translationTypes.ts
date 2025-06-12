@@ -236,6 +236,37 @@ export interface TranslationDictionary {
       submitButton: string;
     };
 
+    ui: {
+      admin: {
+        title: string;
+        components: {
+          alerts: string;
+          organizations: string;
+          messages: string;
+          maps: string;
+          settings: string;
+          dashboard: string;
+          resources: string;
+          analytics: string;
+        };
+      };
+
+      partner: {
+        title: string;
+        components: {
+          dashboard: string;
+          alerts: string;
+          resources: string;
+          personnel: string;
+          map: string;
+          messages: string;
+          organization: string;
+          sos: string;
+          settings: string;
+        };
+      };
+    };
+
     //!organizations
     organizations: {
       title: string;
