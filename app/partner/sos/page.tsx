@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { getCloneableBody } from "next/dist/server/body-streams";
 
 type SOSReport = {
   id: string;
@@ -37,7 +38,6 @@ export default function SOSPage() {
   const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [selectedReport, setSelectedReport] = useState<SOSReport | null>(null);
   const [showModal, setShowModal] = useState(false);
-
   const handlePersonnelDispatch = async (
     personnel: Personnel,
     report: SOSReport
@@ -92,6 +92,9 @@ export default function SOSPage() {
       .from("personnel")
       .select("*")
       .eq("status", "available");
+    // .eq("organization_id", organizationId);
+
+    console.log(data);
 
     if (error) {
       toast.error("Failed to fetch personnel");

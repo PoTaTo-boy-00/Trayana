@@ -58,6 +58,11 @@ export default function PersonnelPage() {
           throw new Error("Failed to fetch user details");
 
         const { organization_id } = userDetails;
+        // console.log(organization_id);
+        console.log(organization_id);
+        setOrganizationId(userDetails.organization_id);
+
+        console.log(organizationId);
 
         // Now fetch only personnel for this org
         const { data: personnelData, error: personnelError } = await supabase
@@ -77,7 +82,7 @@ export default function PersonnelPage() {
     };
 
     fetchUserAndPersonnel();
-  }, []);
+  }, [organizationId]);
 
   const updatePersonnelStatus = async (
     id: string,
@@ -120,6 +125,8 @@ export default function PersonnelPage() {
   const handleAddPersonnel = async (
     newPersonnel: Omit<Personnel, "id" | "timestamp" | "organization_id">
   ) => {
+    console.log("entered");
+    console.log(organizationId);
     if (!organizationId) return;
 
     try {
@@ -133,12 +140,12 @@ export default function PersonnelPage() {
       const { data, error } = await supabase
         .from("personnel")
         .insert(completePersonnel)
-        .select()
-        .single();
+        .select();
+      // .single();
 
       if (error) throw error;
 
-      setPersonnel((prev) => [...prev, data]);
+      setPersonnel((prev) => [...prev, data[0]]);
       setIsDialogOpen(false);
     } catch (err) {
       console.error("Error adding personnel:", err);
@@ -272,7 +279,7 @@ function PersonnelForm({
   ) => void;
 }) {
   const [formData, setFormData] = useState<
-    Omit<Personnel, "id" | "timestamp" | "organization_id">
+    Omit<Personnel, "id" | "organization_id">
   >({
     name: "",
     role: "",
@@ -280,8 +287,8 @@ function PersonnelForm({
     skills: [],
     contact: { phone: "", email: "" },
     location: undefined,
-
-    updatedAt: "",
+    timestamp: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

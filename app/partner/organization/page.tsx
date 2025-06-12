@@ -10,6 +10,7 @@ import {
   Save,
   X,
   Loader2,
+  Globe,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -159,6 +160,22 @@ export default function OrganizationPage() {
     setEditedOrg({
       ...editedOrg,
       capabilities: [...editedOrg.capabilities, ""],
+    });
+  };
+
+  const updateCoverageCenter = (field: "lat" | "lng", value: string) => {
+    if (!editedOrg) return;
+
+    const numValue = parseFloat(value) || 0;
+    setEditedOrg({
+      ...editedOrg,
+      coverage: {
+        ...editedOrg.coverage,
+        center: {
+          ...editedOrg.coverage.center,
+          [field]: numValue,
+        },
+      },
     });
   };
 
@@ -362,6 +379,78 @@ export default function OrganizationPage() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Coverage Section */}
+            <div>
+              <Label className="text-sm text-muted-foreground flex items-center gap-2 mb-3">
+                <Globe className="h-4 w-4" />
+                Coverage Area
+              </Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Latitude
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      step="any"
+                      value={currentOrg.coverage.center.lat}
+                      onChange={(e) =>
+                        updateCoverageCenter("lat", e.target.value)
+                      }
+                      placeholder="e.g., 22.5726"
+                    />
+                  ) : (
+                    <p className="font-medium">
+                      {currentOrg.coverage.center.lat}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Longitude
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      step="any"
+                      value={currentOrg.coverage.center.lng}
+                      onChange={(e) =>
+                        updateCoverageCenter("lng", e.target.value)
+                      }
+                      placeholder="e.g., 88.3639"
+                    />
+                  ) : (
+                    <p className="font-medium">
+                      {currentOrg.coverage.center.lng}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Radius (km)
+                  </Label>
+                  {isEditing ? (
+                    <Input
+                      type="number"
+                      value={currentOrg.coverage.radius}
+                      onChange={(e) =>
+                        updateField(
+                          "coverage.radius",
+                          parseFloat(e.target.value) || 0
+                        )
+                      }
+                      placeholder="e.g., 10"
+                    />
+                  ) : (
+                    <p className="font-medium">
+                      {currentOrg.coverage.radius} km
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -36,10 +36,10 @@ export default function PartnerDashboard() {
   const [alertCount, setAlertCount] = useState<number>(0);
   const [resourceCount, setResourceCount] = useState<number>(0);
   const [personnelCount, setPersonnelCount] = useState<number>(0);
-  const [organizationId, setOrganizationId] = useState<string | "">("");
 
   const [personnelData, setPersonnelData] = useState(staticPersonnel);
   const [SOSdata, setSOSData] = useState<SOSWithCoords[]>([]);
+  const [organizationId, setOrganizationId] = useState<string | "">("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +72,13 @@ export default function PartnerDashboard() {
 
   useEffect(() => {
     const fetchPersonnel = async () => {
-      const { data, error } = await supabase.from("personnel").select("*");
+      const { data, error } = await supabase
+        .from("personnel")
+        .select("*")
+        .eq("organization_id", organizationId);
+
+      // console.log(otrga)
+      // console.log(data);
       if (error) {
         console.error("Error fetching alerts:", error);
       } else {
@@ -81,7 +87,7 @@ export default function PartnerDashboard() {
     };
 
     fetchPersonnel();
-  }, []);
+  }, [organizationId]);
 
   useEffect(() => {
     const fetchUserAndPersonnel = async () => {
@@ -103,7 +109,7 @@ export default function PartnerDashboard() {
           .eq("id", user.id)
           .single();
 
-        console.log(userDetails?.organization_id);
+        // console.log(userDetails?.organization_id);
 
         if (userDetailsError || !userDetails)
           throw new Error("Failed to fetch user details");
@@ -117,7 +123,9 @@ export default function PartnerDashboard() {
     };
 
     fetchUserAndPersonnel();
-  }, []);
+  }, [organizationId]);
+
+  console.log(organizationId);
 
   useEffect(() => {
     async function fetchData() {

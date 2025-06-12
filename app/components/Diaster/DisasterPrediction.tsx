@@ -31,6 +31,7 @@ import {
   XCircle,
   Info,
 } from "lucide-react";
+import { useTranslation } from "@/lib/translation-context";
 
 // Enhanced type definitions
 interface FormField {
@@ -825,15 +826,16 @@ const DynamicDisasterPrediction: React.FC = () => {
     }
   };
 
+  const { t } = useTranslation();
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          AI-Powered Disaster Prediction System
+          {t("disaster.title")}
         </h1>
         <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base max-w-2xl mx-auto">
-          Advanced AI predictions using Google Gemini for accurate disaster risk
-          assessment.
+          {t("disaster.desc")}
         </p>
       </div>
 
