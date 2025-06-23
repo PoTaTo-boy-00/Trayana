@@ -23,7 +23,7 @@ This project is a **real-time disaster response and resource management system**
 ✅ **SOS Emergency Requests** (AI-powered urgency detection via Gemini AI)  
 ✅ **Offline Mode** (Locally stores distress messages, syncs once online)  
 ✅ **Multi-Channel Communication** (Mobile app, SMS, IVR for illiterate users)  
-✅ **AI Resource Matching & Allocation** (Google Vertex AI)  
+✅ **AI Resource Matching & Allocation** (Google Gemini AI)  
 ✅ **Geolocation Tracking** (Rescue teams & victims via Google Maps API)  
 ✅ **Data Dashboards** (Live response monitoring via Google Data Studio)  
 
