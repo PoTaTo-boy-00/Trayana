@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Header } from "../components/header";
 // import { Sidebar } from "../components/sidebar";
 import { Sidebar } from "../components/partner-sidebar";
+import { OrgInitializer } from "@/components/OrgInitializer";
 
 export default function PartnerLayout({
   children,
@@ -13,6 +14,7 @@ export default function PartnerLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   return (
     <div className="flex h-screen flex-col">
+      <OrgInitializer />
       <Header onMenuClick={() => setIsSidebarOpen(true)} />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar

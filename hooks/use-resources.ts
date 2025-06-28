@@ -7,6 +7,7 @@ import {
   requestResources,
   RequestStatus,
 } from "@/app/types";
+import { useOrgStore } from "@/store/orgStore";
 
 interface OrgDetail {
   id: string;
@@ -30,7 +31,7 @@ export const useResources = () => {
   const [orgDetails, setOrgDetails] = useState<OrgDetail[]>([]);
   const [userDetails, setUserDetails] = useState<UserDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  const orgID = useOrgStore((state) => state.organizationId);
   // Get user details from localStorage
   const getUserFromStorage = (): UserDetail | null => {
     try {
@@ -228,12 +229,16 @@ export const useResources = () => {
   const deleteRequestedResource = async (id: string) => {
     const currentUser = userDetails || getUserFromStorage();
 
-    // Optional: Check if user owns this request
+    //  Check if user owns this request
     const resourceToDelete = requestedResources.find((res) => res.id === id);
-    if (resourceToDelete && resourceToDelete.requestedBy !== currentUser?.id) {
-      console.error("User not authorized to delete this resource request");
-      return false;
-    }
+    console.log(resourceToDelete);
+
+    console.log(orgID);
+    console.log(currentUser);
+    // if (resourceToDelete && resourceToDelete.requestedBy !== currentUser?.id) {
+    //   console.error("User not authorized to delete this resource request");
+    //   return false;
+    // }
 
     const { error } = await supabase
       .from("requestresources")
@@ -246,21 +251,21 @@ export const useResources = () => {
     } else {
       setRequestedResources((prev) => prev.filter((res) => res.id !== id));
 
-      // Log the deletion
-      if (currentUser) {
-        await logResourceHistory({
-          resource_id: id,
-          event_type: "delete",
-          quantity_changed: 0,
-          status_after_event: "deleted",
-          location: resourceToDelete?.location
-            ? `${resourceToDelete.location.lat},${resourceToDelete.location.lng}`
-            : "unknown",
-          performed_by: currentUser.id,
-          quantity: 0,
-          remarks: "Resource request deleted by user",
-        });
-      }
+      // // Log the deletion
+      // if (currentUser) {
+      //   await logResourceHistory({
+      //     resource_id: id,
+      //     event_type: "delete",
+      //     quantity_changed: 0,
+      //     status_after_event: "deleted",
+      //     location: resourceToDelete?.location
+      //       ? `${resourceToDelete.location.lat},${resourceToDelete.location.lng}`
+      //       : "unknown",
+      //     performed_by: currentUser.id,
+      //     quantity: 0,
+      //     remarks: "Resource request deleted by user",
+      //   });
+      // }
     }
     return true;
   };
