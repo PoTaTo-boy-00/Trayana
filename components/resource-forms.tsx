@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
 import { Resource } from "@/app/types";
+import { useTranslation } from "@/lib/translation-context";
 
 interface ResourceFormProps {
   onSubmit: (resource: Omit<Resource, "id" | "lastUpdated">) => void;
 }
 
 export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<
     Omit<Resource, "id" | "lastUpdated">
   >({
@@ -72,7 +74,7 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <Label>Name</Label>
+        <Label>{t("partnerPage.components.resources.addResourceForm.name")}</Label>
         <Input
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -81,7 +83,7 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
       </div>
 
       <div>
-        <Label>Type</Label>
+        <Label>{t("partnerPage.components.resources.addResourceForm.type.title")}</Label>
         <Select
           value={formData.type}
           onValueChange={(value) =>
@@ -92,16 +94,16 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="food">Food</SelectItem>
-            <SelectItem value="medicine">Medicine</SelectItem>
-            <SelectItem value="shelter">Shelter</SelectItem>
-            <SelectItem value="equipment">Equipment</SelectItem>
+            <SelectItem value="food">{t("partnerPage.components.resources.addResourceForm.type.options.food")}</SelectItem>
+            <SelectItem value="medicine">{t("partnerPage.components.resources.addResourceForm.type.options.medicine")}</SelectItem>
+            <SelectItem value="shelter">{t("partnerPage.components.resources.addResourceForm.type.options.shelter")}</SelectItem>
+            <SelectItem value="equipment">{t("partnerPage.components.resources.addResourceForm.type.options.equipment")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Quantity</Label>
+        <Label>{t("partnerPage.components.resources.addResourceForm.quantity")}</Label>
         <Input
           type="number"
           value={formData.quantity}
@@ -113,7 +115,7 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
       </div>
 
       <div>
-        <Label>Unit</Label>
+        <Label>{t("partnerPage.components.resources.addResourceForm.unit")}</Label>
         <Input
           value={formData.unit}
           onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
@@ -122,7 +124,7 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
       </div>
 
       <div>
-        <Label>Status</Label>
+        <Label>{t("partnerPage.components.resources.addResourceForm.status.title")}</Label>
         <Select
           value={formData.status}
           onValueChange={(value) =>
@@ -133,15 +135,15 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
             <SelectValue placeholder="Select status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="allocated">Allocated</SelectItem>
-            <SelectItem value="depleted">Depleted</SelectItem>
+            <SelectItem value="available">{t("partnerPage.components.resources.addResourceForm.status.options.available")}</SelectItem>
+            <SelectItem value="allocated">{t("partnerPage.components.resources.addResourceForm.status.options.allocated")}</SelectItem>
+            <SelectItem value="depleted">{t("partnerPage.components.resources.addResourceForm.status.options.depleted")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Expiry Date</Label>
+        <Label>{t("partnerPage.components.resources.addResourceForm.expiryDate")}</Label>
         <Input
           type="date"
           value={formData.expiryDate}
@@ -152,7 +154,7 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
       </div>
 
       <div>
-        <Label>Conditions</Label>
+        <Label>{t("partnerPage.components.resources.addResourceForm.conditions.title")}</Label>
         <Input
           value={formData.conditions?.join(", ")}
           onChange={(e) =>
@@ -161,11 +163,11 @@ export const ResourceForm = ({ onSubmit }: ResourceFormProps) => {
               conditions: e.target.value.split(", "),
             })
           }
-          placeholder="Enter conditions separated by commas"
+          placeholder={t("partnerPage.components.resources.addResourceForm.conditions.placeholder")}
         />
       </div>
 
-      <Button type="submit">Add Resource</Button>
+      <Button type="submit">{t("partnerPage.components.resources.addResourceForm.submitButton")}</Button>
     </form>
   );
 };

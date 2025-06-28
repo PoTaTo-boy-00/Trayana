@@ -9,11 +9,11 @@ This project is a **real-time disaster response and resource management system**
 |-------------------|----------------|
 | **Frontend**      | React Native (Mobile), Next.js (Web), TailwindCSS |
 | **Backend**       | Node.js, Express.js, Supabase (PostgreSQL, Realtime DB) |
-| **AI & ML**       | Google Gemini AI, Vertex AI Forecasting, Google NLP API, BigQuery |
+| **AI & ML**       | Google Gemini AI, Vertex AI Forecasting,  BigQuery |
 | **Communication** | Supabse Push, Twilio SMS, Supabase Realtime, Websocket |
 | **Geolocation**   | Google Maps API, GPS Tracking |
 | **Database**      | Supabase, BigQuery |
-| **APIs**          | IMD, USGS Earthquake, Google Maps, Google Translate, Google Sheets, Google Flood Forecasting, Google Earth, Google Earth Engine |
+| **APIs**          | IMD, USGS Earthquake, Google Maps, Google Cloud Translation, Google Sheets, Google Flood Forecasting, Google Earth, Google Earth Engine, Compute Engine API |
 | **Code Editor**   | IDX, VS Code | 
 
 
@@ -23,7 +23,7 @@ This project is a **real-time disaster response and resource management system**
 ✅ **SOS Emergency Requests** (AI-powered urgency detection via Gemini AI)  
 ✅ **Offline Mode** (Locally stores distress messages, syncs once online)  
 ✅ **Multi-Channel Communication** (Mobile app, SMS, IVR for illiterate users)  
-✅ **AI Resource Matching & Allocation** (Google Vertex AI)  
+✅ **AI Resource Matching & Allocation** (Google Gemini AI)  
 ✅ **Geolocation Tracking** (Rescue teams & victims via Google Maps API)  
 ✅ **Data Dashboards** (Live response monitoring via Google Data Studio)  
 
@@ -52,7 +52,7 @@ For testing purposes, use the following credentials:
 - Password: admin2005
 
 ### Partner Login
-- Email: jsh@gmail.com
+- Email: abcde@gmail.com
 
 - Password: 123456
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Message } from "@/app/types";
+import { useTranslation } from "@/lib/translation-context";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ import { supabase } from "@/lib/supabase";
 export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const testSupabaseConnection = async () => {
@@ -91,11 +93,11 @@ export default function MessagesPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Messages</h1>
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.messages.title")}</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> New Message
+              <Plus className="mr-2 h-4 w-4" /> {t("partnerPage.components.messages.newButton")}
             </Button>
           </DialogTrigger>
           <DialogContent>

@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Organization } from "@/app/types";
+import { useTranslation } from "@/lib/translation-context";
 
 export default function OrganizationPage() {
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -28,6 +29,7 @@ export default function OrganizationPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editedOrg, setEditedOrg] = useState<Organization | null>(null);
+  const { t } = useTranslation();
 
   const supabase = createClientComponentClient();
 
@@ -202,7 +204,7 @@ export default function OrganizationPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex items-center gap-2">
           <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Loading organization data...</span>
+          <span>{t("partnerPage.components.organization.loading")}</span>
         </div>
       </div>
     );
@@ -211,7 +213,7 @@ export default function OrganizationPage() {
   if (error && !organization) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Organization Profile</h1>
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.organization.title")}</h1>
         <Card>
           <CardContent className="p-6">
             <div className="text-center space-y-4">
@@ -227,7 +229,7 @@ export default function OrganizationPage() {
   if (!organization) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Organization Profile</h1>
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.organization.title")}</h1>
         <Card>
           <CardContent className="p-6">
             <p className="text-center text-muted-foreground">
@@ -244,11 +246,11 @@ export default function OrganizationPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Organization Profile</h1>
+        <h1 className="text-3xl font-bold">{t("partnerPage.components.organization.title")}</h1>
         {!isEditing ? (
           <Button onClick={handleEdit} className="flex items-center gap-2">
             <Edit className="h-4 w-4" />
-            Edit Profile
+            {t("partnerPage.components.organization.button")}
           </Button>
         ) : (
           <div className="flex items-center gap-2">

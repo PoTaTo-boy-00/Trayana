@@ -1,4 +1,5 @@
 import { TranslationDictionary } from "@/app/types/translationTypes";
+import { add, daysToWeeks } from "date-fns";
 import { Card } from "../components/ui/card";
 // import { DashboardTranslation } from '../app/types/translationTypes';
 
@@ -300,42 +301,124 @@ export const translations: TranslationDictionary = {
       longitude: "Longitude",
       submitButton: "Add Organization",
     },
-    resources: {
-      title: "Resource Management",
-      filter: "Filter",
 
-      btnName: "Add Resource",
-
-      formTitle: "Add New Resource",
-    },
-    resourceForm: {
-      name: "Name",
-      type: "Type",
-      item: {
-        food: "Food",
-        medicine: "Medicine",
-        shelter: "Shelter",
-        equipment: "Equipment",
+    partnerPage:{
+      components:{
+        dashboard:{
+          title: "Partner Dashboard",
+          description: "Welcome to the Partner Dashboard",
+          resourceCount: "Available Resources",
+          personnelCount: "Active Personnel",
+          organizationStatus: "Organization Status",
+          allSystemsOperational: "All systems operational",
+        },
+        alerts:{
+          title: "Active Alerts",
+        },
+        resources: {
+          title: "Resource Management",
+          addButton: "Add Resource",
+          requestButton: "Request Resource",
+          requestedResources: "Requested Resources",
+          requestResourceForm: {
+            title: "Request Resource",
+            name: "Name",
+            quantity: "Quantity",
+            unit: "Unit",
+            expiryDate: "Expiry Date",
+            resourceType: {
+              title: "Resource Type",
+              options: {
+                food: "Food",
+                medicine: "Medicine",
+                shelter: "Shelter",
+                equipment: "Equipment",
+              },
+            },
+            status: {
+              title: "Status",
+              options: {
+                requested: "Requested",
+                allocated: "Allocated",
+                depleted: "Depleted",
+              },
+            },
+            submitButton: "Request Resource",
+            conditions: {
+              title: "Conditions",
+              placeholder: "Enter conditions separated by commas",
+            },
+            urgency: {
+              title: "Urgency",
+              options: {
+                low: "Low",
+                medium: "Medium",
+                high: "High",
+              },
+            },
+            disasterType: {
+              title: "Disaster Type",
+              options: {
+                flood: "Flood",
+                earthquake: "Earthquake",
+                fire: "Fire",
+                other: "Other",
+              },
+            },
+          },
+          addResourceForm: {
+            title: "Add New Resource",
+            name: "Name",
+            type: {
+              title: "Type",
+              options: {
+                food: "Food",
+                medicine: "Medicine",
+                shelter: "Shelter",
+                equipment: "Equipment",
+              },
+            },
+            quantity: "Quantity",
+            unit: "Unit",
+            expiryDate: "Expiry Date",
+            status: {
+              title: "Status",
+              options: {
+                available: "Available",
+                allocated: "Allocated",
+                depleted: "Depleted",
+              },
+            },
+            conditions: {
+              title: "Conditions",
+              placeholder: "Enter conditions separated by commas",
+            },
+            submitButton: "Add Resource",
+          },
+        },
+        personnel: {
+          title: "Personnel Management",
+          addButton: "Add Personnel",
+          loading: "Loading personnel data...",
+        },
+        messages: {
+          title: "Messages",
+          newButton: "New Message",
+        },
+        organization:{
+          title: "Organization Profile",
+          button: "Edit Profile",
+          loading: "Loading organization data...",
+        },
+        sos: {
+          title: "SOS Reports",
+          header: "SOS Report",
+          location: "Location",
+          help: "Dispatch Help",
+          coordinates: "Coordinates",
+          time: "Reported at",
+        },
       },
-      quantity: "Quantity",
-      unit: "Unit",
-      location: "Location (Auto-detect)",
-      detect_location: "Detect Location",
-      locStatement: "No address detected yet.",
-      expiryDate: "Expiry Date",
-      conditions: "Conditions",
-      cdt_placeholder: "Enter conditions separated by commas",
-      add_Resource: "Add Resource",
-    },
-    ResourcesCard: {
-      type: "Type",
-      quantity: "Quantity",
-      location: "Location",
-      status: "Status",
-      conditions: "Conditions",
-      expiryDate: "Expiry Date",
-      requestedBy: "Requested By",
-      allocateResources: "Allocate Resources",
     },
     allocateResourceForm: {
       Allocate_Resource: "AllocateResource",
@@ -684,44 +767,125 @@ export const translations: TranslationDictionary = {
       optimizedRecommendation: "अनुकूलित संसाधन सिफारिश",
     },
 
-    //!organizationForm
-    resources: {
-      title: "संसाधन प्रबंधन",
-      filter: "फ़िल्टर",
-
-      btnName: "संसाधन जोड़ें",
-
-      formTitle: "नया संसाधन जोड़ें",
-    },
-    resourceForm: {
-      name: "नाम",
-      type: "प्रकार",
-      item: {
-        food: "भोजन",
-        medicine: "दवा",
-        shelter: "आश्रय",
-        equipment: "उपकरण",
+    partnerPage: {
+      components: {
+        dashboard: {
+          title: "साझेदार डैशबोर्ड",
+          description: "साझेदार डैशबोर्ड में आपका स्वागत है",
+          resourceCount: "उपलब्ध संसाधन",
+          personnelCount: "सक्रिय कर्मचारी",
+          organizationStatus: "संगठन की स्थिति",
+          allSystemsOperational: "सभी सिस्टम संचालित हैं",
+        },
+        alerts: {
+          title: "सक्रिय अलर्ट",
+        },
+        resources: {
+          title: "संसाधन प्रबंधन",
+          addButton: "संसाधन जोड़ें",
+          requestButton: "संसाधन अनुरोध करें",
+          requestedResources: "अनुरोधित संसाधन",
+          requestResourceForm: {
+            title: "संसाधन अनुरोध करें",
+            name: "नाम",
+            quantity: "मात्रा",
+            unit: "इकाई",
+            expiryDate: "समाप्ति तिथि",
+            resourceType: {
+              title: "संसाधन प्रकार",
+              options: {
+                food: "भोजन",
+                medicine: "दवा",
+                shelter: "आश्रय",
+                equipment: "उपकरण",
+              },
+            },
+            status: {
+              title: "स्थिति",
+              options: {
+                requested: "अनुरोधित",
+                allocated: "आवंटित",
+                depleted: "खत्म हो गया",
+              },
+            },
+            submitButton: "संसाधन अनुरोध करें",
+            conditions: {
+              title: "शर्तें",
+              placeholder: "अल्पविराम से अलग करके शर्तें दर्ज करें",
+            },
+            urgency: {
+              title: "तत्कालता",
+              options: {
+                low: "कम",
+                medium: "मध्यम",
+                high: "उच्च",
+              },
+            },
+            disasterType: {
+              title: "आपदा प्रकार",
+              options: {
+                flood: "बाढ़",
+                earthquake: "भूकंप",
+                fire: "आग",
+                other: "अन्य",
+              },
+            },
+          },
+          addResourceForm: {
+            title: "नया संसाधन जोड़ें",
+            name: "नाम",
+            type: {
+              title: "प्रकार",
+              options: {
+                food: "भोजन",
+                medicine: "दवा",
+                shelter: "आश्रय",
+                equipment: "उपकरण",
+              },
+            },
+            quantity: "मात्रा",
+            unit: "इकाई",
+            expiryDate: "समाप्ति तिथि",
+            status: {
+              title: "स्थिति",
+              options: {
+                available: "उपलब्ध",
+                allocated: "आवंटित",
+                depleted: "खत्म हो गया",
+              },
+            },
+            conditions: {
+              title: "शर्तें",
+              placeholder: "अल्पविराम से अलग करके शर्तें दर्ज करें",
+            },
+            submitButton: "संसाधन जोड़ें",
+          },
+        },
+        personnel: {
+          title: "कर्मचारी प्रबंधन",
+          addButton: "कर्मचारी जोड़ें",
+          loading: "कर्मचारी डेटा लोड हो रहा है...",
+        },
+        messages: {
+          title: "संदेश",
+          newButton: "नया संदेश",
+        },
+        organization: {
+          title: "संगठन प्रोफ़ाइल",
+          button: "प्रोफ़ाइल संपादित करें",
+          loading: "संगठन डेटा लोड हो रहा है...",
+        },
+        sos: {
+          title: "एसओएस रिपोर्ट",
+          header: "एसओएस रिपोर्ट",
+          location: "स्थान",
+          help: "मदद भेजें",
+          coordinates: "निर्देशांक",
+          time: "रिपोर्ट किया गया समय",
+        },
       },
-      quantity: "मात्रा",
-      unit: "इकाई",
-      location: "स्थान (स्वतः पता लगाएं)",
-      detect_location: "स्थान पता करें",
-      locStatement: "अभी तक कोई पता नहीं मिला।",
-      expiryDate: "समाप्ति तिथि",
-      conditions: "शर्तें",
-      cdt_placeholder: "शर्तें कॉमा से अलग करें",
-      add_Resource: "संसाधन जोड़ें",
     },
-    ResourcesCard: {
-      type: "प्रकार",
-      quantity: "मात्रा",
-      location: "स्थान",
-      status: "स्थिति",
-      conditions: "शर्तें",
-      expiryDate: "समाप्ति तिथि",
-      requestedBy: "अनुरोधकर्ता",
-      allocateResources: "संसाधन आवंटित करें",
-    },
+
     allocateResourceForm: {
       Allocate_Resource: "संसाधन आवंटित करें",
       Request_for: "अनुरोध करें",
