@@ -475,122 +475,206 @@ export default function ResourcesPage() {
                         {selectedRequest.quantity} {selectedRequest.unit})
                       </p>
 
-                      <div>
-                        <Label>
-                          {t("allocateResourceForm.Allocate_Quantity")}
-                        </Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={
-                            resources.find(
-                              (res) => res.type === selectedRequest.type
-                            )?.quantity || 0
-                          }
-                          value={allocateQuantity}
-                          onChange={(e) =>
-                            setAllocateQuantity(Number(e.target.value))
-                          }
-                        />
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {t("allocateResourceForm.Available")}:{" "}
-                          {resources.find(
-                            (res) => res.type === selectedRequest.type
-                          )?.quantity || 0}{" "}
-                          {selectedRequest.unit}
-                        </p>
-                      </div>
+                      {/* Improved matching logic */}
+                      {(() => {
+                        const matchingResources = resources.filter(
+                          (res) =>
+                            res.name?.toLowerCase() ===
+                              selectedRequest.name?.toLowerCase() &&
+                            res.type?.toLowerCase() ===
+                              selectedRequest.type?.toLowerCase()
+                        );
 
-                      <Button
-                        onClick={async () => {
-                          const matchingResource = resources.find(
-                            (res) => res.type === selectedRequest.type
-                          );
+                        const totalAvailable = matchingResources.reduce(
+                          (sum, res) => sum + res.quantity,
+                          0
+                        );
+                        const maxAllocatable = Math.min(
+                          selectedRequest.quantity,
+                          totalAvailable
+                        );
 
-                          if (
-                            !matchingResource ||
-                            allocateQuantity <= 0 ||
-                            allocateQuantity > matchingResource.quantity
-                          ) {
-                            alert(t("allocateResourceForm.alert"));
-                            return;
-                          }
+                        return (
+                          <>
+                            <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm">
+                              <p>
+                                Matching resources found:{" "}
+                                {matchingResources.length}
+                              </p>
+                              <p>
+                                Total available: {totalAvailable}{" "}
+                                {selectedRequest.unit}
+                              </p>
+                              {matchingResources.map((res, idx) => (
+                                <p key={idx}>
+                                  - {res.name} (ID: {res.id}): {res.quantity}{" "}
+                                  {res.unit}
+                                </p>
+                              ))}
+                            </div>
 
-                          try {
-                            // 1. Update the resource quantity first
-                            const newResourceQuantity =
-                              matchingResource.quantity - allocateQuantity;
-                            const { error: resError } = await supabase
-                              .from("resources")
-                              .update({
-                                quantity: newResourceQuantity,
-                                status:
-                                  newResourceQuantity === 0
-                                    ? "depleted"
-                                    : "available",
-                              })
-                              .eq("id", matchingResource.id);
+                            <div>
+                              <Label>
+                                {t("allocateResourceForm.Allocate_Quantity")}
+                              </Label>
+                              <Input
+                                type="number"
+                                min={1}
+                                max={maxAllocatable}
+                                value={allocateQuantity}
+                                onChange={(e) => {
+                                  const value = Number(e.target.value);
+                                  setAllocateQuantity(
+                                    Math.min(value, maxAllocatable)
+                                  );
+                                }}
+                              />
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {t("allocateResourceForm.Available")}:{" "}
+                                {totalAvailable} {selectedRequest.unit}
+                                <br />
+                                {t("Maximum_Allocatable_Quantity")}:{" "}
+                                {maxAllocatable} {selectedRequest.unit}
+                              </p>
+                            </div>
 
-                            if (resError) throw resError;
+                            <Button
+                              onClick={async () => {
+                                if (
+                                  !allocateQuantity ||
+                                  allocateQuantity <= 0
+                                ) {
+                                  alert(
+                                    "Please enter a valid allocation quantity"
+                                  );
+                                  return;
+                                }
 
-                            // 🟡 INSERT INTO resource_history
-                            const { error: historyError } = await supabase
-                              .from("resource_history")
-                              .insert([
-                                {
-                                  id: crypto.randomUUID(),
-                                  timestamp: new Date().toISOString(),
-                                  event_type: "update",
-                                  quantity_changed: -allocateQuantity,
-                                  quantity: newResourceQuantity,
-                                  status_after_event:
-                                    newResourceQuantity === 0
-                                      ? "depleted"
-                                      : "available",
-                                  location: `${matchingResource.location.lat}, ${matchingResource.location.lng}`,
-                                  performed_by: "admin",
-                                  remarks: `Allocated ${allocateQuantity} to fulfill request: ${selectedRequest.name}`,
-                                  resource_id: matchingResource.id,
-                                },
-                              ]);
+                                try {
+                                  // Sort matching resources by quantity (descending)
+                                  const sortedResources = [
+                                    ...matchingResources,
+                                  ].sort((a, b) => b.quantity - a.quantity);
+                                  let remainingAllocation = allocateQuantity;
 
-                            if (historyError) throw historyError;
+                                  // Process each matching resource until allocation is complete
+                                  for (const resource of sortedResources) {
+                                    if (remainingAllocation <= 0) break;
 
-                            // 2. Then handle the request
-                            if (selectedRequest.quantity <= allocateQuantity) {
-                              // Delete request if fully allocated
-                              const { error: reqError } = await supabase
-                                .from("requestresources")
-                                .delete()
-                                .eq("id", selectedRequest.id);
-                              if (reqError) throw reqError;
-                            } else {
-                              // Update request quantity if partially allocated
-                              const newRequestQuantity =
-                                selectedRequest.quantity - allocateQuantity;
-                              const { error: reqError } = await supabase
-                                .from("requestresources")
-                                .update({
-                                  quantity: newRequestQuantity,
-                                  status: "requested",
-                                })
-                                .eq("id", selectedRequest.id);
-                              if (reqError) throw reqError;
-                            }
+                                    const allocationAmount = Math.min(
+                                      remainingAllocation,
+                                      resource.quantity
+                                    );
+                                    const newResourceQuantity =
+                                      resource.quantity - allocationAmount;
+                                    remainingAllocation -= allocationAmount;
 
-                            // Success - close dialog and reset state
-                            setIsAllocDialogOpen(false);
-                            setAllocateQuantity(0);
-                          } catch (error) {
-                            console.error("Allocation failed:", error);
-                            alert(
-                              "Failed to allocate resources. Please try again."
-                            );
-                          }
-                        }}
-                      >
-                        {t("allocateResourceForm.Confirm_Allocation")}
-                      </Button>
+                                    // Update resource in database
+                                    const { error: resError } = await supabase
+                                      .from("resources")
+                                      .update({
+                                        quantity: newResourceQuantity,
+                                        status:
+                                          newResourceQuantity <= 0
+                                            ? "depleted"
+                                            : "available",
+                                      })
+                                      .eq("id", resource.id);
+
+                                    if (resError) throw resError;
+
+                                    // Add to history
+                                    const { error: historyError } =
+                                      await supabase
+                                        .from("resource_history")
+                                        .insert([
+                                          {
+                                            id: crypto.randomUUID(),
+                                            timestamp: new Date().toISOString(),
+                                            event_type: "allocation",
+                                            quantity_changed: -allocationAmount,
+                                            quantity: newResourceQuantity,
+                                            status_after_event:
+                                              newResourceQuantity <= 0
+                                                ? "depleted"
+                                                : "available",
+                                            location: `${resource.location.lat}, ${resource.location.lng}`,
+                                            performed_by: "admin",
+                                            remarks: `Allocated ${allocationAmount} ${selectedRequest.unit} for request ${selectedRequest.id}`,
+                                            resource_id: resource.id,
+                                          },
+                                        ]);
+
+                                    if (historyError) throw historyError;
+                                  }
+
+                                  // Update the request
+                                  const newRequestQuantity =
+                                    selectedRequest.quantity - allocateQuantity;
+                                  if (newRequestQuantity <= 0) {
+                                    // Delete if fully fulfilled
+                                    const { error: reqError } = await supabase
+                                      .from("requestresources")
+                                      .delete()
+                                      .eq("id", selectedRequest.id);
+                                    if (reqError) throw reqError;
+                                  } else {
+                                    // Update if partially fulfilled
+                                    const { error: reqError } = await supabase
+                                      .from("requestresources")
+                                      .update({
+                                        quantity: newRequestQuantity,
+                                        status: "partially_allocated",
+                                      })
+                                      .eq("id", selectedRequest.id);
+                                    if (reqError) throw reqError;
+                                  }
+
+                                  // Create notification
+                                  const { error: notifError } = await supabase
+                                    .from("notifications")
+                                    .insert([
+                                      {
+                                        id: crypto.randomUUID(),
+                                        recipient_id:
+                                          selectedRequest.organizationId ||
+                                          selectedRequest.requestedBy,
+                                        message: `Allocated ${allocateQuantity} ${selectedRequest.unit} of ${selectedRequest.name}`,
+                                        type: "resource_allocated",
+                                        read: false,
+                                        timestamp: new Date().toISOString(),
+                                      },
+                                    ]);
+
+                                  if (notifError) throw notifError;
+
+                                  alert(
+                                    `Successfully allocated ${allocateQuantity} ${selectedRequest.unit}`
+                                  );
+                                  setIsAllocDialogOpen(false);
+                                  setAllocateQuantity(0);
+                                } catch (error) {
+                                  console.error("Allocation failed:", error);
+                                  if (error instanceof Error) {
+                                    alert(
+                                      `Allocation failed: ${error.message}`
+                                    );
+                                  } else {
+                                    alert("Allocation failed: Unknown error");
+                                  }
+                                }
+                              }}
+                              disabled={
+                                !allocateQuantity ||
+                                allocateQuantity <= 0 ||
+                                allocateQuantity > maxAllocatable
+                              }
+                            >
+                              {t("allocateResourceForm.Confirm_Allocation")}
+                            </Button>
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
                 </DialogContent>
@@ -690,7 +774,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       </div>
 
       <div>
-        <Label>{t("resourceForm.type")}</Label>
+        <Label>{t("resourceForm.type.title")}</Label>
         <Select
           value={formData.type}
           onValueChange={(value) =>
@@ -698,18 +782,20 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder={t("resourceForm.type")} />
+            <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="food">{t("resourceForm.item.food")}</SelectItem>
+            <SelectItem value="food">
+              {t("resourceForm.type.options.food")}
+            </SelectItem>
             <SelectItem value="medicine">
-              {t("resourceForm.item.medicine")}
+              {t("resourceForm.type.options.medicine")}
             </SelectItem>
             <SelectItem value="shelter">
-              {t("resourceForm.item.shelter")}
+              {t("resourceForm.type.options.shelter")}
             </SelectItem>
             <SelectItem value="equipment">
-              {t("resourceForm.item.equipment")}
+              {t("resourceForm.type.options.equipment")}
             </SelectItem>
           </SelectContent>
         </Select>
@@ -760,7 +846,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       </div>
 
       <div>
-        <Label>{t("resourceForm.conditions")}</Label>
+        <Label>{t("resourceForm.conditions.title")}</Label>
         <Input
           value={formData.conditions?.join(", ")}
           onChange={(e) =>
@@ -769,11 +855,11 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
               conditions: e.target.value.split(", "),
             })
           }
-          placeholder={t("resourceForm.cdt_placeholder")}
+          placeholder={t("resourceForm.conditions.placeholder")}
         />
       </div>
 
-      <Button type="submit">{t("resourceForm.add_Resource")}</Button>
+      <Button type="submit">{t("resourceForm.submitButton")}</Button>
     </form>
   );
 }

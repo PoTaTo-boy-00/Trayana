@@ -301,10 +301,96 @@ export const translations: TranslationDictionary = {
       longitude: "Longitude",
       submitButton: "Add Organization",
     },
+    resources: {
+      title: "Resource Management",
+      filter: "Filter",
 
-    partnerPage:{
-      components:{
-        dashboard:{
+      btnName: "Add Resource",
+
+      formTitle: "Add New Resource",
+    },
+    requestResourceForm: {
+      title: "Request Resource",
+      name: "Name",
+      quantity: "Quantity",
+      unit: "Unit",
+      expiryDate: "Expiry Date",
+      resourceType: {
+        title: "Resource Type",
+        options: {
+          food: "Food",
+          medicine: "Medicine",
+          shelter: "Shelter",
+          equipment: "Equipment",
+        },
+      },
+      status: {
+        title: "Status",
+        options: {
+          requested: "Requested",
+          allocated: "Allocated",
+          depleted: "Depleted",
+        },
+      },
+      submitButton: "Request Resource",
+      conditions: {
+        title: "Conditions",
+        placeholder: "Enter conditions separated by commas",
+      },
+      urgency: {
+        title: "Urgency",
+        options: {
+          low: "Low",
+          medium: "Medium",
+          high: "High",
+        },
+      },
+      disasterType: {
+        title: "Disaster Type",
+        options: {
+          flood: "Flood",
+          earthquake: "Earthquake",
+          fire: "Fire",
+          other: "Other",
+        },
+      },
+    },
+    resourceForm: {
+      title: "Add New Resource",
+      name: "Name",
+      type: {
+        title: "Type",
+        options: {
+          food: "Food",
+          medicine: "Medicine",
+          shelter: "Shelter",
+          equipment: "Equipment",
+        },
+      },
+      quantity: "Quantity",
+      unit: "Unit",
+      expiryDate: "Expiry Date",
+      location: "Location (Auto-detect)",
+      detect_location: "Detect Location",
+      locStatement: "No address detected yet.",
+      status: {
+        title: "Status",
+        options: {
+          available: "Available",
+          allocated: "Allocated",
+          depleted: "Depleted",
+        },
+      },
+      conditions: {
+        title: "Conditions",
+        placeholder: "Enter conditions separated by commas",
+      },
+      submitButton: "Add Resource",
+    },
+
+    partnerPage: {
+      components: {
+        dashboard: {
           title: "Partner Dashboard",
           description: "Welcome to the Partner Dashboard",
           resourceCount: "Available Resources",
@@ -312,7 +398,7 @@ export const translations: TranslationDictionary = {
           organizationStatus: "Organization Status",
           allSystemsOperational: "All systems operational",
         },
-        alerts:{
+        alerts: {
           title: "Active Alerts",
         },
         resources: {
@@ -405,7 +491,7 @@ export const translations: TranslationDictionary = {
           title: "Messages",
           newButton: "New Message",
         },
-        organization:{
+        organization: {
           title: "Organization Profile",
           button: "Edit Profile",
           loading: "Loading organization data...",
@@ -428,7 +514,16 @@ export const translations: TranslationDictionary = {
       alert: "Invalid allocation amount.",
       Confirm_Allocation: "Confirm Allocation",
     },
-
+    ResourcesCard: {
+      type: "Type",
+      quantity: "Quantity",
+      location: "Location",
+      status: "Status",
+      conditions: "Conditions",
+      expiryDate: "Expiry Date",
+      requestedBy: "Requested By",
+      allocateResources: "Allocate Resources",
+    },
     analytics: {
       title: "Resource Analytics Dashboard",
       lastUpadte: "  Last Update",
@@ -765,6 +860,103 @@ export const translations: TranslationDictionary = {
       floodPrediction: "बाढ़ पूर्वानुमान (भारत)",
       resourceAnalysis: "संसाधन आवंटन विश्लेषण",
       optimizedRecommendation: "अनुकूलित संसाधन सिफारिश",
+    },
+    resources: {
+      title: "संसाधन प्रबंधन",
+      filter: "फ़िल्टर",
+
+      btnName: "संसाधन जोड़ें",
+
+      formTitle: "नया संसाधन जोड़ें",
+    },
+    requestResourceForm: {
+      title: "संसाधन अनुरोध करें",
+      name: "नाम",
+      quantity: "मात्रा",
+      unit: "इकाई",
+      expiryDate: "समाप्ति तिथि",
+      resourceType: {
+        title: "संसाधन प्रकार",
+        options: {
+          food: "भोजन",
+          medicine: "दवा",
+          shelter: "आश्रय",
+          equipment: "उपकरण",
+        },
+      },
+      status: {
+        title: "स्थिति",
+        options: {
+          requested: "अनुरोधित",
+          allocated: "आवंटित",
+          depleted: "खत्म हो गया",
+        },
+      },
+      submitButton: "संसाधन अनुरोध करें",
+      conditions: {
+        title: "शर्तें",
+        placeholder: "अल्पविराम से अलग करके शर्तें दर्ज करें",
+      },
+      urgency: {
+        title: "तत्कालता",
+        options: {
+          low: "कम",
+          medium: "मध्यम",
+          high: "उच्च",
+        },
+      },
+      disasterType: {
+        title: "आपदा प्रकार",
+        options: {
+          flood: "बाढ़",
+          earthquake: "भूकंप",
+          fire: "आग",
+          other: "अन्य",
+        },
+      },
+    },
+    resourceForm: {
+      title: "नया संसाधन जोड़ें",
+      name: "नाम",
+      type: {
+        title: "प्रकार",
+        options: {
+          food: "भोजन",
+          medicine: "दवा",
+          shelter: "आश्रय",
+          equipment: "उपकरण",
+        },
+      },
+      quantity: "मात्रा",
+      unit: "इकाई",
+      expiryDate: "समाप्ति तिथि",
+      location: "स्थान (स्वतः पता लगाएं)",
+      detect_location: "स्थान का पता लगाएं",
+      locStatement: "अभी तक कोई पता नहीं मिला है।",
+      status: {
+        title: "स्थिति",
+        options: {
+          available: "उपलब्ध",
+          allocated: "आवंटित",
+          depleted: "खत्म हो गया",
+        },
+      },
+      conditions: {
+        title: "शर्तें",
+        placeholder: "अल्पविराम से अलग करके शर्तें दर्ज करें",
+      },
+      submitButton: "संसाधन जोड़ें",
+    },
+
+    ResourcesCard: {
+      type: "प्रकार",
+      quantity: "मात्रा",
+      location: "स्थान",
+      status: "स्थिति",
+      conditions: "शर्तें",
+      expiryDate: "समाप्ति तिथि",
+      requestedBy: "अनुरोधकर्ता",
+      allocateResources: "संसाधन आवंटित करें",
     },
 
     partnerPage: {

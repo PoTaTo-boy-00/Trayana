@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 interface ResourceCardProps {
   resource: Resource | requestResources;
   onDelete?: (id: string) => void;
+  onUpdateResource?: (res: Resource) => void;
   isRequest?: boolean;
 }
 
 export const ResourceCard = ({
   resource,
   onDelete,
+  onUpdateResource,
   isRequest = false,
 }: ResourceCardProps) => {
   const statusColors = {
@@ -39,6 +41,16 @@ export const ResourceCard = ({
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
+          {!isRequest && onUpdateResource && (
+            <Button
+              variant="link"
+              size="sm"
+              onClick={() => onUpdateResource(resource as Resource)}
+            >
+              Update
+            </Button>
+          )}
+
           {isRequest && onDelete && (
             <Button
               variant="destructive"

@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Organization } from "@/app/types";
 import { useTranslation } from "@/lib/translation-context";
+import { useOrgStore } from "@/store/orgStore";
 
 export default function OrganizationPage() {
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -77,6 +78,8 @@ export default function OrganizationPage() {
       }
 
       if (orgData) {
+        // console.log(orgData?.id);
+        if (orgData?.id) useOrgStore.getState().setOrganizationId(orgData.id);
         setOrganization(orgData);
         setEditedOrg(orgData);
       } else {
@@ -213,7 +216,9 @@ export default function OrganizationPage() {
   if (error && !organization) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">{t("partnerPage.components.organization.title")}</h1>
+        <h1 className="text-3xl font-bold">
+          {t("partnerPage.components.organization.title")}
+        </h1>
         <Card>
           <CardContent className="p-6">
             <div className="text-center space-y-4">
@@ -229,7 +234,9 @@ export default function OrganizationPage() {
   if (!organization) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">{t("partnerPage.components.organization.title")}</h1>
+        <h1 className="text-3xl font-bold">
+          {t("partnerPage.components.organization.title")}
+        </h1>
         <Card>
           <CardContent className="p-6">
             <p className="text-center text-muted-foreground">
@@ -246,7 +253,9 @@ export default function OrganizationPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">{t("partnerPage.components.organization.title")}</h1>
+        <h1 className="text-3xl font-bold">
+          {t("partnerPage.components.organization.title")}
+        </h1>
         {!isEditing ? (
           <Button onClick={handleEdit} className="flex items-center gap-2">
             <Edit className="h-4 w-4" />
