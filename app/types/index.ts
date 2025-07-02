@@ -4,7 +4,7 @@ export type RequestStatus = "requested" | "allocated";
 export type PriorityLevel = "critical" | "high" | "medium" | "low";
 export type ResourceType = "food" | "medicine" | "shelter" | "equipment";
 export type DisasterType = "earthquake" | "flood" | "fire" | "other";
-export type UrgencyLevel = "immediate" | "urgent" | "normal";
+export type UrgencyLevel = "high" | "normal" | "low";
 export type Role = "admin" | "partner";
 export type EventType = "insert" | "update" | "delete" | "requested";
 
