@@ -15,8 +15,8 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTranslation } from "@/lib/translation-context";
-import { getCloneableBody } from "next/dist/server/body-streams";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog } from "@/components/ui/dialog";
 
 type SOSReport = {
   id: string;
@@ -32,76 +32,25 @@ type Personnel = {
   name: string;
   status: "available" | "deployed";
 };
+
+type Status = "pending" | "dispatched" | "resolved";
+type BadgeVariant = "destructive" | "default" | "secondary" | "outline";
+
 export default function SOSPage() {
   const [reports, setReports] = useState<SOSReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
-  const [selectedReports, setSelectedReports] = useState<string[]>([]); // Stores report IDs
+  const [selectedReports, setSelectedReports] = useState<string[]>([]);
   const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
-  const [selectedReport, setSelectedReport] = useState<SOSReport | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showDispatchModal, setShowDispatchModal] = useState(false);
 
-  const handlePersonnelDispatch = async (
-    personnel: Personnel,
-    reportsToDispatch: SOSReport[] // Now accepts an array
-  ) => {
-    try {
-      // 1. Update personnel status
-      const { error: personnelError } = await supabase
-        .from("personnel")
-        .update({
-          status: "deployed",
-          updatedAt: new Date().toISOString(),
-        })
-        .eq("id", personnel.id);
-
-      if (personnelError) throw personnelError;
-
-      // 2. Insert all selected reports into sos_history
-      const { error: insertError } = await supabase.from("sos_history").insert(
-        reportsToDispatch.map((report) => ({
-          ...report,
-          status: "dispatched",
-          personnel: personnel.id,
-          dispatched_at: new Date().toISOString(),
-        }))
-      );
-
-      if (insertError) throw insertError;
-
-      // 3. Delete all selected reports from sos_report
-      const { error: deleteError } = await supabase
-        .from("sosReport")
-        .delete()
-        .in(
-          "id",
-          reportsToDispatch.map((r) => r.id)
-        );
-
-      if (deleteError) throw deleteError;
-
-      // 4. Update UI
-      setReports((prev) => prev.filter((r) => !selectedReports.includes(r.id)));
-      setSelectedReports([]);
-      toast.success(
-        `Dispatched ${personnel.name} to ${reportsToDispatch.length} reports`
-      );
-      setShowModal(false);
-    } catch (err) {
-      console.error("Bulk dispatch failed:", err);
-      toast.error("Dispatch failed");
-    }
-  };
-
+  // Fetch available personnel
   const fetchAvailablePersonnel = async () => {
     const { data, error } = await supabase
       .from("personnel")
       .select("*")
       .eq("status", "available");
-    // .eq("organization_id", organizationId);
-
-    console.log(data);
 
     if (error) {
       toast.error("Failed to fetch personnel");
@@ -111,43 +60,78 @@ export default function SOSPage() {
     setPersonnelList(data || []);
   };
 
-  // useEffect(() => {
-  //   const fetchUserDeatils = async () => {
-  //     const {
-  //       data: { user },
-  //     } = await supabase.auth.getUser();
-  //     console.log(user);
-  //   };
-  //   fetchUserDeatils();
-  // }, []);
+  // Handle bulk dispatch
+  const handleBulkDispatch = async (personnelId: string) => {
+    try {
+      const reportsToDispatch = reports.filter((r) =>
+        selectedReports.includes(r.id)
+      );
 
+      // 1. Update personnel status
+      const { error: personnelError } = await supabase
+        .from("personnel")
+        .update({ status: "deployed" })
+        .eq("id", personnelId);
+
+      if (personnelError) throw personnelError;
+
+      // 2. Move reports to history
+      const { error: historyError } = await supabase.from("sos_history").insert(
+        reportsToDispatch.map((report) => ({
+          ...report,
+          status: "dispatched",
+          personnel: personnelId,
+          dispatched_at: new Date().toISOString(),
+        }))
+      );
+
+      if (historyError) throw historyError;
+
+      // 3. Delete from active reports
+      const { error: deleteError } = await supabase
+        .from("sosReport")
+        .delete()
+        .in("id", selectedReports);
+
+      if (deleteError) throw deleteError;
+
+      // 4. Update UI
+      setReports((prev) => prev.filter((r) => !selectedReports.includes(r.id)));
+      setSelectedReports([]);
+      toast.success(`Dispatched to ${reportsToDispatch.length} reports`);
+      setShowDispatchModal(false);
+    } catch (err) {
+      console.error("Bulk dispatch failed:", err);
+      toast.error("Dispatch failed");
+    }
+  };
+
+  // Toggle select all reports
+  const toggleSelectAll = () => {
+    setSelectedReports((prev) =>
+      prev.length === reports.length ? [] : reports.map((r) => r.id)
+    );
+  };
+
+  // Fetch reports
   useEffect(() => {
     const fetchReports = async () => {
       try {
         setLoading(true);
-        setError(null);
-
-        const { data, error: fetchError } = await supabase
+        const { data, error } = await supabase
           .from("sosReport")
           .select("*")
           .order("created_at", { ascending: false });
 
-        if (fetchError) {
-          throw fetchError;
-        }
+        if (error) throw error;
 
-        if (!data) {
-          throw new Error("No data returned from query");
-        }
-
-        const reportsWithStatus = data.map((report) => ({
-          ...report,
-          status: report.status || "pending",
-        }));
-
-        setReports(reportsWithStatus);
+        setReports(
+          data?.map((report) => ({
+            ...report,
+            status: report.status || "pending",
+          })) || []
+        );
       } catch (error) {
-        console.error("Error fetching reports:", error);
         setError(
           error instanceof Error ? error.message : "Failed to load reports"
         );
@@ -159,23 +143,15 @@ export default function SOSPage() {
 
     fetchReports();
 
-    // Realtime subscription
     const channel = supabase
       .channel("sos_realtime")
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "sosReport",
-        },
+        { event: "*", schema: "public", table: "sosReport" },
         (payload) => {
           if (payload.eventType === "INSERT") {
             setReports((prev) => [
-              {
-                ...(payload.new as SOSReport),
-                status: "pending",
-              },
+              { ...(payload.new as SOSReport), status: "pending" },
               ...prev,
             ]);
           } else if (payload.eventType === "UPDATE") {
@@ -196,53 +172,41 @@ export default function SOSPage() {
     };
   }, []);
 
-  const handleDispatch = async (reportId: string) => {
-    try {
-      const { error } = await supabase
-        .from("sosReport")
-        .update({ status: "dispatched" })
-        .eq("id", reportId);
+  // Status badge component
+  const getStatusBadge = (status: Status) => {
+    const variants: Record<
+      Status,
+      {
+        variant: BadgeVariant;
+        icon: React.ReactNode;
+        text: string;
+      }
+    > = {
+      pending: {
+        variant: "destructive",
+        icon: <Clock className="h-3 w-3" />,
+        text: "Pending",
+      },
+      dispatched: {
+        variant: "default",
+        icon: <Clock className="h-3 w-3" />,
+        text: "Dispatched",
+      },
+      resolved: {
+        variant: "default",
+        icon: <CheckCircle className="h-3 w-3" />,
+        text: "Resolved",
+      },
+    };
 
-      if (error) throw error;
+    const current = variants[status];
 
-      setReports((prev) =>
-        prev.map((report) =>
-          report.id === reportId ? { ...report, status: "dispatched" } : report
-        )
-      );
-      toast.success("Help dispatched successfully");
-    } catch (error) {
-      console.error("Dispatch error:", error);
-      toast.error("Failed to dispatch help");
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge variant="destructive" className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Pending
-          </Badge>
-        );
-      case "dispatched":
-        return (
-          <Badge variant="default" className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Dispatched
-          </Badge>
-        );
-      case "resolved":
-        return (
-          <Badge variant="default" className="flex items-center gap-1">
-            <CheckCircle className="h-3 w-3" />
-            Resolved
-          </Badge>
-        );
-      default:
-        return null;
-    }
+    return (
+      <Badge variant={current.variant} className="flex items-center gap-1">
+        {current.icon}
+        {current.text}
+      </Badge>
+    );
   };
 
   if (error) {
@@ -251,20 +215,6 @@ export default function SOSPage() {
         <h1 className="text-3xl font-bold">
           {t("partnerPage.components.sos.title")}
         </h1>
-        {selectedReports.length > 0 && (
-          <Button
-            onClick={() => {
-              const selected = reports.filter((r) =>
-                selectedReports.includes(r.id)
-              );
-              setSelectedReport(selected[0]); // For personnel selection
-              fetchAvailablePersonnel();
-              setShowModal(true);
-            }}
-          >
-            Dispatch to {selectedReports.length} Reports
-          </Button>
-        )}
         <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <p>Error: {error}</p>
           <Button
@@ -275,26 +225,43 @@ export default function SOSPage() {
             Retry
           </Button>
         </div>
-        {selectedReports.length > 0 && (
-          <Button onClick={() => setShowModal(true)}>
-            Dispatch to {selectedReports.length} Reports
-          </Button>
-        )}
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">
-        {t("partnerPage.components.sos.title")}
-      </h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">
+          {t("partnerPage.components.sos.title")}
+        </h1>
+        {reports.length > 0 && (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={toggleSelectAll}>
+              {selectedReports.length === reports.length
+                ? "Deselect All"
+                : "Select All"}
+            </Button>
+            {selectedReports.length > 0 && (
+              <Button
+                onClick={() => {
+                  fetchAvailablePersonnel();
+                  setShowDispatchModal(true);
+                }}
+              >
+                Dispatch ({selectedReports.length})
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
 
-      {showModal && selectedReport && (
+      {/* Dispatch Modal */}
+      <Dialog open={showDispatchModal} onOpenChange={setShowDispatchModal}>
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg w-full max-w-md space-y-4">
             <h2 className="text-lg font-semibold">
-              Dispatch to {selectedReports.length || 1} Reports
+              Dispatch to {selectedReports.length} Reports
             </h2>
             {personnelList.length === 0 ? (
               <p>No available personnel</p>
@@ -305,15 +272,7 @@ export default function SOSPage() {
                     <Button
                       variant="outline"
                       className="w-full justify-between"
-                      onClick={() => {
-                        const reportsToDispatch =
-                          selectedReports.length > 0
-                            ? reports.filter((r) =>
-                                selectedReports.includes(r.id)
-                              )
-                            : [selectedReport];
-                        handlePersonnelDispatch(person, reportsToDispatch);
-                      }}
+                      onClick={() => handleBulkDispatch(person.id)}
                     >
                       {person.name}
                     </Button>
@@ -324,17 +283,15 @@ export default function SOSPage() {
             <Button
               variant="ghost"
               className="w-full"
-              onClick={() => {
-                setShowModal(false);
-                setSelectedReports([]); // Reset selection
-              }}
+              onClick={() => setShowDispatchModal(false)}
             >
               Cancel
             </Button>
           </div>
         </div>
-      )}
+      </Dialog>
 
+      {/* Reports List */}
       {loading ? (
         <div className="flex justify-center items-center h-64">
           <p>Loading reports...</p>
@@ -351,24 +308,31 @@ export default function SOSPage() {
       ) : (
         <div className="grid gap-4">
           {reports.map((report) => (
-            <Card key={report.id}>
+            <Card
+              key={report.id}
+              className={
+                selectedReports.includes(report.id)
+                  ? "border-2 border-primary"
+                  : ""
+              }
+            >
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                <Checkbox
-                  checked={selectedReports.includes(report.id)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setSelectedReports([...selectedReports, report.id]);
-                    } else {
-                      setSelectedReports(
-                        selectedReports.filter((id) => id !== report.id)
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={selectedReports.includes(report.id)}
+                    onCheckedChange={(checked) => {
+                      setSelectedReports((prev) =>
+                        checked
+                          ? [...prev, report.id]
+                          : prev.filter((id) => id !== report.id)
                       );
-                    }
-                  }}
-                />
-                <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                  <AlertTriangle className="text-red-500" />
-                  {t("partnerPage.components.sos.header")}
-                </CardTitle>
+                    }}
+                  />
+                  <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                    <AlertTriangle className="text-red-500" />
+                    {t("partnerPage.components.sos.header")}
+                  </CardTitle>
+                </div>
                 {getStatusBadge(report.status || "pending")}
               </CardHeader>
 
@@ -398,33 +362,22 @@ export default function SOSPage() {
                 </div>
               </CardContent>
 
-              <CardFooter className="flex justify-end">
-                {report.status === "pending" && (
-                  <Button
-                    onClick={() => {
-                      setSelectedReport(report);
-                      fetchAvailablePersonnel();
-                      setShowModal(true);
-                    }}
-                  >
-                    {t("partnerPage.components.sos.help")}
-                  </Button>
-                )}
-
-                {report.status === "dispatched" && (
-                  <Button variant="outline" disabled>
-                    Help Dispatched
-                  </Button>
-                )}
-                {report.status === "resolved" && (
-                  <Button variant="outline" disabled>
-                    Resolved
-                  </Button>
-                )}
+              <CardFooter className="flex justify-between">
                 {report.personnel && (
                   <p className="text-sm text-muted-foreground">
                     Assigned to: {report.personnel}
                   </p>
+                )}
+                {report.status === "pending" && (
+                  <Button
+                    onClick={() => {
+                      setSelectedReports([report.id]);
+                      fetchAvailablePersonnel();
+                      setShowDispatchModal(true);
+                    }}
+                  >
+                    {t("partnerPage.components.sos.help")}
+                  </Button>
                 )}
               </CardFooter>
             </Card>

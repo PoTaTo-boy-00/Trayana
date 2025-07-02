@@ -196,7 +196,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("maps.description")}</CardTitle>
+        <CardTitle>{t("maps.desc1")}</CardTitle>
       </CardHeader>
       <CardContent className="p-0 w-full h-[500px]">
         <GoogleMap
@@ -389,7 +389,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
               className="mr-2"
             />
             <div className="w-4 h-4 bg-red-500 rounded-full mr-2" />
-            {t("maps.Requested_Resources")}
+            {t("maps.Resource_Requests")}
           </label>
         </div>
 
