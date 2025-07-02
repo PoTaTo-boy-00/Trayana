@@ -12,6 +12,7 @@ interface TranslationLanguage {
   //!maps
   maps: {
     title: string;
+    desc1: string;
     description: string;
     legends: {
       personnel: string;
@@ -23,7 +24,7 @@ interface TranslationLanguage {
     // legend_title: string;
     cardTitle: string;
     Available_Resources: string;
-    Requested_Resources: string;
+    Resource_Requests: string;
     Map_Style: string;
     Roadmap: string;
     Satellite: string;
