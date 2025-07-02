@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTranslation } from "@/lib/translation-context";
 import { getCloneableBody } from "next/dist/server/body-streams";
+import { useOrgStore } from "@/store/orgStore";
 
 type SOSReport = {
   id: string;
@@ -35,8 +36,10 @@ export default function SOSPage() {
   const [reports, setReports] = useState<SOSReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const { t } = useTranslation();
 
+  const { organizationId } = useOrgStore();
   const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [selectedReport, setSelectedReport] = useState<SOSReport | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -90,31 +93,39 @@ export default function SOSPage() {
   };
 
   const fetchAvailablePersonnel = async () => {
-    const { data, error } = await supabase
-      .from("personnel")
-      .select("*")
-      .eq("status", "available");
-    // .eq("organization_id", organizationId);
-
-    console.log(data);
-
-    if (error) {
-      toast.error("Failed to fetch personnel");
+    if (!organizationId) {
+      console.error("No organizationId found");
       return;
     }
 
-    setPersonnelList(data || []);
-  };
+    console.log("Fetching personnel for org:", organizationId);
 
+    try {
+      const { data, error } = await supabase
+        .from("personnel")
+        .select("id, name, status")
+        .eq("status", "available")
+        .eq("organization_id", organizationId)
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+
+      console.log("Fetched personnel data:", data);
+      setPersonnelList(data || []);
+    } catch (err) {
+      console.error("Personnel fetch error:", err);
+      toast.error("Failed to fetch available personnel");
+    }
+  };
   // useEffect(() => {
-  //   const fetchUserDeatils = async () => {
-  //     const {
-  //       data: { user },
-  //     } = await supabase.auth.getUser();
-  //     console.log(user);
-  //   };
-  //   fetchUserDeatils();
-  // }, []);
+  //   console.log("Organization ID:", organizationId);
+  //   console.log("Personnel List:", personnelList);
+  // }, [organizationId, personnelList]);
+  useEffect(() => {
+    if (organizationId) {
+      fetchAvailablePersonnel();
+    }
+  }, [organizationId]); // Add proper dependencies
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -243,7 +254,9 @@ export default function SOSPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">{t("partnerPage.components.sos.title")}</h1>
+        <h1 className="text-3xl font-bold">
+          {t("partnerPage.components.sos.title")}
+        </h1>
         <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <p>Error: {error}</p>
           <Button
@@ -260,7 +273,9 @@ export default function SOSPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">{t("partnerPage.components.sos.title")}</h1>
+      <h1 className="text-3xl font-bold">
+        {t("partnerPage.components.sos.title")}
+      </h1>
 
       {showModal && selectedReport && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
@@ -329,9 +344,12 @@ export default function SOSPage() {
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 mt-0.5 text-muted-foreground" />
                   <div>
-                    <p className="font-medium">{t("partnerPage.components.sos.location")}</p>
+                    <p className="font-medium">
+                      {t("partnerPage.components.sos.location")}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {t("partnerPage.components.sos.coordinates")}: {report.latitude.toFixed(4)},{" "}
+                      {t("partnerPage.components.sos.coordinates")}:{" "}
+                      {report.latitude.toFixed(4)},{" "}
                       {report.longitude.toFixed(4)}
                     </p>
                   </div>
@@ -341,7 +359,8 @@ export default function SOSPage() {
 
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">
-                    {t("partnerPage.components.sos.time")}: {new Date(report.created_at).toLocaleString()}
+                    {t("partnerPage.components.sos.time")}:{" "}
+                    {new Date(report.created_at).toLocaleString()}
                   </span>
                   <span className="font-mono text-xs">ID: {report.id}</span>
                 </div>

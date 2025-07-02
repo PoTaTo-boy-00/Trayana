@@ -3,6 +3,7 @@ import { Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Resource, requestResources } from "@/app/types";
 import { Button } from "@/components/ui/button";
+import { useOrgStore } from "@/store/orgStore";
 
 interface ResourceCardProps {
   resource: Resource | requestResources;
@@ -17,6 +18,10 @@ export const ResourceCard = ({
   onUpdateResource,
   isRequest = false,
 }: ResourceCardProps) => {
+  const { organizationId } = useOrgStore();
+  const isOwnedResource =
+    !isRequest && (resource as Resource).organizationId === organizationId;
+
   const statusColors = {
     available:
       "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100",
@@ -28,12 +33,58 @@ export const ResourceCard = ({
 
   const status = resource.status;
 
+  const renderActionButtons = () => {
+    if (isRequest) {
+      return (
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => onDelete?.(resource.id)}
+        >
+          Delete
+        </Button>
+      );
+    }
+
+    if (isOwnedResource && onUpdateResource) {
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onUpdateResource(resource as Resource)}
+        >
+          Update
+        </Button>
+      );
+    }
+
+    return null;
+  };
+
+  const renderResourceDetail = (label: string, value: React.ReactNode) => (
+    <div>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="font-medium">{value}</p>
+    </div>
+  );
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0">
+    <Card
+      className={`hover:shadow-md transition-shadow ${
+        isOwnedResource ? "border-l-4 border-primary" : ""
+      }`}
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-xl font-semibold flex items-center gap-2">
           <Package className="h-5 w-5" />
-          {resource.name}
+          <div>
+            {resource.name}
+            {isOwnedResource && (
+              <span className="ml-2 text-xs text-muted-foreground">
+                (Your Resource)
+              </span>
+            )}
+          </div>
         </CardTitle>
         <div className="flex items-center gap-2">
           <span
@@ -41,53 +92,26 @@ export const ResourceCard = ({
           >
             {status.charAt(0).toUpperCase() + status.slice(1)}
           </span>
-          {!isRequest && onUpdateResource && (
-            <Button
-              variant="link"
-              size="sm"
-              onClick={() => onUpdateResource(resource as Resource)}
-            >
-              Update
-            </Button>
-          )}
-
-          {isRequest && onDelete && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onDelete(resource.id)}
-            >
-              Delete
-            </Button>
-          )}
+          {renderActionButtons()}
         </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Type</p>
-            <p className="font-medium">{resource.type}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Quantity</p>
-            <p className="font-medium">
-              {resource.quantity} {resource.unit}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Location</p>
-            <p className="font-medium">
-              {resource.location.lat}, {resource.location.lng}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Status</p>
-            <p className="font-medium">{resource.status}</p>
-          </div>
+          {renderResourceDetail("Type", resource.type)}
+          {renderResourceDetail(
+            "Quantity",
+            `${resource.quantity} ${resource.unit}`
+          )}
+          {renderResourceDetail(
+            "Location",
+            `${resource.location.lat}, ${resource.location.lng}`
+          )}
+          {renderResourceDetail("Status", status)}
+
           {resource.conditions && resource.conditions.length > 0 && (
             <div className="col-span-2">
               <p className="text-sm text-muted-foreground">Conditions</p>
-              <div className="flex gap-2 mt-1">
+              <div className="flex gap-2 mt-1 flex-wrap">
                 {resource.conditions.map((condition) => (
                   <span
                     key={condition}
@@ -99,24 +123,15 @@ export const ResourceCard = ({
               </div>
             </div>
           )}
+
           {"expiryDate" in resource && resource.expiryDate && (
             <div className="col-span-2">
-              <p className="text-sm text-muted-foreground">Expiry Date</p>
-              <p className="font-medium">{resource.expiryDate}</p>
+              {renderResourceDetail("Expiry Date", resource.expiryDate)}
             </div>
           )}
-          {"disasterType" in resource && (
-            <div>
-              <p className="text-sm text-muted-foreground">Disaster Type</p>
-              <p className="font-medium">{resource.disasterType}</p>
-            </div>
-          )}
-          {"urgency" in resource && (
-            <div>
-              <p className="text-sm text-muted-foreground">Urgency</p>
-              <p className="font-medium">{resource.urgency}</p>
-            </div>
-          )}
+
+          {"urgency" in resource &&
+            renderResourceDetail("Urgency", resource.urgency)}
         </div>
       </CardContent>
     </Card>

@@ -579,37 +579,25 @@ export default function ResourcesPage() {
                                 }
 
                                 try {
-                                  // Sort matching resources by quantity (descending)
+                                  // Sort matching resources by distance
                                   const sortedResources = [
                                     ...matchingResources,
                                   ].sort((a, b) => {
                                     const distA = getDistance(
-                                      {
-                                        latitude: a.location.lat,
-                                        longitude: a.location.lng,
-                                      },
-                                      {
-                                        latitude: selectedRequest.location.lat,
-                                        longitude: selectedRequest.location.lng,
-                                      }
+                                      a.location,
+                                      selectedRequest.location
                                     );
-                                    // console.log(distA);
                                     const distB = getDistance(
-                                      {
-                                        latitude: b.location.lat,
-                                        longitude: b.location.lng,
-                                      },
-                                      {
-                                        latitude: selectedRequest.location.lat,
-                                        longitude: selectedRequest.location.lng,
-                                      }
+                                      b.location,
+                                      selectedRequest.location
                                     );
-                                    // console.log(distB);
                                     return distA - distB;
                                   });
-                                  let remainingAllocation = allocateQuantity;
 
-                                  // Process each matching resource until allocation is complete
+                                  let remainingAllocation = allocateQuantity;
+                                  const allocatedResources = [];
+
+                                  // Process each matching resource
                                   for (const resource of sortedResources) {
                                     if (remainingAllocation <= 0) break;
 
@@ -617,99 +605,116 @@ export default function ResourcesPage() {
                                       remainingAllocation,
                                       resource.quantity
                                     );
-                                    const newResourceQuantity =
-                                      resource.quantity - allocationAmount;
                                     remainingAllocation -= allocationAmount;
+                                    allocatedResources.push({
+                                      resource,
+                                      allocationAmount,
+                                    });
 
-                                    // Update resource in database
-                                    const { error: resError } = await supabase
+                                    // Update resource quantity
+                                    const newQuantity =
+                                      resource.quantity - allocationAmount;
+                                    await supabase
                                       .from("resources")
                                       .update({
-                                        quantity: newResourceQuantity,
+                                        quantity: newQuantity,
                                         status:
-                                          newResourceQuantity <= 0
+                                          newQuantity <= 0
                                             ? "depleted"
                                             : "available",
                                       })
                                       .eq("id", resource.id);
 
-                                    if (resError) throw resError;
-
                                     // Add to history
-                                    const { error: historyError } =
-                                      await supabase
-                                        .from("resource_history")
-                                        .insert([
-                                          {
-                                            id: crypto.randomUUID(),
-                                            timestamp: new Date().toISOString(),
-                                            event_type: "allocation",
-                                            quantity_changed: -allocationAmount,
-                                            quantity: newResourceQuantity,
-                                            status_after_event:
-                                              newResourceQuantity <= 0
-                                                ? "depleted"
-                                                : "available",
-                                            location: `${resource.location.lat}, ${resource.location.lng}`,
-                                            performed_by: "admin",
-                                            remarks: `Allocated ${allocationAmount} ${selectedRequest.unit} for request ${selectedRequest.id} from resource ${resource.name} (ID: ${resource.id})`,
-                                            resource_id: resource.id,
-                                          },
-                                        ]);
-
-                                    if (historyError) throw historyError;
+                                    await supabase
+                                      .from("resource_history")
+                                      .insert({
+                                        id: crypto.randomUUID(),
+                                        resource_id: resource.id,
+                                        event_type: "allocation",
+                                        quantity_changed: -allocationAmount,
+                                        quantity: newQuantity,
+                                        status_after_event:
+                                          newQuantity <= 0
+                                            ? "depleted"
+                                            : "available",
+                                        timestamp: new Date().toISOString(),
+                                        remarks: `Allocated to request ${selectedRequest.id}`,
+                                      });
                                   }
 
                                   // Update the request
                                   const newRequestQuantity =
                                     selectedRequest.quantity - allocateQuantity;
                                   if (newRequestQuantity <= 0) {
-                                    // Delete if fully fulfilled
-                                    const { error: reqError } = await supabase
+                                    await supabase
                                       .from("requestresources")
                                       .delete()
                                       .eq("id", selectedRequest.id);
-                                    if (reqError) throw reqError;
                                   } else {
-                                    // Update if partially fulfilled
-                                    const { error: reqError } = await supabase
+                                    await supabase
                                       .from("requestresources")
                                       .update({
                                         quantity: newRequestQuantity,
                                         status: "partially_allocated",
                                       })
                                       .eq("id", selectedRequest.id);
-                                    if (reqError) throw reqError;
                                   }
 
-                                  // Create notification
-                                  const { error: notifError } = await supabase
+                                  // Create notifications
+                                  const notificationId = crypto.randomUUID();
+                                  const currentTimestamp =
+                                    new Date().toISOString();
+
+                                  // Notification for requester
+                                  const requesterNotification = {
+                                    id: notificationId,
+                                    recipient_id:
+                                      selectedRequest.organizationId ||
+                                      selectedRequest.requestedBy,
+                                    message: `You received ${allocateQuantity} ${selectedRequest.unit} of ${selectedRequest.name}`,
+                                    type: "resource_allocated",
+                                    read: false,
+                                    timestamp: currentTimestamp,
+                                    // org_id: selectedRequest.organizationId,
+                                  };
+                                  const cleanUUID = (uuid: string | null) => {
+                                    if (!uuid) return null;
+                                    return uuid.trim().replace(/\s+/g, "");
+                                  };
+                                  // Notifications for each donor
+                                  const donorNotifications =
+                                    allocatedResources.map(
+                                      ({ resource, allocationAmount }) => ({
+                                        id: crypto.randomUUID(),
+                                        recipient_id: cleanUUID(
+                                          resource.organizationId
+                                        ),
+                                        message: `${allocationAmount} ${resource.unit} of ${resource.name} was allocated to ${selectedRequest.organizationId}'s request`,
+                                        type: "resource_donated",
+                                        read: false,
+                                        timestamp: currentTimestamp,
+                                        // org_id: resource.organizationId,
+                                      })
+                                    );
+                                  console.log(
+                                    "Notification payload:",
+                                    JSON.stringify(
+                                      [
+                                        requesterNotification,
+                                        ...donorNotifications,
+                                      ],
+                                      null,
+                                      2
+                                    )
+                                  );
+                                  await supabase
                                     .from("notifications")
                                     .insert([
-                                      {
-                                        id: crypto.randomUUID(),
-                                        recipient_id:
-                                          selectedRequest.organizationId ||
-                                          selectedRequest.requestedBy,
-                                        message: `Allocated ${allocateQuantity} ${selectedRequest.unit} of ${selectedRequest.name}`,
-                                        type: "resource_allocated",
-                                        read: false,
-                                        timestamp: new Date().toISOString(),
-                                      },
+                                      requesterNotification,
+                                      ...donorNotifications,
                                     ]);
 
-                                  // const {error:donorNotifyError}=await supabase.from("notifications").insert([
-                                  //   {
-                                  //     id: crypto.randomUUID(),
-                                  //     recipient_id: resource.organizationId,
-                                  //     message: `You resource ${resource.name} has been allocated ${allocateQuantity} ${selectedRequest.unit} for request ${selectedRequest.name}`,
-                                  //     type: "resource_donated",
-                                  //     read: false,
-                                  //     timestamp: new Date().toISOString(),
-                                  //   },
-                                  // ]);
-                                  if (notifError) throw notifError;
-                                  // if(donorNotifyError) throw donorNotifyError;
                                   alert(
                                     `Successfully allocated ${allocateQuantity} ${selectedRequest.unit}`
                                   );
@@ -717,13 +722,7 @@ export default function ResourcesPage() {
                                   setAllocateQuantity(0);
                                 } catch (error) {
                                   console.error("Allocation failed:", error);
-                                  if (error instanceof Error) {
-                                    alert(
-                                      `Allocation failed: ${error.message}`
-                                    );
-                                  } else {
-                                    alert("Allocation failed: Unknown error");
-                                  }
+                                  alert("Allocation failed. Please try again.");
                                 }
                               }}
                               disabled={

@@ -165,7 +165,8 @@ export const translations: TranslationDictionary = {
     // !maps
     maps: {
       title: "Maps",
-      description: "Personnel and SOS location",
+      desc1: " Personnel and SOS locations",
+      description: "Organization and Resources location",
       legends: {
         personnel: "Personnel",
         sosAlerts: "SOS Alerts",
@@ -175,7 +176,7 @@ export const translations: TranslationDictionary = {
       // title:"LEGEND",
       cardTitle: "LEGEND",
       Available_Resources: "Available Resources",
-      Requested_Resources: "Requested Resources",
+      Resource_Requests: "Requested Resources",
       Map_Style: "Map Style",
       Roadmap: "Roadmap",
       Satellite: "Satellite",
@@ -784,6 +785,7 @@ export const translations: TranslationDictionary = {
 
     maps: {
       title: "मानचित्र",
+      desc1: "कर्मचारी और एसओएस स्थान",
       description: "कर्मचारी और एसओएस स्थान",
       legends: {
         personnel: "कर्मचारी",
@@ -794,7 +796,7 @@ export const translations: TranslationDictionary = {
       // cardTitle: "विधि",
       cardTitle: "प्रतीक चिन्ह",
       Available_Resources: "उपलब्ध संसाधन",
-      Requested_Resources: "अनुरोधित संसाधन",
+      Resource_Requests: "अनुरोधित संसाधन",
       Map_Style: "नक्शे की शैली",
       Roadmap: "सड़क नक्शा",
       Satellite: "उपग्रह दृश्य",
