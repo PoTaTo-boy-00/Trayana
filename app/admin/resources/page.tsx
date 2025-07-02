@@ -27,6 +27,7 @@ import { set } from "date-fns";
 import { getReadableAddress } from "@/data/geoLocation";
 import { useTranslation } from "@/lib/translation-context";
 import { useResources } from "@/hooks/use-resources";
+import { getDistance } from "geolib";
 
 export default function ResourcesPage() {
   const [selectedRequest, setSelectedRequest] =
@@ -45,6 +46,20 @@ export default function ResourcesPage() {
 
   const { t } = useTranslation();
 
+  const prirotyRank = { high: 1, normal: 2, low: 3 };
+
+  const sortedResources = [...requestResource].sort((a, b) => {
+    const urgencyDiff = prirotyRank[a.urgency] - prirotyRank[b.urgency];
+    if (urgencyDiff !== 0) {
+      return urgencyDiff;
+    } else {
+      return (
+        new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime()
+      );
+    }
+  });
+
+  console.log(sortedResources);
   useEffect(() => {
     const fetchData = async () => {
       const [resourceRes, requestRes] = await Promise.all([
@@ -339,7 +354,7 @@ export default function ResourcesPage() {
       </div>
       <div>Requested Resources</div>
       <div className="grid gap-4">
-        {requestResource.map((resource) => (
+        {sortedResources.map((resource) => (
           <Card key={resource.id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -508,7 +523,20 @@ export default function ResourcesPage() {
                               {matchingResources.map((res, idx) => (
                                 <p key={idx}>
                                   - {res.name} (ID: {res.id}): {res.quantity}{" "}
-                                  {res.unit}
+                                  {res.unit}-{" "}
+                                  {(
+                                    getDistance(
+                                      {
+                                        latitude: res.location.lat,
+                                        longitude: res.location.lng,
+                                      },
+                                      {
+                                        latitude: selectedRequest.location.lat,
+                                        longitude: selectedRequest.location.lng,
+                                      }
+                                    ) / 1000
+                                  ).toFixed(2)}
+                                  {" km away"}
                                 </p>
                               ))}
                             </div>
@@ -554,7 +582,31 @@ export default function ResourcesPage() {
                                   // Sort matching resources by quantity (descending)
                                   const sortedResources = [
                                     ...matchingResources,
-                                  ].sort((a, b) => b.quantity - a.quantity);
+                                  ].sort((a, b) => {
+                                    const distA = getDistance(
+                                      {
+                                        latitude: a.location.lat,
+                                        longitude: a.location.lng,
+                                      },
+                                      {
+                                        latitude: selectedRequest.location.lat,
+                                        longitude: selectedRequest.location.lng,
+                                      }
+                                    );
+                                    // console.log(distA);
+                                    const distB = getDistance(
+                                      {
+                                        latitude: b.location.lat,
+                                        longitude: b.location.lng,
+                                      },
+                                      {
+                                        latitude: selectedRequest.location.lat,
+                                        longitude: selectedRequest.location.lng,
+                                      }
+                                    );
+                                    // console.log(distB);
+                                    return distA - distB;
+                                  });
                                   let remainingAllocation = allocateQuantity;
 
                                   // Process each matching resource until allocation is complete
@@ -600,7 +652,7 @@ export default function ResourcesPage() {
                                                 : "available",
                                             location: `${resource.location.lat}, ${resource.location.lng}`,
                                             performed_by: "admin",
-                                            remarks: `Allocated ${allocationAmount} ${selectedRequest.unit} for request ${selectedRequest.id}`,
+                                            remarks: `Allocated ${allocationAmount} ${selectedRequest.unit} for request ${selectedRequest.id} from resource ${resource.name} (ID: ${resource.id})`,
                                             resource_id: resource.id,
                                           },
                                         ]);
@@ -646,8 +698,18 @@ export default function ResourcesPage() {
                                       },
                                     ]);
 
+                                  // const {error:donorNotifyError}=await supabase.from("notifications").insert([
+                                  //   {
+                                  //     id: crypto.randomUUID(),
+                                  //     recipient_id: resource.organizationId,
+                                  //     message: `You resource ${resource.name} has been allocated ${allocateQuantity} ${selectedRequest.unit} for request ${selectedRequest.name}`,
+                                  //     type: "resource_donated",
+                                  //     read: false,
+                                  //     timestamp: new Date().toISOString(),
+                                  //   },
+                                  // ]);
                                   if (notifError) throw notifError;
-
+                                  // if(donorNotifyError) throw donorNotifyError;
                                   alert(
                                     `Successfully allocated ${allocateQuantity} ${selectedRequest.unit}`
                                   );
