@@ -323,3 +323,12 @@ export interface PriorityScore {
     trend: "increasing" | "stable" | "decreasing";
   };
 }
+export type SOSReport = {
+  id: string;
+  latitude: number;
+  longitude: number;
+  created_at: string;
+  status?: "pending" | "dispatched" | "resolved";
+  personnel?: string | null;
+  severity?: "critical" | "urgent" | "moderate";
+};

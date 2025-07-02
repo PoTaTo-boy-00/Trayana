@@ -16,6 +16,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTranslation } from "@/lib/translation-context";
 import { getCloneableBody } from "next/dist/server/body-streams";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type SOSReport = {
   id: string;
@@ -36,55 +37,59 @@ export default function SOSPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
-
+  const [selectedReports, setSelectedReports] = useState<string[]>([]); // Stores report IDs
   const [personnelList, setPersonnelList] = useState<Personnel[]>([]);
   const [selectedReport, setSelectedReport] = useState<SOSReport | null>(null);
   const [showModal, setShowModal] = useState(false);
+
   const handlePersonnelDispatch = async (
     personnel: Personnel,
-    report: SOSReport
+    reportsToDispatch: SOSReport[] // Now accepts an array
   ) => {
-    const locationStr = `${report.latitude}, ${report.longitude}`;
-
     try {
-      //  Update personnel status + location
+      // 1. Update personnel status
       const { error: personnelError } = await supabase
         .from("personnel")
         .update({
           status: "deployed",
-          location: locationStr,
           updatedAt: new Date().toISOString(),
         })
         .eq("id", personnel.id);
 
       if (personnelError) throw personnelError;
 
-      //Insert SOS to sos_history
-      const { error: insertError } = await supabase.from("sos_history").insert([
-        {
+      // 2. Insert all selected reports into sos_history
+      const { error: insertError } = await supabase.from("sos_history").insert(
+        reportsToDispatch.map((report) => ({
           ...report,
           status: "dispatched",
           personnel: personnel.id,
-          dispatched_at: new Date().toISOString(), // optional extra field
-        },
-      ]);
+          dispatched_at: new Date().toISOString(),
+        }))
+      );
 
       if (insertError) throw insertError;
 
-      //  Delete from sos_report
+      // 3. Delete all selected reports from sos_report
       const { error: deleteError } = await supabase
         .from("sosReport")
         .delete()
-        .eq("id", report.id);
+        .in(
+          "id",
+          reportsToDispatch.map((r) => r.id)
+        );
 
       if (deleteError) throw deleteError;
 
-      // ✅ Step 4: Update UI
-      setReports((prev) => prev.filter((r) => r.id !== report.id));
-      toast.success(`Dispatched ${personnel.name} successfully`);
+      // 4. Update UI
+      setReports((prev) => prev.filter((r) => !selectedReports.includes(r.id)));
+      setSelectedReports([]);
+      toast.success(
+        `Dispatched ${personnel.name} to ${reportsToDispatch.length} reports`
+      );
       setShowModal(false);
     } catch (err) {
-      console.error("Dispatch failed:", err);
+      console.error("Bulk dispatch failed:", err);
       toast.error("Dispatch failed");
     }
   };
@@ -243,7 +248,23 @@ export default function SOSPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">{t("partnerPage.components.sos.title")}</h1>
+        <h1 className="text-3xl font-bold">
+          {t("partnerPage.components.sos.title")}
+        </h1>
+        {selectedReports.length > 0 && (
+          <Button
+            onClick={() => {
+              const selected = reports.filter((r) =>
+                selectedReports.includes(r.id)
+              );
+              setSelectedReport(selected[0]); // For personnel selection
+              fetchAvailablePersonnel();
+              setShowModal(true);
+            }}
+          >
+            Dispatch to {selectedReports.length} Reports
+          </Button>
+        )}
         <div className="rounded-lg bg-destructive/10 p-4 text-destructive">
           <p>Error: {error}</p>
           <Button
@@ -254,24 +275,29 @@ export default function SOSPage() {
             Retry
           </Button>
         </div>
+        {selectedReports.length > 0 && (
+          <Button onClick={() => setShowModal(true)}>
+            Dispatch to {selectedReports.length} Reports
+          </Button>
+        )}
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">{t("partnerPage.components.sos.title")}</h1>
+      <h1 className="text-3xl font-bold">
+        {t("partnerPage.components.sos.title")}
+      </h1>
 
       {showModal && selectedReport && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg w-full max-w-md space-y-4">
             <h2 className="text-lg font-semibold">
-              Select Personnel to Dispatch
+              Dispatch to {selectedReports.length || 1} Reports
             </h2>
             {personnelList.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No available personnel
-              </p>
+              <p>No available personnel</p>
             ) : (
               <ul className="space-y-2">
                 {personnelList.map((person) => (
@@ -279,9 +305,15 @@ export default function SOSPage() {
                     <Button
                       variant="outline"
                       className="w-full justify-between"
-                      onClick={() =>
-                        handlePersonnelDispatch(person, selectedReport)
-                      }
+                      onClick={() => {
+                        const reportsToDispatch =
+                          selectedReports.length > 0
+                            ? reports.filter((r) =>
+                                selectedReports.includes(r.id)
+                              )
+                            : [selectedReport];
+                        handlePersonnelDispatch(person, reportsToDispatch);
+                      }}
                     >
                       {person.name}
                     </Button>
@@ -292,7 +324,10 @@ export default function SOSPage() {
             <Button
               variant="ghost"
               className="w-full"
-              onClick={() => setShowModal(false)}
+              onClick={() => {
+                setShowModal(false);
+                setSelectedReports([]); // Reset selection
+              }}
             >
               Cancel
             </Button>
@@ -318,6 +353,18 @@ export default function SOSPage() {
           {reports.map((report) => (
             <Card key={report.id}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <Checkbox
+                  checked={selectedReports.includes(report.id)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setSelectedReports([...selectedReports, report.id]);
+                    } else {
+                      setSelectedReports(
+                        selectedReports.filter((id) => id !== report.id)
+                      );
+                    }
+                  }}
+                />
                 <CardTitle className="text-xl font-semibold flex items-center gap-2">
                   <AlertTriangle className="text-red-500" />
                   {t("partnerPage.components.sos.header")}
@@ -329,9 +376,12 @@ export default function SOSPage() {
                 <div className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 mt-0.5 text-muted-foreground" />
                   <div>
-                    <p className="font-medium">{t("partnerPage.components.sos.location")}</p>
+                    <p className="font-medium">
+                      {t("partnerPage.components.sos.location")}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {t("partnerPage.components.sos.coordinates")}: {report.latitude.toFixed(4)},{" "}
+                      {t("partnerPage.components.sos.coordinates")}:{" "}
+                      {report.latitude.toFixed(4)},{" "}
                       {report.longitude.toFixed(4)}
                     </p>
                   </div>
@@ -341,7 +391,8 @@ export default function SOSPage() {
 
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-muted-foreground">
-                    {t("partnerPage.components.sos.time")}: {new Date(report.created_at).toLocaleString()}
+                    {t("partnerPage.components.sos.time")}:{" "}
+                    {new Date(report.created_at).toLocaleString()}
                   </span>
                   <span className="font-mono text-xs">ID: {report.id}</span>
                 </div>
