@@ -221,10 +221,10 @@ interface TranslationLanguage {
       placeholder: string;
     };
 
-    // voiceTransciptions:{
-    //   title:string,
-    //   placeholder:string
-    // },
+    voiceTransciptions: {
+      title: string;
+      placeholder: string;
+    };
 
     enableSMS: {
       title: string;

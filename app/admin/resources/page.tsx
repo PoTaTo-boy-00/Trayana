@@ -98,8 +98,29 @@ export default function ResourcesPage() {
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "resources" },
 
+      // NEW THING ADDED IF THE SYSTEM BREAK THEN REMOVE THIS WITH
+      /**
+       * Reaplace
+       * 
+       * setResources((prev) => {
+          const exists = prev.find(
+            (a) => a.id === (payload.new as Resource).id
+          );
+          return exists ? prev : [...prev, payload.new as Resource];
+        });
+       * with
+       * this
+       *  setResources((prev) => [...prev, payload.new as Resource]);
+       * 
+       */
+
       (payload) => {
-        setResources((prev) => [...prev, payload.new as Resource]);
+        setResources((prev) => {
+          const exists = prev.find(
+            (a) => a.id === (payload.new as Resource).id
+          );
+          return exists ? prev : [...prev, payload.new as Resource];
+        });
       }
     );
 
@@ -824,7 +845,10 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       <div>
         <Label>{t("resourceForm.name")}</Label>
         <Input
@@ -883,10 +907,10 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
         />
       </div>
 
-      <div>
+      <div className="flex flex-col">
         <Label>{t("resourceForm.location")}</Label>
-        <div className="flex gap-2">
-          <Button type="button" onClick={detectLocation}>
+        <div className="flex flex-col gap-1 mt-1">
+          <Button type="button" onClick={detectLocation} className="w-fit">
             {t("resourceForm.detect_location")}
           </Button>
           <p className="text-sm text-muted-foreground">
@@ -920,7 +944,11 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
         />
       </div>
 
-      <Button type="submit">{t("resourceForm.submitButton")}</Button>
+      <div className="lg:col-span-3 md:col-span-2 col-span-1 pt-2">
+        <Button type="submit" className="mt-2">
+          {t("resourceForm.submitButton")}
+        </Button>
+      </div>
     </form>
   );
 }

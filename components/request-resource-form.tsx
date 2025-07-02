@@ -94,7 +94,10 @@ export const RequestResourceForm = ({ onSubmit }: RequestResourceFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+    >
       <div>
         <Label>
           {t("partnerPage.components.resources.requestResourceForm.name")}

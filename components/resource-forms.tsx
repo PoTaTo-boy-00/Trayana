@@ -263,7 +263,10 @@ export const ResourceForm = ({ onSubmit, initialData }: ResourceFormProps) => {
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       {formFields.map((field) => (
         <div key={field.id}>
           <Label htmlFor={field.id}>{field.label}</Label>
@@ -274,7 +277,7 @@ export const ResourceForm = ({ onSubmit, initialData }: ResourceFormProps) => {
         </div>
       ))}
 
-      <div className="pt-2">
+      <div className="col-span-1 md:col-span-2 lg:col-span-3 pt-2">
         <Button type="submit" disabled={isLoading}>
           {isLoading ? (
             <>

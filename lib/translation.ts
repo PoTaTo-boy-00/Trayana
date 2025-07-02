@@ -85,6 +85,10 @@ export const translations: TranslationDictionary = {
         title: "USSD Code for Alerts",
         placeholder: "(e.g., *123#)",
       },
+      voiceTransciptions: {
+        title: "Voice Transcriptions",
+        placeholder: "Enter voice transcriptions (if any)",
+      },
 
       submitButton: "Create Alert",
     },
@@ -683,6 +687,12 @@ export const translations: TranslationDictionary = {
         title: "अलर्ट के लिए यूएसएसडी कोड",
         placeholder: "(जैसे, *123#)",
       },
+
+      voiceTransciptions: {
+        title: "वॉयस ट्रांसक्रिप्शन",
+        placeholder: "यदि कोई हो, तो वॉयस ट्रांसक्रिप्शन दर्ज करें",
+      },
+
       submitButton: "अलर्ट बनाएं",
     },
 
