@@ -68,7 +68,10 @@ export default function AlertsPage() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "alerts" },
         (payload) => {
-          setAlerts((prev) => [...prev, payload.new as Alert]);
+          setAlerts((prev) => {
+            const exists = prev.find((a) => a.id === (payload.new as Alert).id);
+            return exists ? prev : [...prev, payload.new as Alert];
+          });
         }
       )
       .subscribe();
@@ -208,7 +211,7 @@ export default function AlertsPage() {
               {alert.voiceTranscription && (
                 <div className="mt-4">
                   <p className="text-sm text-muted-foreground">
-                    {t("alert.voiceTranscription")}
+                    {t("alert.voiceTranscriptions")}
                   </p>
                   <p className="text-sm">{alert.voiceTranscription}</p>
                 </div>
@@ -278,7 +281,10 @@ function AlertForm({ onSubmit }: AlertFormProps) {
   };
   const { t } = useTranslation();
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={handleSubmit}
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       <div>
         <Label>{t("alertForm.label")}</Label>
         <Select
@@ -382,13 +388,13 @@ function AlertForm({ onSubmit }: AlertFormProps) {
       </div>
 
       <div>
-        <Label>{t("alert.voiceTranscription")}</Label>
+        <Label>{t("alertForm.voiceTransciptions.title")}</Label>
         <Input
           value={formData.voiceTranscription}
           onChange={(e) =>
             setFormData({ ...formData, voiceTranscription: e.target.value })
           }
-          placeholder="Enter voice transcription"
+          placeholder={t("alertForm.voiceTransciptions.placeholder")}
         />
       </div>
 
