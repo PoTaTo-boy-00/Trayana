@@ -206,7 +206,7 @@ export const useResources = () => {
     }
 
     // Update local state
-    // setRequestedResources((prev) => [...prev, newResource]);
+    setRequestedResources((prev) => [...prev, newResource]);
 
     // Log the request with user info in resource history
     // await logResourceHistory({
@@ -332,13 +332,10 @@ export const useResources = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "requestresources" },
         (payload) =>
-          setRequestedResources((prev) =>
-            prev.map((res) =>
-              res.id === payload.new.id
-                ? (payload.new as requestResources)
-                : res
-            )
-          )
+          setRequestedResources((prev) => [
+            ...prev,
+            payload.new as requestResources,
+          ])
       )
       .on(
         "postgres_changes",
