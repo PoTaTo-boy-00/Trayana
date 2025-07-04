@@ -186,7 +186,7 @@ export default function SOSPage() {
 
     fetchReports();
 
-    const channel = supabase
+    const sosReportChannel = supabase
       .channel("sos_realtime")
       .on(
         "postgres_changes",
@@ -217,8 +217,25 @@ export default function SOSPage() {
       )
       .subscribe();
 
+    const personnelChannel = supabase
+      .channel("personnel_realtime")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "personnel",
+          filter: `organization_id=eq.${organizationId}`,
+        },
+        () => {
+          fetchAvailablePersonnel(); // Refresh available personnel list
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(sosReportChannel);
+      supabase.removeChannel(personnelChannel);
     };
   }, []);
 
