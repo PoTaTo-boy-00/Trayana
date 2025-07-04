@@ -277,7 +277,7 @@ function AlertForm({ onSubmit }: AlertFormProps) {
         {
           params: {
             address: address,
-            key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API,
+            key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
           },
         }
       );
