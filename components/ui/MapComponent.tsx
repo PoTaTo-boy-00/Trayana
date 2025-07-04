@@ -275,7 +275,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   const { t } = useTranslation();
   // Load the Google Maps script
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API || "",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
 
   // Handle loading and errors
@@ -444,7 +444,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
   ];
   const [showStats, setShowStats] = useState(false);
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API || "",
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
