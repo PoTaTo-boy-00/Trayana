@@ -71,7 +71,83 @@ export default function PartnerDashboard() {
 
     fetchResource();
   }, []);
+  // Add these useEffect hooks to your PartnerDashboard component
 
+  // Realtime for personnel locations
+  useEffect(() => {
+    if (!organizationId) return;
+
+    const channel = supabase
+      .channel("personnel_locations")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "personnel",
+          filter: `organization_id=eq.${organizationId}`,
+        },
+        (payload) => {
+          const updatedPersonnel = payload.new as PersonnelLocation;
+          setPersonnelData((prev) => {
+            // Handle different event types
+            switch (payload.eventType) {
+              case "INSERT":
+                return [...prev, updatedPersonnel];
+              case "UPDATE":
+                return prev.map((p) =>
+                  p.id === updatedPersonnel.id ? updatedPersonnel : p
+                );
+              // case 'DELETE':
+              //   return prev.filter(p => p.id !== (payload.old as { id: number }).id);
+              default:
+                return prev;
+            }
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [organizationId]);
+
+  // Realtime for SOS alerts
+  useEffect(() => {
+    const channel = supabase
+      .channel("sos_alerts")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "sos_alerts",
+        },
+        (payload) => {
+          const updatedAlert = payload.new as SOSWithCoords;
+          setSOSData((prev) => {
+            switch (payload.eventType) {
+              case "INSERT":
+                return [...prev, updatedAlert];
+              case "UPDATE":
+                return prev.map((a) =>
+                  a.id === updatedAlert.id ? updatedAlert : a
+                );
+              // case 'DELETE':
+              //   return prev.filter(a => a.id !== (payload.old as { id: number }).id);
+              default:
+                return prev;
+            }
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
   useEffect(() => {
     const fetchPersonnel = async () => {
       const { data, error } = await supabase
@@ -146,7 +222,9 @@ export default function PartnerDashboard() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">{t("partnerPage.components.dashboard.title")}</h1>
+      <h1 className="text-3xl font-bold">
+        {t("partnerPage.components.dashboard.title")}
+      </h1>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

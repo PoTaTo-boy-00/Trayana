@@ -84,6 +84,44 @@ export default function PersonnelPage() {
     };
 
     fetchUserAndPersonnel();
+    const channel = supabase
+      .channel("personnel_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "personnel",
+          filter: organizationId
+            ? `organization_id=eq.${organizationId}`
+            : undefined,
+        },
+        (payload) => {
+          console.log("Change received:", payload);
+          switch (payload.eventType) {
+            case "INSERT":
+              setPersonnel((prev) => [...prev, payload.new as Personnel]);
+              break;
+            case "UPDATE":
+              setPersonnel((prev) =>
+                prev.map((p) =>
+                  p.id === payload.new.id ? (payload.new as Personnel) : p
+                )
+              );
+              break;
+            case "DELETE":
+              setPersonnel((prev) =>
+                prev.filter((p) => p.id !== (payload.old as { id: string }).id)
+              );
+              break;
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [organizationId]);
 
   const updatePersonnelStatus = async (
@@ -154,17 +192,21 @@ export default function PersonnelPage() {
     }
   };
 
-  if (loading) return <div>{t("partnerPage.components.personnel.loading")}</div>;
+  if (loading)
+    return <div>{t("partnerPage.components.personnel.loading")}</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{t("partnerPage.components.personnel.title")}</h1>
+        <h1 className="text-3xl font-bold">
+          {t("partnerPage.components.personnel.title")}
+        </h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> {t("partnerPage.components.personnel.addButton")}
+              <Plus className="mr-2 h-4 w-4" />{" "}
+              {t("partnerPage.components.personnel.addButton")}
             </Button>
           </DialogTrigger>
           <DialogContent>

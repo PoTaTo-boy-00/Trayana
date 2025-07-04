@@ -44,6 +44,8 @@ export default function MapPage() {
     fetchData();
   }, []);
 
+  console.log("MapPage Resource Data:", resourceData);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -57,15 +59,15 @@ export default function MapPage() {
               <MapComponent2
                 organization={organizationsData.map((org) => ({
                   ...org,
-                  id: typeof org.id === "string" ? Number(org.id) : org.id,
+                  id: String(org.id),
                 }))}
                 resource={resourceData.map((res) => ({
                   ...res,
-                  id: typeof res.id === "string" ? Number(res.id) : res.id,
+                  id: String(res.id),
                 }))}
                 reqResource={reqResourceData.map((req) => ({
                   ...req,
-                  id: typeof req.id === "string" ? Number(req.id) : req.id,
+                  id: String(req.id),
                 }))}
               />
             </div>

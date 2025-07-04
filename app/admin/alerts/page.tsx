@@ -267,17 +267,54 @@ function AlertForm({ onSubmit }: AlertFormProps) {
     ussdCode: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newAlert: Alert = {
-      ...formData,
-      // id: String(Math.random().toString(36).substr(2, 9)), // Generate a unique ID
-      id: uuidv4(),
-      timestamp: new Date().toISOString(),
-      isActive: true, // Default status
-      updates: [], // Initialize with no updates
-    };
-    onSubmit(newAlert);
+    try {
+      const address = formData.affected_Areas[0].name;
+
+      const geocodeRes = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json`,
+        {
+          params: {
+            address: address,
+            key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API,
+          },
+        }
+      );
+      console.log("Geo code", geocodeRes);
+
+      const location = geocodeRes.data.results[0]?.geometry.location;
+
+      console.log(location);
+      if (!location) {
+        alert(
+          "Could not fetch location coordinates. Please check the area name."
+        );
+        return;
+      }
+
+      const newAlert: Alert = {
+        ...formData,
+        affected_Areas: [
+          {
+            ...formData.affected_Areas[0],
+            center: {
+              lat: location.lat,
+              lng: location.lng,
+            },
+          },
+        ],
+        // id: String(Math.random().toString(36).substr(2, 9)), // Generate a unique ID
+        id: uuidv4(),
+        timestamp: new Date().toISOString(),
+        isActive: true, // Default status
+        updates: [], // Initialize with no updates
+      };
+      onSubmit(newAlert);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      return;
+    }
   };
   const { t } = useTranslation();
   return (
