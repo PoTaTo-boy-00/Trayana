@@ -663,7 +663,7 @@ export default function ResourcesPage() {
                                         remarks: `Allocated to request ${selectedRequest.id}`,
                                       });
                                   }
-
+                                  console.log(selectedRequest);
                                   // Update the request
                                   const newRequestQuantity =
                                     selectedRequest.quantity - allocateQuantity;
@@ -711,7 +711,7 @@ export default function ResourcesPage() {
                                         recipient_id: cleanUUID(
                                           resource.organizationId
                                         ),
-                                        message: `${allocationAmount} ${resource.unit} of ${resource.name} was allocated to ${selectedRequest.organizationId}'s request`,
+                                        message: `${allocationAmount} ${resource.unit} of ${resource.name} was allocated to ${selectedRequest.organizationName}'s request`,
                                         type: "resource_donated",
                                         read: false,
                                         timestamp: currentTimestamp,
