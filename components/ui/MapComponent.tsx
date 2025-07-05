@@ -37,6 +37,8 @@ import { supabase } from "@/lib/supabase";
 import { requestResources, Resource } from "@/app/types";
 import { Badge } from "./badge";
 import { BarChart2, Clock, MapPin, X } from "lucide-react";
+import { organization } from "@/data/organization";
+import { useOrgStore } from "@/store/orgStore";
 // import type { AdvancedMarkerElement } from '@googlemaps/markerclusterer';
 
 // Define types for personnel and SOS alerts
@@ -100,6 +102,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     lat: 26.544205506857356, // default: Jalpaiguri
     lng: 88.70577006,
   });
+  const { organizationId } = useOrgStore();
 
   // Transform and validate incoming data
   const transformPersonnel = (data: any): Location[] => {
@@ -145,18 +148,72 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           item.location_lng !== 0
       );
   };
+  const transformSosAlerts = (data: any): Location[] => {
+    // console.log(data);
+    return (data || [])
+      .map((item: any) => {
+        let lat = 0,
+          lng = 0;
 
+        // Check all possible location formats
+        if (item.location?.latitude && item.location?.longitude) {
+          lat = item.location.latitude;
+          lng = item.location.longitude;
+        } else if (item.location_lat && item.location_lng) {
+          lat = item.location_lat;
+          lng = item.location_lng;
+        } else if (item.latitude && item.longitude) {
+          // Add this case
+          lat = item.latitude;
+          lng = item.longitude;
+        } else if (
+          typeof item.location === "string" &&
+          item.location.includes(",")
+        ) {
+          const coords = item.location
+            .split(",")
+            .map((coord: string) => parseFloat(coord.trim()));
+          if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+            lat = coords[0];
+            lng = coords[1];
+          }
+        }
+
+        return {
+          ...item,
+          location_lat: lat,
+          location_lng: lng,
+        };
+      })
+      .filter(
+        (item: Location) =>
+          !isNaN(item.location_lat) &&
+          !isNaN(item.location_lng) &&
+          item.location_lat !== 0 &&
+          item.location_lng !== 0
+      );
+  };
   // Helper function to transform a single item
   const transformSingleItem = (item: any): Location | null => {
     const transformed = transformPersonnel([item]);
     return transformed.length > 0 ? transformed[0] : null;
   };
-
+  const transformSingleSosItem = (item: any): Location | null => {
+    const transformed = transformSosAlerts([item]);
+    return transformed.length > 0 ? transformed[0] : null;
+  };
   // Initialize with validated data
   useEffect(() => {
+    console.log("🚨 incoming SOS Alerts: ", initialSosAlerts);
+
     setPersonnel(transformPersonnel(initialPersonnel));
-    setSosAlerts(transformPersonnel(initialSosAlerts));
+    const transformed = transformSosAlerts(initialSosAlerts);
+    console.log("🚨 transformed SOS Alerts: ", transformed);
+    setSosAlerts(transformed);
   }, [initialPersonnel, initialSosAlerts]);
+  // useEffect(() => {
+  //   console.log("✅ Updated sosAlerts: ", sosAlerts);
+  // }, [sosAlerts]);
 
   useEffect(() => {
     const channel = supabase
@@ -169,7 +226,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           table: "personnel",
         },
         (payload) => {
-          console.log("Realtime update received:", payload);
+          console.log("Incoming UPDATE:", payload.new);
+          // console.log("Realtime update received:", payload);
           setPersonnel((prev) => {
             switch (payload.eventType) {
               case "INSERT":
@@ -180,7 +238,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                 return prev;
               case "UPDATE":
                 const updatedItem = transformSingleItem(payload.new);
+
                 if (updatedItem) {
+                  console.log("Transformed UPDATE:", updatedItem);
                   return prev.map((p) =>
                     p.id === updatedItem.id ? updatedItem : p
                   );
@@ -203,10 +263,10 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
-  // Similar subscription for SOS alerts
+  //  subscription for SOS alerts
   useEffect(() => {
     const channel = supabase
-      .channel("sos_updates")
+      .channel("sos_map_updates")
       .on(
         "postgres_changes",
         {
@@ -215,16 +275,19 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           table: "sos_alerts",
         },
         (payload) => {
+          // console.log(payload.new);
+          console.log("📡 Realtime SOS payload received:", payload);
+
           setSosAlerts((prev) => {
             switch (payload.eventType) {
               case "INSERT":
-                const newAlert = transformSingleItem(payload.new);
+                const newAlert = transformSingleSosItem(payload.new);
                 if (newAlert) {
                   return [...prev, newAlert];
                 }
                 return prev;
               case "UPDATE":
-                const updatedAlert = transformSingleItem(payload.new);
+                const updatedAlert = transformSingleSosItem(payload.new);
                 if (updatedAlert) {
                   return prev.map((s) =>
                     s.id === updatedAlert.id ? updatedAlert : s
@@ -382,7 +445,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           {/* Render personnel markers */}
           {personnel?.map((p) => (
             <MarkerF
-              key={p.id}
+              key={`${p.id}-${p.location_lat}-${p.location_lng}-${p.status}`}
               position={{ lat: p.location_lat, lng: p.location_lng }}
               icon={personnelIcon}
             />
@@ -391,7 +454,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           {/* Render SOS alert markers */}
           {sosAlerts?.map((sos) => (
             <MarkerF
-              key={sos.id}
+              key={`${sos.id}-${sos.location_lat}-${sos.location_lng}`}
               position={{ lat: sos.location_lat, lng: sos.location_lng }}
               icon={sosIcon}
             />

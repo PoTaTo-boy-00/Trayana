@@ -122,9 +122,10 @@ export default function PartnerDashboard() {
         {
           event: "*",
           schema: "public",
-          table: "sos_alerts",
+          table: "sosReport",
         },
         (payload) => {
+          // console.log("Payload received:", payload);
           const updatedAlert = payload.new as SOSWithCoords;
           setSOSData((prev) => {
             switch (payload.eventType) {
@@ -134,8 +135,10 @@ export default function PartnerDashboard() {
                 return prev.map((a) =>
                   a.id === updatedAlert.id ? updatedAlert : a
                 );
-              // case 'DELETE':
-              //   return prev.filter(a => a.id !== (payload.old as { id: number }).id);
+              case "DELETE":
+                return prev.filter(
+                  (a) => a.id !== (payload.old as { id: string }).id
+                );
               default:
                 return prev;
             }
@@ -147,7 +150,7 @@ export default function PartnerDashboard() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [organizationId]);
   useEffect(() => {
     const fetchPersonnel = async () => {
       const { data, error } = await supabase
@@ -287,11 +290,11 @@ export default function PartnerDashboard() {
       <MapComponent
         personnel={personnelData.map((p) => ({
           ...p,
-          id: typeof p.id === "string" ? Number(p.id) : p.id,
+          id: String(p.id),
         }))}
         sosAlerts={SOSdata.map((p) => ({
           ...p,
-          id: typeof p.id === "string" ? Number(p.id) : p.id,
+          id: String(p.id),
         }))}
         // sosAlerts={sosAlerts}
       />
