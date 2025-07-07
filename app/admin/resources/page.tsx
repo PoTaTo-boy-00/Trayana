@@ -28,6 +28,7 @@ import { getReadableAddress } from "@/data/geoLocation";
 import { useTranslation } from "@/lib/translation-context";
 import { useResources } from "@/hooks/use-resources";
 import { getDistance } from "geolib";
+import { toast } from "@/hooks/use-toast";
 
 export default function ResourcesPage() {
   const [selectedRequest, setSelectedRequest] =
@@ -39,9 +40,11 @@ export default function ResourcesPage() {
   const [requestResource, setRequestResources] = useState<requestResources[]>(
     []
   );
+  const [orgNames, setOrgNames] = useState<Record<string, string>>({});
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [isAllocating, setIsAllocating] = useState(false);
   const { orgDetails } = useResources();
 
   const { t } = useTranslation();
@@ -58,27 +61,72 @@ export default function ResourcesPage() {
       );
     }
   });
+  // useEffect(() => {
+  //   const fetchOrgNames = async () => {
+  //     const orgIds = [
+  //       ...Array.from(new Set(resources.map((r) => r.organizationId))),
+  //     ].filter(Boolean);
+
+  //     if (orgIds.length === 0) return;
+
+  //     const { data, error } = await supabase
+  //       .from("organizations")
+  //       .select("id, name")
+  //       .in("id", orgIds);
+
+  //     if (error) {
+  //       console.error("Error fetching org names:", error);
+  //       return;
+  //     }
+
+  //     const nameMap: Record<string, string> = {};
+  //     data.forEach((org) => {
+  //       nameMap[org.id] = org.name;
+  //     });
+
+  //     setOrgNames(nameMap);
+  //     console.log("Org names fetched:", nameMap);
+  //   };
+
+  //   fetchOrgNames();
+  // }, [resources]);
 
   console.log(sortedResources);
   useEffect(() => {
     const fetchData = async () => {
-      const [resourceRes, requestRes] = await Promise.all([
+      const [resourceRes, requestRes, orgRes] = await Promise.all([
         supabase.from("resources").select("*"),
         supabase.from("requestresources").select("*"),
+        supabase.from("organizations").select("id, name"),
       ]);
 
-      if (resourceRes.error || requestRes.error) {
-        console.error("Fetch error:", resourceRes.error || requestRes.error);
+      if (resourceRes.error || requestRes.error || orgRes.error) {
+        console.error(
+          "Fetch error:",
+          resourceRes.error || requestRes.error || orgRes.error
+        );
         return;
       }
+      // console.log(orgRes.data, "orgRes.data");
+      // Create a lookup map for org id -> name
+      const orgNameMap = new Map(
+        (orgRes.data || []).map((org) => [org.id, org.name])
+      );
 
-      setResources(resourceRes.data || []);
-      // setIsLoading(false);
+      // Enrich each resource with org name
+      const enrichedResources = (resourceRes.data || []).map((res) => ({
+        ...res,
+        organizationName:
+          orgNameMap.get(res.organizationId) || "Unknown Organization",
+      }));
+
+      setResources(enrichedResources);
       setRequestResources(requestRes.data || []);
     };
 
     fetchData();
   }, []);
+  console.log("resourceserrrrr", resources);
   const handleAddResource = async (newResource: Resource) => {
     const { data, error } = await supabase
       .from("resources")
@@ -529,6 +577,7 @@ export default function ResourcesPage() {
                           selectedRequest.quantity,
                           totalAvailable
                         );
+                        console.log("ma", matchingResources);
 
                         return (
                           <>
@@ -543,8 +592,8 @@ export default function ResourcesPage() {
                               </p>
                               {matchingResources.map((res, idx) => (
                                 <p key={idx}>
-                                  - {res.name} (ID: {res.id}): {res.quantity}{" "}
-                                  {res.unit}-{" "}
+                                  - {res.name} (From: {res.organizationName}){" "}
+                                  {res.quantity} {res.unit}-{" "}
                                   {(
                                     getDistance(
                                       {
@@ -593,12 +642,14 @@ export default function ResourcesPage() {
                                   !allocateQuantity ||
                                   allocateQuantity <= 0
                                 ) {
-                                  alert(
-                                    "Please enter a valid allocation quantity"
-                                  );
+                                  toast.error({
+                                    title:
+                                      "Please enter a valid allocation quantity",
+                                  });
                                   return;
                                 }
 
+                                setIsAllocating(true); // start loading
                                 try {
                                   // Sort matching resources by distance
                                   const sortedResources = [
@@ -663,7 +714,6 @@ export default function ResourcesPage() {
                                         remarks: `Allocated to request ${selectedRequest.id}`,
                                       });
                                   }
-                                  console.log(selectedRequest);
                                   // Update the request
                                   const newRequestQuantity =
                                     selectedRequest.quantity - allocateQuantity;
@@ -681,7 +731,28 @@ export default function ResourcesPage() {
                                       })
                                       .eq("id", selectedRequest.id);
                                   }
-
+                                  // const { data, error } = await supabase
+                                  //   .from("resources")
+                                  //   .select("*, organizations(name)");
+                                  // console.log("JOIN DATA", data);
+                                  //Something diff
+                                  const { data: Res, error: er } =
+                                    await supabase
+                                      .from("organizations")
+                                      .select("name")
+                                      .eq("id", selectedRequest.organizationId);
+                                  // if (
+                                  //   Res &&
+                                  //   Array.isArray(Res) &&
+                                  //   Res.length > 0
+                                  // ) {
+                                  //   console.log("SINGLE DATA", Res[0].name);
+                                  // } else {
+                                  //   console.log(
+                                  //     "SINGLE DATA: No organization found"
+                                  //   );
+                                  // }
+                                  //This should be a Transaction but for now we will do it like this
                                   // Create notifications
                                   const notificationId = crypto.randomUUID();
                                   const currentTimestamp =
@@ -711,7 +782,17 @@ export default function ResourcesPage() {
                                         recipient_id: cleanUUID(
                                           resource.organizationId
                                         ),
-                                        message: `${allocationAmount} ${resource.unit} of ${resource.name} was allocated to ${selectedRequest.organizationName}'s request`,
+                                        message: `${allocationAmount} ${
+                                          resource.unit
+                                        } of ${
+                                          resource.name
+                                        } was allocated to ${
+                                          Res &&
+                                          Array.isArray(Res) &&
+                                          Res.length > 0
+                                            ? Res[0].name
+                                            : "Unknown Organization"
+                                        }'s request`,
                                         type: "resource_donated",
                                         read: false,
                                         timestamp: currentTimestamp,
@@ -736,14 +817,26 @@ export default function ResourcesPage() {
                                       ...donorNotifications,
                                     ]);
 
-                                  alert(
-                                    `Successfully allocated ${allocateQuantity} ${selectedRequest.unit}`
-                                  );
+                                  toast.success({
+                                    title: `Successfully allocated ${allocateQuantity} ${selectedRequest.unit}`,
+                                    description: `Resources have been allocated to the request from ${
+                                      Res &&
+                                      Array.isArray(Res) &&
+                                      Res.length > 0
+                                        ? Res[0].name
+                                        : "Unknown Organization"
+                                    }`,
+                                  });
                                   setIsAllocDialogOpen(false);
                                   setAllocateQuantity(0);
                                 } catch (error) {
                                   console.error("Allocation failed:", error);
-                                  alert("Allocation failed. Please try again.");
+                                  toast.error({
+                                    title:
+                                      "Allocation failed. Please try again.",
+                                  });
+                                } finally {
+                                  setIsAllocating(false); // stop loading
                                 }
                               }}
                               disabled={
@@ -752,7 +845,9 @@ export default function ResourcesPage() {
                                 allocateQuantity > maxAllocatable
                               }
                             >
-                              {t("allocateResourceForm.Confirm_Allocation")}
+                              {isAllocating
+                                ? "Allocating..."
+                                : t("allocateResourceForm.Confirm_Allocation")}
                             </Button>
                           </>
                         );
@@ -797,7 +892,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
     e.preventDefault();
 
     if (!formData.name || formData.quantity <= 0 || !formData.unit) {
-      alert("Please fill in all required fields");
+      toast.error({ title: "Please fill in all required fields" });
       return;
     }
 
@@ -811,7 +906,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
 
   const detectLocation = async () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
+      toast.error({ title: "Geolocation is not supported by your browser" });
       return;
     }
 
@@ -834,7 +929,7 @@ function ResourceForm({ onSubmit }: ResourceFormProps) {
       },
       (error) => {
         console.error("Geolocation error:", error);
-        alert("Could not get your location");
+        toast.error({ title: "Could not get your location" });
       },
       {
         enableHighAccuracy: true, // key fix

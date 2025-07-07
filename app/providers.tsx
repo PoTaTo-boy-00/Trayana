@@ -9,8 +9,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider attribute="class" defaultTheme="dark" enableSystem>
       <LanguageProvider>
-        {children}
         <Toaster />
+        {children}
       </LanguageProvider>
     </NextThemesProvider>
   );
