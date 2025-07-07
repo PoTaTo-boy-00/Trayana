@@ -59,6 +59,7 @@ export interface Resource {
   location: GeoLocation;
   status: ResourceStatus;
   organizationId: string;
+  organizationName?: string;
   lastUpdated: string;
   expiryDate?: string;
   conditions?: string[];

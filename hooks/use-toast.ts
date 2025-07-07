@@ -3,7 +3,7 @@
 import * as React from "react";
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
-const TOAST_LIMIT = 1;
+const TOAST_LIMIT = 3;
 const DEFAULT_TOAST_DURATION = 5000; // 5 seconds
 const LONG_TOAST_DURATION = 10000; // 10 seconds
 
