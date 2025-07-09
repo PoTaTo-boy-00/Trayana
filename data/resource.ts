@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Organization } from "@/app/types";
+import { jitter } from "@/lib/jitter";
 
 export interface ResourceWithCoords {
   id: string;
@@ -33,8 +34,8 @@ export const fetchResources = async () => {
     return {
       id: res.id,
       type: "resource",
-      location_lat: res.location?.lat,
-      location_lng: res.location?.lng,
+      location_lat: res.location?.lat + jitter(),
+      location_lng: res.location?.lng + jitter(),
       name: res.name,
       resource_type: res.type,
       quantity: res.quantity,
@@ -60,8 +61,8 @@ export const fetchReqResources = async () => {
   const processed = (data || []).map((req) => {
     return {
       id: req.id,
-      location_lat: req.location?.lat,
-      location_lng: req.location?.lng,
+      location_lat: req.location?.lat + jitter(),
+      location_lng: req.location?.lng + jitter(),
       name: req.name,
       resource_type: req.type,
       quantity: req.quantity,

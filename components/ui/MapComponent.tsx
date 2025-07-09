@@ -39,6 +39,8 @@ import { Badge } from "./badge";
 import { BarChart2, Clock, MapPin, X } from "lucide-react";
 import { organization } from "@/data/organization";
 import { useOrgStore } from "@/store/orgStore";
+import { useClusters } from "@/hooks/use-cluster";
+import { jitter, jitterLg } from "@/lib/jitter";
 // import type { AdvancedMarkerElement } from '@googlemaps/markerclusterer';
 
 // Define types for personnel and SOS alerts
@@ -92,39 +94,35 @@ const mapContainerStyle: React.CSSProperties = {
 export const MapComponent: React.FC<MapComponentProps> = ({
   personnel: initialPersonnel,
   sosAlerts: initialSosAlerts,
-  // organization,
-  // resource,
 }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [personnel, setPersonnel] = useState<Location[]>([]);
   const [sosAlerts, setSosAlerts] = useState<Location[]>([]);
+  const [showClusters, setShowClusters] = useState(true);
   const [center, setCenter] = useState({
     lat: 26.544205506857356, // default: Jalpaiguri
     lng: 88.70577006,
   });
   const { organizationId } = useOrgStore();
+  const { t } = useTranslation();
 
-  // Transform and validate incoming data
+  // Transform functions (keep your existing ones)
   const transformPersonnel = (data: any): Location[] => {
+    console.log("data", data);
     return (data || [])
       .map((item: any) => {
         let lat = 0,
           lng = 0;
-
-        // Handle different location formats
         if (item.location?.latitude && item.location?.longitude) {
-          // Object format: { latitude: number, longitude: number }
           lat = item.location.latitude;
           lng = item.location.longitude;
         } else if (item.location_lat && item.location_lng) {
-          // Direct properties
           lat = item.location_lat;
           lng = item.location_lng;
         } else if (
           typeof item.location === "string" &&
           item.location.includes(",")
         ) {
-          // String format: "lat, lng"
           const coords = item.location
             .split(",")
             .map((coord: string) => parseFloat(coord.trim()));
@@ -133,12 +131,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             lng = coords[1];
           }
         }
-
-        return {
-          ...item,
-          location_lat: lat,
-          location_lng: lng,
-        };
+        return { ...item, location_lat: lat, location_lng: lng };
       })
       .filter(
         (item: Location) =>
@@ -148,14 +141,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           item.location_lng !== 0
       );
   };
+
   const transformSosAlerts = (data: any): Location[] => {
-    // console.log(data);
     return (data || [])
       .map((item: any) => {
+        // console.log("item", data);
         let lat = 0,
           lng = 0;
-
-        // Check all possible location formats
         if (item.location?.latitude && item.location?.longitude) {
           lat = item.location.latitude;
           lng = item.location.longitude;
@@ -163,7 +155,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           lat = item.location_lat;
           lng = item.location_lng;
         } else if (item.latitude && item.longitude) {
-          // Add this case
           lat = item.latitude;
           lng = item.longitude;
         } else if (
@@ -178,12 +169,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             lng = coords[1];
           }
         }
-
-        return {
-          ...item,
-          location_lat: lat,
-          location_lng: lng,
-        };
+        return { ...item, location_lat: lat, location_lng: lng };
       })
       .filter(
         (item: Location) =>
@@ -193,28 +179,33 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           item.location_lng !== 0
       );
   };
-  // Helper function to transform a single item
+
   const transformSingleItem = (item: any): Location | null => {
+    console.log(item);
     const transformed = transformPersonnel([item]);
     return transformed.length > 0 ? transformed[0] : null;
   };
+
   const transformSingleSosItem = (item: any): Location | null => {
     const transformed = transformSosAlerts([item]);
     return transformed.length > 0 ? transformed[0] : null;
   };
+
+  // Load the Google Maps script
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+  });
+
   // Initialize with validated data
   useEffect(() => {
     console.log("🚨 incoming SOS Alerts: ", initialSosAlerts);
-
     setPersonnel(transformPersonnel(initialPersonnel));
     const transformed = transformSosAlerts(initialSosAlerts);
     console.log("🚨 transformed SOS Alerts: ", transformed);
     setSosAlerts(transformed);
   }, [initialPersonnel, initialSosAlerts]);
-  // useEffect(() => {
-  //   console.log("✅ Updated sosAlerts: ", sosAlerts);
-  // }, [sosAlerts]);
 
+  // Personnel subscription
   useEffect(() => {
     const channel = supabase
       .channel("map_updates")
@@ -227,7 +218,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         },
         (payload) => {
           console.log("Incoming UPDATE:", payload.new);
-          // console.log("Realtime update received:", payload);
           setPersonnel((prev) => {
             switch (payload.eventType) {
               case "INSERT":
@@ -238,7 +228,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
                 return prev;
               case "UPDATE":
                 const updatedItem = transformSingleItem(payload.new);
-
                 if (updatedItem) {
                   console.log("Transformed UPDATE:", updatedItem);
                   return prev.map((p) =>
@@ -263,7 +252,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
-  //  subscription for SOS alerts
+  // SOS subscription
   useEffect(() => {
     const channel = supabase
       .channel("sos_map_updates")
@@ -275,9 +264,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           table: "sos_alerts",
         },
         (payload) => {
-          // console.log(payload.new);
           console.log("📡 Realtime SOS payload received:", payload);
-
           setSosAlerts((prev) => {
             switch (payload.eventType) {
               case "INSERT":
@@ -311,6 +298,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     };
   }, []);
 
+  // Geolocation
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -322,7 +310,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         },
         (error) => {
           console.error("Error fetching geolocation:", error);
-          // optionally fallback or notify user
         },
         {
           enableHighAccuracy: true,
@@ -330,22 +317,38 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           maximumAge: 0,
         }
       );
-    } else {
-      console.warn("Geolocation is not supported by this browser.");
     }
   }, []);
-
-  const { t } = useTranslation();
-  // Load the Google Maps script
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+  console.log(personnel);
+  // Prepare cluster data
+  const clusterData = useMemo(() => {
+    return [
+      ...personnel.map((p) => ({
+        lat: p.location_lat,
+        lng: p.location_lng,
+        label: p.name,
+        type: "personnel" as const,
+      })),
+      ...sosAlerts.map((sos) => ({
+        lat: sos.location_lat,
+        lng: sos.location_lng,
+        //!incase some thing breaks add the label
+        type: "sos" as const,
+      })),
+    ];
+  }, [personnel, sosAlerts]);
+  // Use clusters hook
+  const { clusterer, markers, clearMarkers } = useClusters({
+    map,
+    showClusters,
+    data: clusterData,
   });
 
   // Handle loading and errors
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading Maps...</div>;
 
-  // Define custom icons
+  // Define custom icons for non-clustered markers
   const personnelIcon = {
     path: google.maps.SymbolPath.CIRCLE,
     fillColor: "blue",
@@ -364,59 +367,29 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
   const Legend = () => {
     return (
-      <div
-        style={{
-          position: "absolute",
-          bottom: "20px",
-          left: "20px",
-          backgroundColor: "white",
-          padding: "10px",
-          borderRadius: "5px",
-          boxShadow: "0 2px 6px rgba(0, 0, 0, 0.3)",
-          zIndex: 1,
-        }}
-      >
-        <div
-          style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}
-        >
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-              backgroundColor: "blue",
-              borderRadius: "50%",
-              marginRight: "8px",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "black",
-            }}
-          >
-            {t("maps.legends.personnel")}({personnel.length})
+      <div className="absolute bottom-5 left-5 bg-white dark:bg-gray-800 text-black dark:text-white p-4 rounded-lg shadow-lg z-10 max-w-xs">
+        <div className="flex items-center mb-2">
+          <div className="w-4 h-4 bg-blue-500 rounded-full mr-2" />
+          <span className="text-sm font-medium">
+            {t("maps.legends.personnel")} ({personnel.length})
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-              backgroundColor: "red",
-              borderRadius: "50%",
-              marginRight: "8px",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "14px",
-              fontWeight: "bold",
-              color: "black",
-            }}
-          >
-            {t("maps.legends.sosAlerts")}({sosAlerts.length})
+        <div className="flex items-center mb-3">
+          <div className="w-4 h-4 bg-red-500 rounded-full mr-2" />
+          <span className="text-sm font-medium">
+            {t("maps.legends.sosAlerts")} ({sosAlerts.length})
           </span>
+        </div>
+        <div className="border-t pt-2">
+          <label className="flex items-center text-sm">
+            <input
+              type="checkbox"
+              checked={showClusters}
+              onChange={(e) => setShowClusters(e.target.checked)}
+              className="mr-2"
+            />
+            {t("maps.Enable_Clustering")}
+          </label>
         </div>
       </div>
     );
@@ -429,36 +402,40 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       </CardHeader>
       <CardContent className="p-0 w-full h-[500px]">
         <GoogleMap
-          mapContainerStyle={mapContainerStyle}
+          mapContainerStyle={{ width: "100%", height: "100%" }}
           zoom={11}
           center={center}
+          onLoad={setMap}
           options={{
+            mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID,
             styles: [
               {
                 featureType: "poi",
                 elementType: "labels",
-                stylers: [{ visibility: "on" }], // Hide POI labels
+                stylers: [{ visibility: "on" }],
               },
             ],
           }}
         >
-          {/* Render personnel markers */}
-          {personnel?.map((p) => (
-            <MarkerF
-              key={`${p.id}-${p.location_lat}-${p.location_lng}-${p.status}`}
-              position={{ lat: p.location_lat, lng: p.location_lng }}
-              icon={personnelIcon}
-            />
-          ))}
-
-          {/* Render SOS alert markers */}
-          {sosAlerts?.map((sos) => (
-            <MarkerF
-              key={`${sos.id}-${sos.location_lat}-${sos.location_lng}`}
-              position={{ lat: sos.location_lat, lng: sos.location_lng }}
-              icon={sosIcon}
-            />
-          ))}
+          {/* Render individual markers only when clustering is disabled */}
+          {!showClusters && (
+            <>
+              {personnel?.map((p) => (
+                <MarkerF
+                  key={`personnel-${p.id}-${p.location_lat}-${p.location_lng}`}
+                  position={{ lat: p.location_lat, lng: p.location_lng }}
+                  icon={personnelIcon}
+                />
+              ))}
+              {sosAlerts?.map((sos) => (
+                <MarkerF
+                  key={`sos-${sos.id}-${sos.location_lat}-${sos.location_lng}`}
+                  position={{ lat: sos.location_lat, lng: sos.location_lng }}
+                  icon={sosIcon}
+                />
+              ))}
+            </>
+          )}
 
           <Legend />
         </GoogleMap>
@@ -479,7 +456,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
     (Location & { type: string }) | null
   >(null);
   const [showClusters, setShowClusters] = useState(true);
-  const [clusterer, setClusterer] = useState<MarkerClusterer | null>(null);
+
   const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [filters, setFilters] = useState({
@@ -510,8 +487,43 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries: GOOGLE_MAPS_LIBRARIES,
   });
+  const clusterData = useMemo(() => {
+    return [
+      ...organization.map((org) => ({
+        lat: org.location_lat,
+        lng: org.location_lng,
+        label: org.name,
+        type: "organization" as const,
+      })),
+      ...resource.map((res) => ({
+        lat: res.location_lat + jitter(),
+        lng: res.location_lng + jitter(),
+        label: res.name,
+        type: "resource" as const,
+      })),
+      ...reqResource.map((req) => ({
+        lat: req.location_lat + jitter(),
+        lng: req.location_lng + jitter(),
+        label: req.name,
+        type: "request" as const,
+      })),
+    ];
+  }, [organization, reqResource, resource]);
+  // console.log(JSON.stringify(clusterData, null, 2));
+  const { clusterer, markers, clearMarkers } = useClusters({
+    map,
+    showClusters,
+    data: clusterData,
+  });
 
-  // Get user's current location
+  console.log(showClusters);
+  // Handle loading and errors
+
+  // console.log(hook);
+  // useEffect(() => {
+  // }, [showClusters, map, clusterData]);
+
+  // // Get user's current location
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -530,7 +542,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
     console.log(organization);
   }, [organization]);
 
-  // Enhanced marker click handler with info windows
+  console.log(organization); // Enhanced marker click handler with info windows
   const handleMarkerClick = (
     marker: Location & { id: string },
     type: "personnel" | "sos" | "organization" | "resource" | "request"
@@ -684,7 +696,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
             <option value="terrain">{t("maps.Terrain")}</option>
           </select>
         </div>
-        {/* Clustering Toggle
+        Clustering Toggle
         <label className="flex items-center text-sm">
           <input
             type="checkbox"
@@ -693,7 +705,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
             className="mr-2"
           />
           {t("maps.Enable_Clustering")}
-        </label> */}
+        </label>
       </div>
     );
   };
@@ -1001,8 +1013,10 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
           }}
           zoom={12}
           center={center}
-          mapTypeId={mapStyle}
+          onLoad={setMap}
+          // mapTypeId={mapStyle}
           options={{
+            mapId: process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID,
             styles: [
               {
                 featureType: "poi",
@@ -1016,7 +1030,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
           }}
         >
           {/* User Location Marker */}
-          {userLocation && (
+          {!showClusters && userLocation && (
             <MarkerF
               position={userLocation}
               icon={{
@@ -1032,8 +1046,9 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
           )}
           {/* Filtered Markers */}
           {/* Organizations */}
-          {filters.organizations &&
-            organization.map((org) => (
+          {!showClusters &&
+            filters.organizations &&
+            organization?.map((org) => (
               <MarkerF
                 key={`org-${org.id}`}
                 position={{ lat: org.location_lat, lng: org.location_lng }}
@@ -1053,11 +1068,15 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
               />
             ))}
           {/* Resources */}
-          {filters.resources &&
-            resource.map((res) => (
+          {!showClusters &&
+            filters.resources &&
+            resource?.map((res) => (
               <MarkerF
                 key={`res-${res.id}`}
-                position={{ lat: res.location_lat, lng: res.location_lng }}
+                position={{
+                  lat: res.location_lat,
+                  lng: res.location_lng,
+                }}
                 icon={mapIcons.resIcon}
                 onClick={() =>
                   setSelectedMarker({
@@ -1076,8 +1095,9 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
               />
             ))}
           {/* Requests */}
-          {filters.requests &&
-            reqResource.map((req) => (
+          {!showClusters &&
+            filters.requests &&
+            reqResource?.map((req) => (
               <MarkerF
                 key={`req-${req.id}`}
                 position={{ lat: req.location_lat, lng: req.location_lng }}
