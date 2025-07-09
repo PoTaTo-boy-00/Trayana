@@ -1,3 +1,4 @@
+import { jitter } from "@/lib/jitter";
 import { supabase } from "@/lib/supabase";
 
 export interface SOSWithCoords {
@@ -24,8 +25,8 @@ export const fetchSOS = async () => {
     .filter((res) => res?.latitude && res?.longitude)
     .map((res) => ({
       id: res.id,
-      location_lat: res.latitude,
-      location_lng: res.longitude,
+      location_lat: res.latitude + jitter(),
+      location_lng: res.longitude + jitter(),
     }));
 
   // In-place mutation of sosReport array

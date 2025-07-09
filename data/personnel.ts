@@ -1,4 +1,5 @@
 // data/personnel.ts
+import { jitter } from "@/lib/jitter";
 import { supabase } from "@/lib/supabase";
 
 export interface PersonnelWithCoords {
@@ -6,6 +7,7 @@ export interface PersonnelWithCoords {
   location_lat: number;
   location_lng: number;
   organization_id: string;
+  name: string;
 }
 
 export const personnel: PersonnelWithCoords[] = [];
@@ -20,7 +22,7 @@ export const fetchPersonnelLocation = async (organizationId: string) => {
 
   const { data, error } = await supabase
     .from("personnel")
-    .select("id, location, organization_id")
+    .select("id, location, organization_id,name")
     .eq("organization_id", organizationId); // Filter by organization ID
 
   if (error) {
@@ -35,9 +37,10 @@ export const fetchPersonnelLocation = async (organizationId: string) => {
       const [lat, lng] = item.location.split(",").map(Number);
       return {
         id: item.id,
-        location_lat: lat,
-        location_lng: lng,
+        location_lat: lat + jitter(),
+        location_lng: lng + jitter(),
         organization_id: item.organization_id,
+        name: item.name,
       };
     });
 

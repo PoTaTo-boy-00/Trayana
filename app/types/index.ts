@@ -272,6 +272,7 @@ export interface OptimizedAllocation {
 export interface PersonnelLocation {
   id: string;
   personnel_id: string;
+  name: string;
   organization_id: string;
   location_lat: number;
   location_lng: number;

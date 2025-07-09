@@ -44,7 +44,7 @@ export default function MapPage() {
     fetchData();
   }, []);
 
-  console.log("MapPage Resource Data:", resourceData);
+  // console.log("MapPage Resource Data:", resourceData);
 
   return (
     <div className="space-y-6">
