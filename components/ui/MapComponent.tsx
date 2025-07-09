@@ -618,7 +618,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
   );
 
   // Initialize markers
-
+  console.log("Filters", filters);
   // Enhanced Legend with toggle functionality
   const Legend = () => {
     return (
@@ -684,7 +684,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
             <option value="terrain">{t("maps.Terrain")}</option>
           </select>
         </div>
-        Clustering Toggle
+        {/* Clustering Toggle
         <label className="flex items-center text-sm">
           <input
             type="checkbox"
@@ -693,7 +693,7 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
             className="mr-2"
           />
           {t("maps.Enable_Clustering")}
-        </label>
+        </label> */}
       </div>
     );
   };
@@ -1032,67 +1032,70 @@ export const MapComponent2: React.FC<MapComponentProps> = ({
           )}
           {/* Filtered Markers */}
           {/* Organizations */}
-          {organization.map((org) => (
-            <MarkerF
-              key={`org-${org.id}`}
-              position={{ lat: org.location_lat, lng: org.location_lng }}
-              icon={mapIcons.orgIcon}
-              onClick={() =>
-                setSelectedMarker({
-                  id: String(org.id),
-                  location_lat: org.location_lat,
-                  location_lng: org.location_lng,
-                  name: org.name,
-                  type: "organization",
-                  org_type: org.org_type,
-                  contact: org.contact,
-                  address: org.address,
-                })
-              }
-            />
-          ))}
+          {filters.organizations &&
+            organization.map((org) => (
+              <MarkerF
+                key={`org-${org.id}`}
+                position={{ lat: org.location_lat, lng: org.location_lng }}
+                icon={mapIcons.orgIcon}
+                onClick={() =>
+                  setSelectedMarker({
+                    id: String(org.id),
+                    location_lat: org.location_lat,
+                    location_lng: org.location_lng,
+                    name: org.name,
+                    type: "organization",
+                    org_type: org.org_type,
+                    contact: org.contact,
+                    address: org.address,
+                  })
+                }
+              />
+            ))}
           {/* Resources */}
-          {resource.map((res) => (
-            <MarkerF
-              key={`res-${res.id}`}
-              position={{ lat: res.location_lat, lng: res.location_lng }}
-              icon={mapIcons.resIcon}
-              onClick={() =>
-                setSelectedMarker({
-                  id: String(res.id),
-                  location_lat: res.location_lat,
-                  location_lng: res.location_lng,
-                  name: res.name,
-                  type: "resource",
-                  resource_type: res.resource_type,
-                  quantity: res.quantity,
-                  unit: res.unit,
-                  status: res.status,
-                  expiryDate: res.expiryDate,
-                })
-              }
-            />
-          ))}
+          {filters.resources &&
+            resource.map((res) => (
+              <MarkerF
+                key={`res-${res.id}`}
+                position={{ lat: res.location_lat, lng: res.location_lng }}
+                icon={mapIcons.resIcon}
+                onClick={() =>
+                  setSelectedMarker({
+                    id: String(res.id),
+                    location_lat: res.location_lat,
+                    location_lng: res.location_lng,
+                    name: res.name,
+                    type: "resource",
+                    resource_type: res.resource_type,
+                    quantity: res.quantity,
+                    unit: res.unit,
+                    status: res.status,
+                    expiryDate: res.expiryDate,
+                  })
+                }
+              />
+            ))}
           {/* Requests */}
-          {reqResource.map((req) => (
-            <MarkerF
-              key={`req-${req.id}`}
-              position={{ lat: req.location_lat, lng: req.location_lng }}
-              icon={mapIcons.reqIcon}
-              onClick={() =>
-                setSelectedMarker({
-                  id: String(req.id),
-                  location_lat: req.location_lat,
-                  location_lng: req.location_lng,
-                  name: req.name,
-                  type: "request",
-                  resource_type: req.resource_type,
-                  requested_quantity: req.requested_quantity,
-                  urgency: req.urgency,
-                })
-              }
-            />
-          ))}
+          {filters.requests &&
+            reqResource.map((req) => (
+              <MarkerF
+                key={`req-${req.id}`}
+                position={{ lat: req.location_lat, lng: req.location_lng }}
+                icon={mapIcons.reqIcon}
+                onClick={() =>
+                  setSelectedMarker({
+                    id: String(req.id),
+                    location_lat: req.location_lat,
+                    location_lng: req.location_lng,
+                    name: req.name,
+                    type: "request",
+                    resource_type: req.resource_type,
+                    requested_quantity: req.requested_quantity,
+                    urgency: req.urgency,
+                  })
+                }
+              />
+            ))}
           {/* Directions Renderer */}
           {directions && (
             <DirectionsRenderer
