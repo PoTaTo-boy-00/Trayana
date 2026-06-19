@@ -19,13 +19,13 @@ This project is a **real-time disaster response and resource management system**
 
 ##  Features
 ###  **Core Features**
- **Real-time Disaster Alerts** (SMS, Realtime (for Partner Organizations), Social Media Monitoring)  
- **SOS Emergency Requests** (AI-powered urgency detection via Gemini AI)  
- **Offline Mode** (Locally stores distress messages, syncs once online)  
- **Multi-Channel Communication** (Mobile app, SMS, IVR for illiterate users)  
- **AI Resource Matching & Allocation** (Google Gemini AI)  
- **Geolocation Tracking** (Rescue teams & victims via Google Maps API)  
- **Data Dashboards** (Live response monitoring via Google Data Studio)  
+ 1. **Real-time Disaster Alerts** (SMS, Realtime (for Partner Organizations), Social Media Monitoring)  
+ 2. **SOS Emergency Requests** (AI-powered urgency detection via Gemini AI)  
+ 3. **Offline Mode** (Locally stores distress messages, syncs once online)  
+ 4. **Multi-Channel Communication** (Mobile app, SMS, IVR for illiterate users)  
+ 5. **AI Resource Matching & Allocation** (Google Gemini AI)  
+ 6. **Geolocation Tracking** (Rescue teams & victims via Google Maps API)  
+ 7. **Data Dashboards** (Live response monitoring via Google Data Studio)  
 
 ##  Installation & Setup
 1️. Clone the repository:  
